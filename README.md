@@ -1,9 +1,9 @@
-# ------------------------------------------------------------------------------
-#                      -- [ LA FIESTA DE LAS HORMONAS ] --
-##               "La Fiesta de las Homonas" es un juego de 16-bit para DOS (real mode) 
-##                              presentado en la "C:\DOS\CONTEST\" del MS-DOS Club                              
-##                                            https://msdos.club/      
-# ------------------------------------------------------------------------------
+# ** ------------------------------------------------------------------------------ **
+# **                     -- [ LA FIESTA DE LAS HORMONAS ] -- **
+## **              "La Fiesta de las Homonas" es un juego de 16-bit para DOS (real mode) ** 
+## **                             presentado en la "C:\DOS\CONTEST\" del MS-DOS Club  **                             
+## **                                           https://msdos.club/                **
+# ** ------------------------------------------------------------------------------ **
 
 
 
