@@ -1,0 +1,5 @@
+makedat.exe ext1.pcx ext2.pcx floor1.pcx floor2.pcx
+RENAME DATA.DAT TILESETS.DAT
+COPY TILESETS.DAT Z:\HORMONA\FINAL
+DEL TILESETS.DAT 
+PAUSE
