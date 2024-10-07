@@ -12,7 +12,10 @@ heavies.
 Tus acciones tendrán consecuencias, ya que cada decisión moldeará tu estatus. Toma decisiones acertadas para que
 la Jessy se fije en tí, de lo contrario pasará de tu culo y cumplirás 20 años siendo virgen como en la vida real.
 
+![](https://github.com/ManoleteGames/La-Fiesta-de-las-Hormonas/blob/main/images/INTRO1.PNG)
+![](https://github.com/ManoleteGames/La-Fiesta-de-las-Hormonas/blob/main/images/INTRO2.PNG)
 ![](https://github.com/ManoleteGames/La-Fiesta-de-las-Hormonas/blob/main/images/GAME2.PNG)
+![](https://github.com/ManoleteGames/La-Fiesta-de-las-Hormonas/blob/main/images/GAME3.PNG)
 
 
 
