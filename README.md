@@ -12,6 +12,11 @@ heavies.
 Tus acciones tendrán consecuencias, ya que cada decisión moldeará tu estatus. Toma decisiones acertadas para que
 la Jessy se fije en tí, de lo contrario pasará de tu culo y cumplirás 20 años siendo virgen como en la vida real.
 
+
+
+
+
+
 ## 1. LICENCIA
    Como buen comunista (de momento, si me toca la loteria ya hablaremos), este juego es público, gratuito,
    y de código abierto. Úsalo como te venga en gana.
