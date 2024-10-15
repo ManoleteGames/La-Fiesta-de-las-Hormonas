@@ -14,6 +14,7 @@ byte *map_flip;
 byte *map_collision;
 byte *map_hotspot;
 byte *map_event;
+byte *map_sprites;
 int map_offset_x = 0;
 int map_offset_y = 0;
 int map_setting = 0;
@@ -23,6 +24,7 @@ word map_current_y = 0;
 word map_last_x;
 word map_last_y;
 word map_scrollSide;
+byte map_loaded = 0;
 
 
 
@@ -206,6 +208,12 @@ void LoadMap(char *file, char* dat_string){
 	}
 
 	fclose(f);
+   
+   map_loaded = 1;
+}
+
+void UnloadMap(void){
+ 	map_loaded = 0;
 }
 
 
