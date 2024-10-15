@@ -302,10 +302,10 @@ void VGA_InitVideoCard(void){
 
    // Set VRAM addresses for fonts
    vram_Font = 0xB000; //0xB000; //0xAE00; //0xDCC0;
-
+   vram_FontS = 0xB440;
 
    // Set VRAM addresses for tiles
-   vram_Tiles = 0xB410; //0xE000; //0xE0C0; //0xDCC0; //0xE0C0;
+   vram_Tiles = 0xB880; //0xB410; //0xE000; //0xE0C0; //0xDCC0; //0xE0C0;
 
  	// Set sprites background vram address
    vram_SpritesBack = 0xD400; //0xE500; //0xE000; //0xB410;
@@ -367,10 +367,7 @@ void VGA_Fade_in(void){
 		asm in      al,dx
 		asm test    al,VGA_VRETRACE
 		asm jz		WaitVsync
-
-
 	}
-	VGA_SetPalette(palette);
 }
 
 /////////////////////////////////////////////////////////
@@ -469,6 +466,58 @@ void VGA_LoadImage(char *file,char* dat_string, word page){
       asm STI //Re enable interrupts
    }
 }
+
+/////////////////////////////////////////////////////////
+// Load Transition PCX image
+// - file := filename of .DAT file
+// - dat_string := filename of .PCX file inside .DAT file
+// - Always loaded on page 1
+/////////////////////////////////////////////////////////
+void VGA_LoadTransImage(char *file,char* dat_string){
+	dword VGA_index = 0;
+	word h = 0;
+	word x = 0;
+	word y = 0;
+	byte plane = 0;
+	dword buffer_index = 0;
+	dword offset_Image = 0;
+
+   // Load image on temporary buffer (tempdata1 & tempdata2)
+   LoadTransImage_PCX(file,dat_string);
+
+	// Start writing VRAM on unchained mode
+	for (plane = 0; plane < 4; plane ++){
+		// select plane
+		asm CLI //disable interrupts
+		outp(VGA_SEQ_INDEX, VGA_MAP_MASK);
+		outp(VGA_SEQ_DATA, 1 << plane);
+
+      // Sets index of VGA memory
+      VGA_index = (vga_page[1]*vram_LogicalWidth);
+      buffer_index = plane;
+
+      for (y = 0; y < 200; y++){
+      	for(x = 0; x < 80; x++){ // 80 because on unchained mode we will write 4 bytes at time, that means 80*4 = 320
+         	VGA[VGA_index] = tempdata1[buffer_index];
+            VGA_index++;
+            buffer_index +=4;
+         }
+         VGA_index+=8; //Point to the begining of the scanline (each scanline has 8 non visible bytes)
+      }
+
+      if(buffer_index > 64003){
+  	      sprintf(error1, "%ld", buffer_index);
+      	Error("Buffer overrun loading image file (max = 64003)", dat_string, error1); }
+      if((VGA_index < 0) || (VGA_index > ((vga_page[2]+200) * 88))){ //42240
+      	sprintf(error1, "%ld", VGA_index);
+      	Error("VGA index out of range loading image file (max = ((vga_page[2]+200) * 88) )", file, dat_string);
+      }
+
+      asm STI //Re enable interrupts
+   }
+}
+
+
 
 /////////////////////////////////////////////////////////
 // Load Panel PCX image
@@ -596,7 +645,47 @@ void VGA_SetPage(int page){
 }
 
 /////////////////////////////////////////////////////////
-// Rotate palette
+// Rotate palette sync
+// - Rotates pallete of a current image
+// - Rotates colors just one by one
+/////////////////////////////////////////////////////////
+void VGA_RotatePaletteAsync(int index1, int index2){
+	int i,j;
+	int colors;
+
+   unsigned char auxColorR;
+   unsigned char auxColorG;
+   unsigned char auxColorB;
+
+   int firstIndex = index1*3;
+   int lastIndex = index2*3;
+   colors = index2-index1;
+
+   // first thing first...save last index colour
+ 	auxColorR = palette[lastIndex];
+  	auxColorG = palette[lastIndex+1];
+  	auxColorB = palette[lastIndex+2];
+
+   // rotate all colors
+  	for(j=0; j<colors; j++){
+		palette[lastIndex -(j*3)] 	   = palette[lastIndex -(j*3) -3];
+     	palette[lastIndex -(j*3) + 1] = palette[lastIndex -(j*3) -2];
+     	palette[lastIndex -(j*3) + 2] = palette[lastIndex -(j*3) -1];
+   }
+
+   // restore last index colour on first index
+	palette[firstIndex] = auxColorR;
+	palette[firstIndex+1] = auxColorG;
+	palette[firstIndex+2] = auxColorB;
+
+	VGA_SetPalette(palette);
+}
+
+/////////////////////////////////////////////////////////
+// Rotate palette sync
+// - Rotates pallete of a current image
+// - Stucks CPU no other processes can be done while
+//   rotating
 /////////////////////////////////////////////////////////
 void VGA_RotatePalette(int index1, int index2, int speed){
 	int i,j;
@@ -652,6 +741,7 @@ void VGA_RotatePalette(int index1, int index2, int speed){
 /////////////////////////////////////////////////////////
 void VGA_LoadFont(char *file, char *dat_string){
 	word VGA_index = 0;
+   word VGA_index2 = 0;
 	word w = 0;
 	int h = 0;
 	word ty = 0;
@@ -685,6 +775,7 @@ void VGA_LoadFont(char *file, char *dat_string){
 		asm out	dx,al
 
 		VGA_index = vram_Font;	//VRAM FONT ADDRESS
+      VGA_index2 = vram_FontS; // VRAM FONT ADDRESS
 
 		//SCAN ALL TILES
 		for (tileY = h; tileY > 0 ; tileY--){
@@ -694,8 +785,11 @@ void VGA_LoadFont(char *file, char *dat_string){
 				//LOAD TILE
 				x=0;
 				for(y = 0; y < 16; y++){
-					VGA[VGA_index] = (tempdata1[offset] + 252); //Font color from 252 to 255
+					VGA[VGA_index] = (tempdata1[offset] + 251); //Font color from 251 to 255
+					if(tempdata1[offset] == 3){VGA[VGA_index2] = (tempdata1[offset] + 252);} //Font color from 251 to 255
+               else{VGA[VGA_index2] = (tempdata1[offset] + 251);} //Font color from 251 to 255
 					VGA_index++;
+               VGA_index2++;
 					offset +=4;
 					x++;
 					if (x == 2){
@@ -795,8 +889,8 @@ void VGA_LoadTiles(char *file,char* dat_string){
 // - Each char is 8x8 px
 // - panel: eliminates the current scroll to print text on panel
 /////////////////////////////////////////////////////////
-void VGA_PrintText(word x, word y, word lineLength, unsigned char *string){
-	word fontAddress = vram_Font; // Pointer to font memory
+void VGA_PrintText(word x, word y, word lineLength, unsigned char *string, byte color){
+	word fontAddress; // Pointer to font memory
 	word screen_offset;
 	byte datastring;
 	word size = strlen(string);
@@ -808,6 +902,11 @@ void VGA_PrintText(word x, word y, word lineLength, unsigned char *string){
 	y = (y<<3);
    y += scroll_y;
 	screen_offset = (y<<6)+(y<<4)+(y<<3);
+
+   x += (scroll_x>>3);
+
+   if(color == 0){fontAddress = vram_Font;} // Pointer to font memory
+   else{fontAddress = vram_FontS;} // Pointer to font memory
 
 	asm{
 		push ds
@@ -1023,7 +1122,6 @@ void VGA_PrintPanelText(word x, word y, word lineLength, unsigned char *string){
 	}
 }
 
-
 /////////////////////////////////////////////////////////
 // Draw empty box
 // - Maximum width allowable = 38 characters (+2 for frames)
@@ -1037,19 +1135,6 @@ void VGA_Draw_EmptyBox(word x, word y, byte w, byte h){
 	unsigned char mid[41];
 	unsigned char down[41];
 
-   // Check maximum width and heigth has not been reached
-   //if ((x+w)>38){
-   //   sprintf(error1, "%d", x);
-   //   sprintf(error2, "%d", w);
-   //	Error(" Draw_EmptyBox_VGA >> Wrong empty box width. start >> width : ",error1,error2);
-   //}
-
-   //if ((y+h)>23){
-   //  	sprintf(error1, "%d", y);
-   //   sprintf(error2, "%d", h);
-   //	Error(" Draw_EmptyBox_VGA >> Wrong empty box heigth. start >> heigth : ",error1,error2);
-   //}
-
    // Print frame
 	up[0] = '#'; up[w+1] = '$'; up[w+2] = 0;
 	mid[0] = '*'; mid[w+1] = '+'; mid[w+2] = 0;
@@ -1061,13 +1146,13 @@ void VGA_Draw_EmptyBox(word x, word y, byte w, byte h){
    }
 
    // Print empty frame
-   VGA_PrintText(x,y,40,up);
+   VGA_PrintText(x,y,40,up,0);
    y++;
 	for (i = 0; i<h; i++) {
-   	VGA_PrintText(x,y,40,mid);
+   	VGA_PrintText(x,y,40,mid,0);
    	y++;
    }
-	VGA_PrintText(x,y,40,down);
+	VGA_PrintText(x,y,40,down,0);
 
 	free(up);free(mid);free(down);
 }
@@ -1167,16 +1252,16 @@ void VGA_RunCompiledSprite(word XPos, word YPos, char *Sprite){
 // Loading transition interrupt (private)
 /////////////////////////////////////////////////////////
 void interrupt VGA_LoadingTransition(void){
-	asm CLI
-	{
-
-	}
-	asm STI
+	// Rotate palette colors 243-->249	asm CLI
 
    // Acknowledge interrupt
 	asm mov al,020h
 	asm mov dx,020h
 	asm out dx, al	//PIC, EOI
+
+   VGA_RotatePaletteAsync(243, 249);
+
+	asm STI
 }
 
 /////////////////////////////////////////////////////////
@@ -1195,6 +1280,7 @@ void VGA_SetLoadingInterrupt(void){
 	VGA_Vsync();
 
    UnloadSprites();
+   UnloadMap();
 
    ResetScroll();
 
@@ -1206,6 +1292,8 @@ void VGA_SetLoadingInterrupt(void){
 
 	VGA_ClearPalette();
 	VGA_ClearScreen();//clear screen
+
+	VGA_LoadTransImage("images.DAT","loading.pcx");
 
 	asm CLI
 
@@ -1252,7 +1340,6 @@ void VGA_SetLoadingInterrupt(void){
 /////////////////////////////////////////////////////////
 void VGA_ResetLoadingInterrupt(void){
 
-	VGA_Fade_out();
 	asm CLI
 
 	//set frame counter
@@ -1260,13 +1347,15 @@ void VGA_ResetLoadingInterrupt(void){
 	outportb(PTI_CH0, 0xFF);	//lo-byte
 	outportb(PTI_CH0, 0xFF);	//hi-byte
 
-
    // Restore old handler
 	setvect(0x1C, old_loading_handler);
 
-	asm STI
+ 	VGA_Fade_out();
 
-   VGA_ClearScreen();//clear screen
+ 	VGA_ClearPalette();
+	VGA_ClearScreen();//clear screen
+
+	asm STI
 }
 
 
@@ -1293,7 +1382,6 @@ void VGA_Disable4Planes(void){ // dbg ??? why set GC index + 1 to 00ff??
 	asm out dx,ax
 }
 
-
 /////////////////////////////////////////////////////////
 // Draw sprites
 /////////////////////////////////////////////////////////
@@ -1312,6 +1400,7 @@ void VGA_Draw_Sprites(void){
    word spriteBkgAddress;
 	int spriteStackIndex; //sprite_number
    byte spriteSize = 2;
+   word aux;
 
 
    VGA_Enable4Planes();
@@ -1385,8 +1474,9 @@ void VGA_Draw_Sprites(void){
 				asm pop 	ds
 
          // if it is outside limits, reset init status
-      	if((x < scroll_x) || (x > scroll_x + 304)){ s->init = 0; }
+      	//if((x < scroll_x) || (x > scroll_x + 304)){ s->init = 0; }
          //if((x < (scroll_x + 8)) || (x > (scroll_x + 296))){ s->init = 0; }
+         if((x < (scroll_x + 16)) || (x > (scroll_x + 288)) || (y < (scroll_y)) || (y > (scroll_y + 184))){ s->init = 0; }
 
          // if hide is requested just hide it
          if( s->hide ){
@@ -1399,8 +1489,9 @@ void VGA_Draw_Sprites(void){
       if( s->init == 1)
       {
       	// Copy background only if new position is inside limits
-      	if((x >= scroll_x) && (x <= scroll_x + 304)){
+      	//if((x >= scroll_x) && (x <= scroll_x + 304)){
          //if((x >= (scroll_x+8)) && (x <= (scroll_x + 296))){
+         if((x >= (scroll_x+16)) && (x <= (scroll_x + 288)) && (y >= (scroll_y)) && (y <= (scroll_y + 184))){
 
          	rows = s->rows; //s->size;
          	cols = s->cols;
@@ -1466,8 +1557,9 @@ void VGA_Draw_Sprites(void){
       if( (s->init == 0) && (s->hidden == 0)){
 
       	// Save background only if new position is inside limits
-      	if((lx >= scroll_x) && (lx <= scroll_x + 304)){
+      	//if((lx >= scroll_x) && (lx <= scroll_x + 304)){
       	//if((lx >= (scroll_x+8)) && (lx <= (scroll_x + 296))){
+         if((lx >= (scroll_x+16)) && (lx <= (scroll_x + 288)) && (y >= (scroll_y)) && (y <= (scroll_y + 184))){
 
          	rows = s->rows; // s->size;
          	cols = s->cols;   //cols
@@ -1551,8 +1643,9 @@ void VGA_Draw_Sprites(void){
       if( s->init == 1){
 
 			// Write sprite on VGA only if it is inside visible screen
-      	if((x >= scroll_x) && (x <= scroll_x + 304)){
+      	//if((x >= scroll_x) && (x <= scroll_x + 304)){
          //if((x >= (scroll_x+8)) && (x <= (scroll_x + 296))){
+         if((x >= (scroll_x+16)) && (x <= (scroll_x + 288))&& (y >= (scroll_y))&& (y <= (scroll_y + 184))){
 
          	// Check animation enabled
       		if(s->animate == 1){
@@ -1571,6 +1664,33 @@ void VGA_Draw_Sprites(void){
 
 				if(s->hide == 0){
             	VGA_RunCompiledSprite(x,y,s->frames[s->frame].compiled_code);
+
+               // Update sprite on map position
+               s->tile_x = (s->pos_x)>>4;
+               s->tile_y = (s->pos_y)>>4;
+
+               if( spriteStackTable[spriteStackIndex] != player.spriteNum){
+               	//Update map collision
+               	// -- reset old map collision
+               	aux = (((s->last_y-64)>>4) * map_width ) +  ((s->last_x)>>4);
+               	map_sprites[aux]  = 0;
+                  map_sprites[aux + 1] = 0;
+                  map_sprites[aux + map_width] = 0;
+                  map_sprites[aux + map_width + 1] = 0;
+               	// -- set old map collision
+               	aux = (((s->pos_y-64)>>4) * map_width ) +  ((s->pos_x)>>4);
+               	map_sprites[aux]  = spriteStackTable[spriteStackIndex];
+                  map_sprites[aux + 1] = spriteStackTable[spriteStackIndex];
+                  map_sprites[aux + map_width] = spriteStackTable[spriteStackIndex];
+                  map_sprites[aux + map_width + 1] = spriteStackTable[spriteStackIndex];
+               }
+            }
+            else{
+                  aux = (((s->pos_y-64)>>4) * map_width ) +  ((s->pos_x)>>4);
+               	map_sprites[aux]  = 0;
+                  map_sprites[aux + 1] = 0;
+                  map_sprites[aux + map_width] = 0;
+                  map_sprites[aux + map_width + 1] = 0;
             }
       	}
       }
@@ -1579,6 +1699,44 @@ void VGA_Draw_Sprites(void){
       s->last_y = y;
  	}
 }
+
+/////////////////////////////////////////////////////////
+// Draw sprite (destructive)
+/////////////////////////////////////////////////////////
+void VGA_DrawSpriteDestructive(int sprNum){
+   word bkgAddress;
+   word spriteBkgData;
+	word screenPrevAddress;
+   word screenNewAddress;
+   word rows;
+   word cols;
+   word spriteBkgAddress;
+	int spriteStackIndex; //sprite_number
+   byte spriteSize = 2;
+   word aux;
+
+  	SPRITE *s = &sprite[sprNum];
+
+   int x = s->pos_x;
+	int y = s->pos_y;
+	int lx = s->last_x;
+	int ly = s->last_y;
+   word next_scanline = s->next_scanline;
+
+  	// Check animation enabled
+	if(s->animate == 1){
+  		s->frame = s->animation[s->anim_counter];
+     	if(s->anim_speed > s->speed){
+     		s->anim_speed = 0;
+        	s->anim_counter ++;
+         // Reset animation counter
+         if (s->anim_counter == s->aframes) s->anim_counter = 0;
+      }
+   	s->anim_speed++;
+   }
+   VGA_RunCompiledSprite(x,y,s->frames[s->frame].compiled_code);
+}
+
 
 
 /////////////////////////////////////////////////////////
@@ -1868,6 +2026,7 @@ void VGA_SetMap(int x, int y){
    }
 
    VGA_Disable4Planes();
+   Update(0,0);
 }
 
 
@@ -2008,11 +2167,13 @@ void VGA_ScrollMap(void){
 /////////////////////////////////////////////////////////
 void VGA_Draw_MapBack(void){
 	VGA_Enable4Planes();
-	VGA_DrawMapRow(map_current_x,map_current_y,map_offset_x,map_offset_y,22);
-  	VGA_DrawMapRow(map_current_x,map_current_y+16,map_offset_x,map_offset_y+1,22);
-   VGA_DrawMapRow(map_current_x,map_current_y+32,map_offset_x,map_offset_y+2,22);
-   VGA_DrawMapRow(map_current_x,map_current_y+48,map_offset_x,map_offset_y+3,22);
-   VGA_DrawMapRow(map_current_x,map_current_y+64,map_offset_x,map_offset_y+4,22);
+
+	VGA_DrawMapRow(map_current_x,map_current_y,map_offset_x,map_offset_y,21);
+  	VGA_DrawMapRow(map_current_x,map_current_y+16,map_offset_x,map_offset_y+1,21);
+   VGA_DrawMapRow(map_current_x,map_current_y+32,map_offset_x,map_offset_y+2,21);
+   VGA_DrawMapRow(map_current_x,map_current_y+48,map_offset_x,map_offset_y+3,21);
+   VGA_DrawMapRow(map_current_x,map_current_y+64,map_offset_x,map_offset_y+4,21);
+
    VGA_Disable4Planes();
 }
 
@@ -2160,67 +2321,103 @@ void VGA_UpdatePanel(void){
 
 	int aux;
 
-	if( fp_keys[K_SPACE] ) {
-   	if(showPanel){ showPanel = 0; }
-      else{
-         showPanel = 1;
-      }
-   }
+//	if( fp_keys[K_SPACE] ) {
+//   	if(showPanel){
+//      	panelScrolling = 0;
+//      	showPanel = 0;
+//      }
+//      else{
+//      	panelScrolling = 0;
+//         showPanel = 1;
+//      }
+//   }
 
 	if(showPanel){
-   	if(scroll_wy > 336){
-      	scroll_wy --;
+   	if(panelScrolling == 1){
+   		if(scroll_wy > 336){
+      		scroll_wy --;
+         	VGA_MoveWindow();
+      	}
+      }
+      else{
+         scroll_wy = 336;
          VGA_MoveWindow();
       }
 
-		//sprintf(string, "X: %d", scroll_x);
-      //VGA_PrintPanelText(1,1,8,"        ");
-		//VGA_PrintPanelText(1,1,strlen(string),string);
+      // current day
+      sprintf(string, "%d", player.day);
+      VGA_PrintPanelText(1,2,8,"  ");
+		VGA_PrintPanelText(1,2,strlen(string),string);
 
-		//sprintf(string, "Y: %d", scroll_y);
-      //VGA_PrintPanelText(1,2,8,"        ");
-		//VGA_PrintPanelText(1,2,strlen(string),string);
+		// current time
+      sprintf(string, "%d", scroll_x); //player.hour);
+      VGA_PrintPanelText(5,1,8,"  ");
+		VGA_PrintPanelText(5,1,strlen(string),string);
+      sprintf(string, "%d", scroll_y); // player.min);
+      VGA_PrintPanelText(5,2,8,"  ");
+		VGA_PrintPanelText(5,2,strlen(string),string);
 
-   	//sprintf(string, "WY: %d", scroll_wy);
+      // money
+      sprintf(string, "%d", player.hotspot);  // money
+      VGA_PrintPanelText(36,1,8,"  ");
+      VGA_PrintPanelText(36,1,strlen(string),string);
+
+
+/*		sprintf(string, "mapCX: %d", map_current_x);
+      VGA_PrintPanelText(1,1,8,"        ");
+		VGA_PrintPanelText(1,1,strlen(string),string);
+
+		sprintf(string, "mapCY: %d", map_current_y);
+      VGA_PrintPanelText(1,2,8,"        ");
+		VGA_PrintPanelText(1,2,strlen(string),string);
+
+		sprintf(string, "mapOx %d", map_offset_x );
+      VGA_PrintPanelText(9,1,16,"                ");
+		VGA_PrintPanelText(9,1,strlen(string),string);
+
+  		sprintf(string, "mapOy %d", map_offset_y);
+      VGA_PrintPanelText(9,2,16,"                ");
+		VGA_PrintPanelText(9,2,strlen(string),string);
+
+      sprintf(string, "P x: %d", sprite[1].tile_x);
+      VGA_PrintPanelText(14,1,16,"                ");
+		VGA_PrintPanelText(14,1,strlen(string),string);
+
+      sprintf(string, "P y: %d", sprite[1].tile_y);
+      VGA_PrintPanelText(14,2,16,"                ");
+		VGA_PrintPanelText(14,2,strlen(string),string);
+
+      	//sprintf(string, "WY: %d", scroll_wy);
       //VGA_PrintPanelText(1,3,8,"        ");
 		//VGA_PrintPanelText(1,3,strlen(string),string);
 
 		//sprintf(string, "Player x %d", player.tile_x );
 
-		//sprintf(string, "Max h x %d", map_height_px );
-      //VGA_PrintPanelText(9,1,16,"                ");
-		//VGA_PrintPanelText(9,1,strlen(string),string);
+      sprintf(string, "ScrollX %d", scroll_x);
+      VGA_PrintPanelText(25,1,14,"              ");
+		VGA_PrintPanelText(25,1,strlen(string),string);
 
-  		//sprintf(string, "Player y: %d", player.tile_y);
-      //VGA_PrintPanelText(9,2,16,"                ");
-		//VGA_PrintPanelText(9,2,strlen(string),string);
-
-      //sprintf(string, "Player e: %d", player.event);
-      //VGA_PrintPanelText(9,3,16,"                ");
-		//VGA_PrintPanelText(9,3,strlen(string),string);
-
-      //sprintf(string, "Player h: %d", player.hotspot);
-      //VGA_PrintPanelText(9,4,16,"                ");
-		//VGA_PrintPanelText(9,4,strlen(string),string);
-
-      //sprintf(string, "Player move: %d", player.move);
-      //VGA_PrintPanelText(25,1,14,"              ");
-		//VGA_PrintPanelText(25,1,strlen(string),string);
-
-      //aux = (  (player.tile_y) * map_width ) + player.tile_x;
-      //sprintf(string, "P. col up: %d", map_collision[aux] );
-      //VGA_PrintPanelText(25,2,14,"              ");
-		//VGA_PrintPanelText(25,2,strlen(string),string);
+      sprintf(string, "ScrollY %d", scroll_y );
+      VGA_PrintPanelText(25,2,14,"              ");
+		VGA_PrintPanelText(25,2,strlen(string),string);
 
       //aux = (  (player.tile_y) * map_width ) + player.tile_x;
       //sprintf(string, "P. col lft: %d", map_collision[aux] );
       //VGA_PrintPanelText(25,3,14,"              ");
 		//VGA_PrintPanelText(25,3,strlen(string),string);
+  */
+
 
 	}
    else{
-   	if(scroll_wy < 400){
-      	scroll_wy ++;
+   	if(panelScrolling == 1){
+   		if(scroll_wy < 400){
+      		scroll_wy ++;
+         	VGA_MoveWindow();
+      	}
+      }
+      else{
+         scroll_wy = 400;
          VGA_MoveWindow();
       }
 	}
