@@ -196,6 +196,7 @@ void UnloadSprites(void){
 	int i = 0;
 	for (i=0;i<20;i++){Unload_sprite(i);}
    ResetSpriteStack();
+   memset(map_sprites, 0, 1024);
    vram_SpritesBack = 0xDF00; //0xD400;;
 }
 
