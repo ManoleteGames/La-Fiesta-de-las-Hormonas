@@ -23,14 +23,17 @@ typedef struct tagPLAYER{
    byte charm;
    byte freak;
    byte handsome;
+   byte badass;
 
    byte day;
    byte hour;
    byte min;
+   byte money;
 
    byte floor;
    byte event;
    byte hotspot;
+   byte spriteColl;
    byte move;
    byte oldMove;
    byte act;
@@ -131,6 +134,7 @@ extern unsigned char *error2;
 extern unsigned char *string;
 extern word vram_LogicalWidth; // screen logical with on bytes in vram
 extern word vram_Font; // Font address in VRAM
+extern word vram_FontS; // Font address in VRAM
 extern word vram_Tiles; // Tiles address in VRAM
 extern word vram_SpritesBack; // Sprites background address in VRAM
 extern byte palette[256*3];
@@ -140,8 +144,10 @@ extern int scroll_x;   // Scroll X
 extern int scroll_y;   // Scroll Y
 extern int scroll_wy;   // Scroll window Y
 extern byte showPanel;
+extern byte panelScrolling; 
 extern byte scrolling_enabled;
 extern PLAYER far player;
+extern byte speech_active;
 
 void InitEngine(void);
 void Delay(int count);
@@ -150,6 +156,8 @@ void Update(int sprite_follow, int sprite);
 void ExitDOS(void);
 void MovePlayer(void);
 void ResetScroll(void);
+void Speech(int sprFace,int sprEnter,char* filename, char* dat_string,char * line1, char * line2, char * line3, char * line4);
+byte SpeechSelection(int optNum, int sprFace, int sprEnter,char* filename, char* dat_string,char * line1, char * line2, char * line3, char * line4);
 
 // External functions prototypes
 extern void (*Fade_out)(void);
@@ -163,14 +171,16 @@ extern void (*LoadTiles)(char *file,char* dat_string);
 extern void (*Draw_EmptyBox)(word x, word y, byte w, byte h);
 extern void (*SetLoadingInterrupt)(void);
 extern void (*ResetLoadingInterrupt)(void);
-extern void (*PrintText)(word x, word y, word lineLength, unsigned char *string);
+extern void (*PrintText)(word x, word y, word lineLength, unsigned char *string, byte color);
 extern void (*Draw_Sprites)(void);
+extern void (*DrawSpriteDestructive)(int sprNum);
 extern void (*SetPalette)(unsigned char *pal);
 extern void (*LoadTiles)(char *file,char* dat_string);
 extern void (*SetMap)(int x, int y);
 extern void (*ScrollMap)(void);
 extern void (*UpdatePanel)(void);
 extern void (*LoadPanelBackground)(char *file,char* dat_string);
+extern void (*DrawMapBack)(void);
 
 // VIDEO/VGA.c prototypes
 extern word vga_page[];
@@ -182,6 +192,7 @@ void VGA_InitVideoCard(void);
 void VGA_Fade_in(void);
 void VGA_Fade_out(void);
 void VGA_LoadImage(char *file,char* dat_string, word page);
+void VGA_LoadTransImage(char *file,char* dat_string);
 void VGA_HardwareScrolling(void);
 void VGA_SetPage(int page);
 void VGA_RotatePalette(int index1, int index2, int speed);
@@ -190,8 +201,9 @@ void VGA_LoadTiles(char *file,char* dat_string);
 void VGA_Draw_EmptyBox(word x, word y, byte w, byte h);
 void VGA_SetLoadingInterrupt(void);
 void VGA_ResetLoadingInterrupt(void);
-void VGA_PrintText(word x, word y, word lineLength, unsigned char *string);
+void VGA_PrintText(word x, word y, word lineLength, unsigned char *string, byte color);
 void VGA_Draw_Sprites(void);
+void VGA_DrawSpriteDestructive(int sprNum);
 void VGA_SetPalette(unsigned char *pal);
 void VGA_LoadTiles(char *file,char* dat_string);
 void VGA_SetMap(int x, int y);
@@ -258,6 +270,7 @@ extern byte *map_flip;
 extern byte *map_collision;
 extern byte *map_hotspot;
 extern byte *map_event;
+extern byte *map_sprites;
 extern word map_width;
 extern word map_height;
 extern word map_width_px;
@@ -269,6 +282,7 @@ extern word map_current_y;
 extern word map_last_x;
 extern word map_last_y;
 extern word map_scrollSide;
+extern byte map_loaded;
 void LoadMap(char *file, char* dat_string);
 
 // SPRITE/SPRITE.c prototypes
@@ -294,6 +308,7 @@ void HideSprite(int sprite_number);
 // FILE/FILE.c prototypes
 void DAT_Seek(FILE *fp,char *dat_string);
 void LoadImage_PCX(char* filename, char* dat_string);
+void LoadTransImage_PCX(char* filename, char* dat_string);
 void LoadFont_BMP(char* filename, char* dat_string);
 void LoadTileset_PCX(char* filename, char* dat_string);
 void LoadAnimation_BMP(char* filename, char* dat_string);
@@ -306,4 +321,94 @@ extern word tilesetWidth;
 extern word tilesetHeight;
 extern word tileset_ntiles;
 extern byte *tilesetData;
+
+// HORMONA.C prototypes
+extern byte PlayerAnimation[];
+extern byte PlayerFaceAnimation[];
+extern byte JessyAnimation[];
+extern byte EnterAnimation[];
+extern byte BirdAnimation[];
+extern byte DirectorAnimation[];
+extern byte CharacterAnimation2[];
+extern byte CharacterAnimation3[];
+extern byte ext1_event_mask[];
+extern byte ext2_event_mask[];
+extern byte floor1_event_mask[];
+extern byte floor2_event_mask[];
+extern byte gym_event_mask[];
+extern byte ext1_hotspot_mask[];
+extern byte ext2_hotspot_mask[];
+extern byte floor1_hotspot_mask[];
+extern byte floor2_hotspot_mask[];
+extern byte gym_hotspot_mask[];
+
+
+// All day events
+void GoToFloor2_Left(void);
+void GoToFloor2_Right(void);
+void GoToExt1_Door(void);
+void GoToExt2_BackDoor(void);
+void GoToFloor1_Left(void);
+void GoToFloor1_Right(void);
+void GoToNextDay(void);
+void GoToFloor1_Entry(void);
+void GoToExt1_Right(void);
+void GoToFloor1_BackDoor(void);
+void GoToGym(void);
+void GoToExt2_Gym(void);
+void GoToExt2_Right(void);
+
+// DAY10.c
+void D10_Events(byte event);
+void D10_Hotspots(byte hotspot);
+void GoToToniDoor(void);
+
+// DAY9.c
+void D9_Events(byte event);
+void D9_Hotspots(byte hotspot);
+
+// DAY8.c
+void D8_Events(byte event);
+void D8_Hotspots(byte hotspot);
+
+// DAY7.c
+void D7_Events(byte event);
+void D7_Hotspots(byte hotspot);
+
+// DAY6.c
+void D6_Events(byte event);
+void D6_Hotspots(byte hotspot);
+
+// DAY5.c
+void D5_Events(byte event);
+void D5_Hotspots(byte hotspot);
+
+// DAY4.c
+void D4_Events(byte event);
+void D4_Hotspots(byte hotspot);
+
+// DAY3.c
+void D3_Events(byte event);
+void D3_Hotspots(byte hotspot);
+
+// DAY2.c
+void D2_Events(byte event);
+void D2_Hotspots(byte hotspot);
+
+// DAY1.c
+void D1_Events(byte event);
+void D1_Hotspots(byte hotspot);
+
+// DAY0.c
+void D0_Events(byte event);
+void D0_Hotspots(byte hotspot);
+void GoToEnd(void);
+
+// Intro.c
+void Intro(void);
+
+// EndGame.c
+void EndGameExtinguisher(void);
+
+
 

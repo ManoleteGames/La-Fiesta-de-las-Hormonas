@@ -54,6 +54,7 @@ PLAYER far player;
 // Video memory mapping
 word vram_LogicalWidth; // screen logical with on bytes in vram
 word vram_Font; // Font address in VRAM
+word vram_FontS; // Font address in VRAM
 word vram_Tiles; // Tiles address in VRAM
 word vram_SpritesBack; // Sprites background address in VRAM
 
@@ -64,12 +65,15 @@ int scroll_x_adjust = 150;
 int scroll_y_adjust = 70;
 int scroll_wy = 400;
 byte showPanel = 0;
+byte panelScrolling = 0;
 byte scrolling_enabled = 0; // Scrolling and panning enabled
 
 unsigned char far *data;
 
 // Old time handler
 void interrupt (*old_time_handler)(void);
+
+byte speech_active = 0;
 
 /////////////////////////////////////////////////////////
 // Music functions
@@ -99,14 +103,16 @@ void (*LoadTiles)(char *file,char* dat_string);
 void (*Draw_EmptyBox)(word x, word y, byte w, byte h);
 void (*SetLoadingInterrupt)(void);
 void (*ResetLoadingInterrupt)(void);
-void (*PrintText)(word x, word y, word lineLength, unsigned char *string);
+void (*PrintText)(word x, word y, word lineLength, unsigned char *string,byte color);
 void (*Draw_Sprites)(void);
+void (*DrawSpriteDestructive)(int sprNum);
 void (*SetPalette)(unsigned char *pal);
 void (*LoadTiles)(char *file,char* dat_string);
 void (*SetMap)(int x, int y);
 void (*ScrollMap)(void);
 void (*UpdatePanel)(void);
 void (*LoadPanelBackground)(char *file,char* dat_string);
+void (*DrawMapBack)(void);
 
 /////////////////////////////////////////////////////////
 // Dummy function
@@ -294,12 +300,15 @@ void LinkVideo(void){
          ResetLoadingInterrupt = VGA_ResetLoadingInterrupt;
          PrintText = VGA_PrintText;
          Draw_Sprites = VGA_Draw_Sprites;
+         DrawSpriteDestructive = VGA_DrawSpriteDestructive;
          SetPalette = VGA_SetPalette;
 
          SetMap = VGA_SetMap;
          ScrollMap = VGA_ScrollMap;
          UpdatePanel = VGA_UpdatePanel;
          LoadPanelBackground = VGA_LoadPanelBackground;
+
+         DrawMapBack = VGA_Draw_MapBack;
 
       	break;
       case 2:
@@ -422,6 +431,7 @@ void ExitDOS(void){
    if(map_collision ){ farfree(map_collision); }
    if(map_hotspot ){ farfree(map_hotspot); }
    if(map_event ){ farfree(map_event); }
+   if(map_sprites ){ farfree(map_sprites); }
 
    printf("bye byte...");
 	exit(1);
@@ -495,7 +505,9 @@ void AllocateEngineMem(void){
    printf(" map_hotspot allocated onto adddress: %p address \n", map_hotspot);
    if ((map_event = farcalloc(8192L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate event data","map","event");
    printf(" map_event allocated onto adddress: %p address \n", map_event);
-//   if ((player = farcalloc(1,sizeof(PLAYER))) == NULL) Error("Not enough RAM to allocate player predefined sprite struct","player",0);
+   if ((map_sprites = farcalloc(8192L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate event data","map","sprites");
+   printf(" map_sprites allocated onto adddress: %p address \n", map_event);
+   //   if ((player = farcalloc(1,sizeof(PLAYER))) == NULL) Error("Not enough RAM to allocate player predefined sprite struct","player",0);
 //   printf(" player allocated onto adddress: %p address \n", player);
    if ((sprite = farcalloc(20,sizeof(SPRITE))) == NULL) Error("Not enough RAM to allocate 22 predefined sprite structs","sprite",0);
    printf(" sprite allocated onto adddress: %p address \n", sprite);
@@ -608,10 +620,11 @@ void ScrollFollow(void){
 // Update system
 /////////////////////////////////////////////////////////
 void Update(int player_follow, int sprite){
+
 	HardwareScrolling();
 	if (player_follow) ScrollFollow();
 	if (scrolling_enabled) ScrollMap();
-   Draw_Sprites();                           
+   if (speech_active == 0) Draw_Sprites();
    UpdatePanel();
    Update_FP_Keys();
 }
@@ -660,6 +673,8 @@ void MovePlayer(void){
    right_coll = 0;
    up_coll = 0;
    down_coll = 0;
+   player.event = 0;
+   player.hotspot = 0;
 
     // Up colision
    if( (s->tile_y) <= 0){ up_coll = 1; }
@@ -675,59 +690,62 @@ void MovePlayer(void){
    if( (player.move == 8) || (player.move == 6) || (player.move == 3) ){
   	   tile_number = ( ((s->pos_y + 4 - 64)>>4)* map_width ) +  s->tile_x - 1;
    	if(map_collision[tile_number]  != 0) {  left_coll = 1; }
+      if(map_sprites[tile_number]  != 0) {  left_coll = 1; }
       tile_number = ( ((s->pos_y + s->height - 4 - 64)>>4)* map_width) +  s->tile_x - 1;
      	if(map_collision[tile_number]  != 0) {  left_coll = 1; }
+      if(map_sprites[tile_number]  != 0) {  left_coll = 1; }
    }
    //if( (player.move == P_UPRIGHT) || (player.move == P_UPLEFT) || (layer.move == P_UP) ){
    if( (player.move == 5) || (player.move == 6) || (player.move == 1) ){
       tile_number = ((s->tile_y-1) * map_width ) +  ((s->pos_x + 4)>>4);
    	if(map_collision[tile_number]  != 0) {  up_coll = 1; }
+      if(map_sprites[tile_number]  != 0) {  up_coll = 1; }
       tile_number = ((s->tile_y-1) * map_width ) +  ((s->pos_x + s->width - 4)>>4);
      	if(map_collision[tile_number]  != 0) {  up_coll = 1; }
+      if(map_sprites[tile_number]  != 0) {  up_coll = 1; }
    }
    //if( (player.move == P_UPRIGHT) || (player.move == P_DWNRIGHT) || (player.move == P_RIGHT) ){
    if( (player.move == 5) || (player.move == 7) || (player.move == 4) ){
       tile_number = ( ((s->pos_y + 4 - 64)>>4)* map_width ) +  s->tile_x + 1;
    	if(map_collision[tile_number]  != 0) {  right_coll = 1; }
+      if(map_sprites[tile_number]  != 0) {  right_coll = 1; }
       tile_number = ( ((s->pos_y + s->height - 4 - 64)>>4)* map_width) +  s->tile_x + 1;
      	if(map_collision[tile_number]  != 0) {  right_coll = 1; }
+      if(map_sprites[tile_number]  != 0) {  right_coll = 1; }
    }
    //if( (player.move == P_DWNLEFT) || (player.move == P_DWNRIGHT) || (player.move == P_DOWN) ){
    if( (player.move == 8) || (player.move == 7) || (player.move == 2) ){
       tile_number = ((s->tile_y+1) * map_width ) +  ((s->pos_x + 4)>>4);
    	if(map_collision[tile_number]  != 0) {  down_coll = 1; }
+      if(map_sprites[tile_number]  != 0) {  down_coll = 1; }
       tile_number = ((s->tile_y+1) * map_width ) +  ((s->pos_x + s->width - 4)>>4);
      	if(map_collision[tile_number]  != 0) {  down_coll = 1; }
+      if(map_sprites[tile_number]  != 0) {  down_coll = 1; }
    }
-
-   // Event finder
-   player.event = map_event[tile_number];
-
-   // Hotspot finder
-   player.hotspot = map_hotspot[tile_number];
 
    // Player movement
   	//if( (player.move == P_UP) || (player.move == P_UPRIGHT) || (player.move == P_UPLEFT) ){
    if( (player.move == 1) || (player.move == 5) || (player.move == 6) ){
    	if(up_coll == 0) s->pos_y--;
-      //s->pos_y--;
    }
    //if( (player.move == P_DOWN) || (player.move == P_DWNRIGHT) || (player.move == P_DWNLEFT) ) {
    if( (player.move == 2) || (player.move == 7) || (player.move == 8) ) {
     	if(down_coll == 0) s->pos_y++;
-      //s->pos_y++;
    }
    //if( (player.move == P_LEFT) || (player.move == P_UPLEFT) || (player.move == P_DWNLEFT) ) {
    if( (player.move == 3) || (player.move == 6) || (player.move == 8) ) {
     	if(left_coll == 0) s->pos_x--;
-      //s->pos_x--;
    }
    //if( (player.move == P_RIGHT) || (player.move == P_UPRIGHT) || (player.move == P_DWNRIGHT) ) {
    if( (player.move == 4) || (player.move == 5) || (player.move == 7) ) {
     	if(right_coll == 0) s->pos_x++;
-      //s->pos_x++;
    }
 
+	// Check map events and hotspots
+   tile_number = ( ((s->pos_y + 16 - 64)>>4)* map_width ) +  ((s->pos_x + 16)>>4); // Check the middle of the sprite
+	player.event = map_event[tile_number];
+   player.hotspot = map_hotspot[tile_number];
+   player.spriteColl = map_sprites[tile_number];
 
 	//Fixed animations
    if((player.oldMove !=  player.move)&& (s->animate == 1)){
@@ -756,18 +774,226 @@ void MovePlayer(void){
          case 8:
          	SetSpriteAnimation(player.spriteNum,17,4,12,PlayerAnimation);  // down + left
          	break;
-			case 0:
-         	SetSpriteAnimation(player.spriteNum,0,6,12,PlayerAnimation);  // stand
-         	break;
-      	default:
-         	SetSpriteAnimation(player.spriteNum,0,6,12,PlayerAnimation);  // stand
+      	default: // Static motion
+     	   	s->aframes = 1;
+		   	s->anim_counter = 0;
 				break;
    	}
-      //SetSpriteAnimation(player.spriteNum,s->baseframe,s->aframes,s->speed,PlayerAnimation);
    }
-
    player.oldMove =  player.move;
 }
 
 
+/////////////////////////////////////////////////////////
+// Speech
+// - Speaking function
+/////////////////////////////////////////////////////////
+void Speech(int sprFace,int sprEnter,char* filename, char* dat_string,char * line1, char * line2, char * line3, char * line4){
+	SPRITE *s = &sprite[sprFace];
+  	SPRITE *e = &sprite[sprEnter];
+   word length;
+   int newscroll_x;
+   int newscroll_y;
 
+   speech_active = 1;
+
+  	// Recalculate scroll to fit screen on absolute values
+  	newscroll_x = (scroll_x>>4)<<4;
+  	newscroll_y = (scroll_y>>4)<<4;
+
+   while( (newscroll_x != scroll_x) || (newscroll_y != scroll_y) ){
+      if(scroll_x < newscroll_x){scroll_x++;}
+      if(scroll_x > newscroll_x){scroll_x--;}
+		if(scroll_y < newscroll_y){scroll_y++;}
+      if(scroll_y > newscroll_y){scroll_y--;}
+
+   	Update(0,0);
+   }
+
+	Draw_EmptyBox(0,0,5,5);
+   Draw_EmptyBox(7,0,31,5);
+
+   s->pos_x = scroll_x;
+   s->pos_y = scroll_y;
+   Update(0,0);
+
+   ShowSprite(sprFace);
+   DrawSpriteDestructive(sprFace);
+
+   if(line1 != 0){
+   	LoadText(filename,dat_string,line1,string,&length);
+   	PrintText(8,1,length,string,0);
+   	Delay(20);
+   }
+   if(line2 != 0){
+	   LoadText(filename,dat_string,line2,string,&length);
+ 		PrintText(8,2,length,string,0);
+   	Delay(20);
+	}
+   if(line3 != 0){
+		LoadText(filename,dat_string,line3,string,&length);
+   	PrintText(8,3,length,string,0);
+	   Delay(20);
+   }
+   if(line4 != 0){
+		LoadText(filename,dat_string,line4,string,&length);
+   	PrintText(8,4,length,string,0);
+	   Delay(20);
+   }
+
+   e->pos_x = scroll_x + 298;
+   e->pos_y = scroll_y + 34;
+   ShowSprite(sprEnter);
+
+	while( keys[K_ENTER] != 1) {
+  		Update(0,0);
+      DrawSpriteDestructive(sprEnter);
+   }
+   while( keys[K_ENTER] == 1) {
+		//wait
+      HideSprite(sprFace);
+      HideSprite(sprEnter);
+   }
+
+   speech_active = 0;
+   if(map_loaded){ DrawMapBack(); }
+}
+
+/////////////////////////////////////////////////////////
+// Speech selection
+// - Speaking function
+/////////////////////////////////////////////////////////
+byte SpeechSelection(int optNum, int sprFace, int sprEnter,char* filename, char* dat_string,char * line1, char * line2, char * line3, char * line4){
+	SPRITE *s = &sprite[sprFace];
+  	SPRITE *e = &sprite[sprEnter];
+   word length;
+   byte option = 1;
+   int newscroll_x;
+   int newscroll_y;
+
+   speech_active = 1;
+
+     	// Recalculate scroll to fit screen on absolute values
+  	newscroll_x = (scroll_x>>4)<<4;
+  	newscroll_y = (scroll_y>>4)<<4;
+
+   while( (newscroll_x != scroll_x) || (newscroll_y != scroll_y) ){
+      if(scroll_x < newscroll_x){scroll_x++;}
+      if(scroll_x > newscroll_x){scroll_x--;}
+		if(scroll_y < newscroll_y){scroll_y++;}
+      if(scroll_y > newscroll_y){scroll_y--;}
+
+   	Update(0,0);
+   }
+
+	Draw_EmptyBox(0,0,5,5);
+   Draw_EmptyBox(7,0,31,5);
+
+   s->pos_x = scroll_x;
+   s->pos_y = scroll_y;
+   Update(0,0);
+
+   ShowSprite(sprFace);
+   DrawSpriteDestructive(sprFace);
+
+   if(line1 != 0){
+   	LoadText(filename,dat_string,line1,string,&length);
+   	PrintText(8,1,length,string,1);
+   }
+   if(line2 != 0){
+	   LoadText(filename,dat_string,line2,string,&length);
+ 		PrintText(8,2,length,string,0);
+	}
+   if(line3 != 0){
+		LoadText(filename,dat_string,line3,string,&length);
+   	PrintText(8,3,length,string,0);
+   }
+   if(line4 != 0){
+		LoadText(filename,dat_string,line4,string,&length);
+   	PrintText(8,4,length,string,0);
+   }
+
+   e->pos_x = scroll_x + 298;
+   e->pos_y = scroll_y + 34;
+   ShowSprite(sprEnter);
+
+	while( keys[K_ENTER] != 1) {
+		//selectopm
+      if(fp_keys[K_UP]){
+   		switch(option){
+         	case 1: // Do nothing
+            	break;
+            case 2: // Rewrite old and new option
+               LoadText(filename,dat_string,line2,string,&length);
+   				PrintText(8,2,length,string,0);
+	            option--; // Change option
+               LoadText(filename,dat_string,line1,string,&length);
+   				PrintText(8,1,length,string,1);
+				  	break;
+            case 3: // Rewrite old and new option
+               LoadText(filename,dat_string,line3,string,&length);
+   				PrintText(8,3,length,string,0);
+	            option--; // Change option
+               LoadText(filename,dat_string,line2,string,&length);
+   				PrintText(8,2,length,string,1);
+				  	break;
+            case 4: // Rewrite old and new option
+               LoadText(filename,dat_string,line4,string,&length);
+   				PrintText(8,4,length,string,0);
+	            option--; // Change option
+               LoadText(filename,dat_string,line3,string,&length);
+   				PrintText(8,3,length,string,1);
+				  	break;
+         }
+      }
+
+      if(fp_keys[K_DOWN]){
+      	switch(option){
+         	case 1: // Rewrite old and new option
+            	if(optNum > 1){
+		            LoadText(filename,dat_string,line1,string,&length);
+   					PrintText(8,1,length,string,0);
+      	         option++;
+         	      LoadText(filename,dat_string,line2,string,&length);
+   					PrintText(8,2,length,string,1);
+               }
+               break;
+            case 2: // Rewrite old and new option
+	            if(optNum > 2){
+						LoadText(filename,dat_string,line2,string,&length);
+   					PrintText(8,2,length,string,0);
+      	         option++;
+         	      LoadText(filename,dat_string,line3,string,&length);
+   					PrintText(8,3,length,string,1);
+               }
+               break;
+            case 3: // Rewrite old and new option
+               if(optNum > 3){
+						LoadText(filename,dat_string,line3,string,&length);
+   					PrintText(8,3,length,string,0);
+      	         option++;
+         	      LoadText(filename,dat_string,line4,string,&length);
+   					PrintText(8,4,length,string,1);
+               }
+				  	break;
+            case 4: // Do nothing
+				  	break;
+         }
+      }
+      if(option < 1){option = 1;}
+      if(option > optNum){option = optNum;}
+
+      DrawSpriteDestructive(sprEnter);
+      Update(0,0);
+   }
+   while( keys[K_ENTER] == 1) {
+		//wait
+      HideSprite(sprFace);
+      HideSprite(sprEnter);
+   }
+
+   speech_active = 0;
+   if(map_loaded){ DrawMapBack(); }
+
+   return option;
+}
