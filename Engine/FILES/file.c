@@ -142,80 +142,118 @@ void LoadImage_PCX(char* filename, char* dat_string){
 }
 
 /////////////////////////////////////////////////////////
-// BMP Animation reader
-// - Reads a 256 colors bmp file inside a .DAT file
-// - Sets image width in local variable "width"
-// - Sets image height in local variable "height"
-// - Sets image information in temp buffer "->??"
+// PCX Transition Image reader
+// - Reads a 256 colors pcx file inside a .DAT file
+// - Image must be 320x200 256 color
+// - Image must be 8 bits per pixel
+// - Only 10 colors will be loaded at pallet pos 240
+// - Palette colors 240..250 are reserved for loading image
+// - Sets image width in global variable "tilesetWidth"
+// - Sets image height in global variable "tilesetHeight"
+// - Sets image information in temp buffer "tempdata1" & "tempdata2"
+//   320x200 = 64000 >> tempdata1 (32000) + tempdata2 (32000)
 /////////////////////////////////////////////////////////
-void LoadAnimation_BMP(char* filename, char* dat_string){
- 	FILE *fp;
+void LoadTransImage_PCX(char* filename, char* dat_string){
+	FILE *fp;
    int index;
-   word header;
+   byte ident; // must be 0x0A for PCX file
+   byte version;
+   byte encoding;
+   byte bitsPerPixel;
+   byte checkByte;
+
+   word xMin;
+   word xMax;
+   word yMin;
+   word yMax;
+
+  	word width;
+   word height;
+
    word num_colors;
    byte pal_colors = 0;
-   byte get_pal = 1;
-   byte pixel_format = 0;
-   word width;
-	word height;
    byte first_color = 0;
-   word x;
+   byte get_pal = 1;
 
+   int i;
+   long l;
+   //long bufferSize;
+   long imageSize;
+   int cnt;
+   byte chr;
+
+   // Open file
    fp = fopen(filename,"rb");
-	if(!fp)Error("Can't find ",filename,dat_string);
+	if(!fp) Error("Can't find ",filename,dat_string);
+
+   // Search for filename inside a DAT file
+   // and set the filepointer to the begining of data if it exists
 	if (dat_string) DAT_Seek(fp,dat_string);
 
    //Read header
-	fread(&header, sizeof(word), 1, fp);
-	if (header != 0x4D42) Error("Not a BMP file",filename,dat_string);
-	fseek(fp, 16, SEEK_CUR);
-	fread(&width, sizeof(word), 1, fp);
-	fseek(fp, 2, SEEK_CUR);
-	fread(&height,sizeof(word), 1, fp);
-	fseek(fp, 4, SEEK_CUR);
-	fread(&pixel_format,sizeof(byte), 1, fp);
-	fseek(fp, 17, SEEK_CUR);
-	fread(&num_colors,sizeof(word), 1, fp);
-	fseek(fp, 6, SEEK_CUR);
+   fread(&ident, sizeof(byte), 1, fp);
+   if (ident != 0x0A) Error("Not a PCX file",filename,dat_string);
+   fread(&version, sizeof(byte), 1, fp);
+   fread(&encoding, sizeof(byte), 1, fp);
+   if (encoding != 1) Error("Not a RLE encoding file",filename,dat_string);
+   fread(&bitsPerPixel, sizeof(byte), 1, fp);
+   if (bitsPerPixel != 8) Error("Not 8 bits per pixel image",filename,dat_string);
+   fread(&xMin, sizeof(word), 1, fp);
+   fread(&yMin, sizeof(word), 1, fp);
+   fread(&xMax, sizeof(word), 1, fp);
+   fread(&yMax, sizeof(word), 1, fp);
 
-   if (num_colors==0)  num_colors=256;
-	if (num_colors > 256) Error("Image has more than 256 colors",filename,dat_string);
+   // Calculate image width and heigth
+   width  = xMax - xMin + 1;
+   height = yMax - yMin + 1;
+   if (width > 320) Error("Only 320 pixels with image allowed",filename,dat_string);
+   if (height > 200) Error("Only 200 pixels height image allowed",filename,dat_string);
+   imageSize = (long) width * height;
+   if (imageSize > 64000) Error("Loading image bigger than destination memory",filename,dat_string);
 
-   if (height !=32) Error("Wrong size for animation, image must be 128x32: ",filename,dat_string);
-   if (width !=128) Error("Wrong size for animation, image must be 128x32: ",filename,dat_string);
+   // Skip some data with no use in this case, like hDpi, vDpi, EGA palette, planes, bytes per line, palette info, device width and device heigth
+   fseek(fp, 116, SEEK_CUR);  // skip some more data like planes, bytes per line, palette info, device width and device heigth
 
-   if (pixel_format !=4) Error("Wrong format for animation image, must be 4 bit per pixel: ",filename,dat_string);
+   // Get image data
+   l = 0;
+   while(l < imageSize ){
+      // Get value
+      fread(&chr, sizeof(byte), 1, fp);
 
-   pal_colors = 4;
-   first_color = 248;
+      if (EOF == chr){ Error("Unexpected end of fole detected while loading image",filename,dat_string); }
 
-   //Load Palette
-	for(index=first_color;index<first_color+num_colors;index++){
-		if (index-first_color == pal_colors) get_pal = 0;
+      if (0xC0 == (0xC0 & chr)){ // is it a RLE repeater
+         cnt =  0x3F & chr; // Get count
+         fread(&chr, sizeof(byte), 1, fp); // Get color
+         for (i = 0; i < cnt; i++){
+         	tempdata1[l] = chr + 240;
+         	l++;
+        	}
+      }
+      else{ // not a RLE...just a single color
+      	tempdata1[l] = chr + 240;
+       	l++;
+      }
+   }
+
+   // Get 256 colour palette
+   // - Pallete data starts with value 0x0C, so lets go and search it
+   fread(&checkByte, sizeof(byte), 1, fp);
+   if( checkByte != 12 ) {Error("Expected a 256 color palette, didn't find it",filename,dat_string);}
+
+   pal_colors = 10;
+   first_color = 240;
+
+  	for(index=first_color;index<first_color+pal_colors;index++){
 		if (get_pal){
-			palette[(int)(index*3+2)] = fgetc(fp) >> 2;
-			palette[(int)(index*3+1)] = fgetc(fp) >> 2;
 			palette[(int)(index*3+0)] = fgetc(fp) >> 2;
-		} else {
-			fgetc(fp);
-			fgetc(fp);
-			fgetc(fp);
-		}
-		fgetc(fp);
-	}
-
-   width = 128;
-   //w = 7;
-
-	for(index=31*64;index>=0;index-=64){
-		for(x=0;x<64;x++){
-			unsigned char c = (byte)fgetc(fp);
-      	tempdata1[((index+x)<<1)]   = ((c & 0xF0)>>4) + 248; //1111 0000c
-			tempdata1[((index+x)<<1)+1] =  (c & 0x0F)     + 248; //0000 1111c Animation colors from 248 to 251
+			palette[(int)(index*3+1)] = fgetc(fp) >> 2;
+			palette[(int)(index*3+2)] = fgetc(fp) >> 2;
 		}
 	}
    fclose(fp);
 }
+
 
 /////////////////////////////////////////////////////////
 // BMP Font reader
@@ -263,7 +301,8 @@ void LoadFont_BMP(char* filename, char* dat_string){
 
    if (pixel_format !=4) Error("Wrong format for font image, must be 4 bit per pixel: ",filename,dat_string);
 
-   pal_colors = 4; first_color = 252;//If reading font
+//   pal_colors = 4; first_color = 252;//If reading font
+   pal_colors = 5; first_color = 251;//If reading font
 
    //Load Palette
 	for(index=first_color;index<first_color+num_colors;index++){
@@ -473,7 +512,7 @@ void LoadText(char* filename, char* dat_string, char* line,unsigned char* str, w
 
          currLine ++;
 
-      	if (currLine == 50) {
+      	if (currLine == 80) {
       		fclose(fp);
    			Error(" Text line not found on file ",dat_string,line);
       	}
@@ -518,7 +557,8 @@ void LoadSprite_PCX(char* filename, char* dat_string, int sprite_number){
    word deviceWidth;
    word deviceHeight;
 
-   byte pal_colors = 32;
+   //byte pal_colors = 32;
+   byte pal_colors = 43;
    byte first_color = 208;
    byte get_pal = 1;
    SPRITE *s = &sprite[sprite_number];
@@ -585,7 +625,8 @@ void LoadSprite_PCX(char* filename, char* dat_string, int sprite_number){
    fread(&checkByte, sizeof(byte), 1, fp);
    if( checkByte != 12 ) {Error("Expected a 256 color palette, didn't find it",filename,dat_string);}
 
-   pal_colors = 32;
+   //pal_colors = 32;
+   pal_colors = 43;
    first_color = 208;
 
    //Load Palette
