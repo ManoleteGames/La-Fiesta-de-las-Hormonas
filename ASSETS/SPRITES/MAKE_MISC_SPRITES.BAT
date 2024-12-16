@@ -1,4 +1,4 @@
-makedat.exe cursor.pcx ARROW.PCX bird.pcx enter.pcx SMOKE.PCX
+makedat.exe cursor.pcx ARROW.PCX bird.pcx enter.pcx SMOKE.PCX add1.pcx sub1.pcx
 RENAME DATA.DAT SPRMISC.DAT
 COPY SPRMISC.DAT Z:\HORMONA\FINAL
 DEL SPRMISC.DAT 

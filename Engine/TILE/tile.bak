@@ -1,0 +1,95 @@
+/***********************
+*  Tile functions
+************************/
+
+#include "source\engine\engine.h"
+
+word tilesetWidth;
+word tilesetHeight;
+word tileset_ntiles;
+byte *tilesetData;
+
+/////////////////////////////////////////////////////////
+// Load_16x16 tiles to VRAM
+// - Maximum number of tiles on the tileset file =
+/////////////////////////////////////////////////////////
+void LoadTiles_VGA(char *file,char* dat_string){
+	dword VGA_index = 0;
+	word w = 0;
+	word h = 0;
+	word ty = 0;
+	word x = 0;
+	word y = 0;
+	word tileX = 0;
+	word tileY = 0;
+	byte plane = 0;
+	dword offset = 0;
+
+   LoadTileset_PCX(file, dat_string);
+
+	//COPY TO VGA VRAM
+	w = tilesetWidth>>4;
+	h = tilesetHeight>>4;
+
+   for (plane = 0; plane < 4; plane ++){
+
+		// select plane
+		asm CLI //disable interrupts so that loading animation does not interfere
+
+		outp(VGA_SEQ_INDEX, VGA_MAP_MASK);
+		outp(VGA_SEQ_DATA, 1 << plane);
+		VGA_index = tile_vram;
+
+		//SCAN ALL TILES
+		for (tileY = 0; tileY < h ; tileY++){
+			ty = (tileY<<4);   // number of tile * 16 >> gets the pixel
+
+			for (tileX = 0; tileX < w; tileX++){
+
+            offset = plane + (ty*tilesetWidth) + (tileX<<4);  // offset of first pixel of tile
+
+				//LOAD TILE
+				x=0;
+				for(y = 0; y < 64; y++){
+					VGA[VGA_index] = tempdata1[offset];
+					VGA_index++;
+					offset +=4;
+					x++;
+					if (x == 4){
+						x = 0;
+                  offset = offset + tilesetWidth-16; // offset to the first pixel of next tile line
+					}
+				}
+				if (VGA_index > 0xFFFF){
+            	sprintf(err1_char, "%d", tileY * tileX);
+               Error(" Error loading tileset, it is too big!", file,err1_char);
+            	break; //Out of VRAM
+            }
+			}
+			if (VGA_index > 0xFFFF){
+         	sprintf(err1_char, "%d", tileY * tileX);
+            Error(" Error loading tileset, it is too big!", file,err1_char);
+         	break; //Out of VRAM
+         }
+		}
+		asm STI //Re enable interrupts so that loading animation is played again
+	}
+
+	//Populate palettes for colour cycling, colours 136-200
+	//cycle_palcounter = 0;
+  	//cycle_palframe = 0;
+
+   //Palette 1
+	//memcpy(&cycle_paldata[0],&palette[200*3],8*3);
+	//memcpy(&cycle_paldata[8*3],&palette[200*3],8*3);
+	//Palette 2
+	//memcpy(&cycle_paldata[16*3],&palette[200*3],8*3);
+   //memcpy(&cycle_paldata[24*3],&palette[200*3],8*3);
+   //Polulate palette for parallax, colours 176-239
+	//memcpy(&parallax_paldata[0],&palette[136*3],64*3);
+	//memcpy(&parallax_paldata[64*3],&palette[136*3],64*3);
+}
+
+
+
+

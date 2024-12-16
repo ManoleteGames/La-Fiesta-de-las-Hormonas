@@ -46,26 +46,24 @@ void LoadMap(char *file, char* dat_string){
    word start_event_data = 0;
    word start_gid = 0;
 	word tile;
-   //byte coll;
    word gid_back;
    word gid_coll;
    word gid_hspot;
    word gid_event;
    word aux;
 	word index = 0;
-	//word tindex = 0;
-   //word tileheigth = 0;
-   //word tilewidth = 0;
-	//word tilecount = 0; //Just to get the number of tiles to substract to collision tiles
    word id;
 
 	char line[128];
 	char name[64]; //name of the layer in TILED
-   
+
    // Open DAT file and search TMX file inside
    f = fopen(file,"rb");
-	if(!f) Error("Can't find ",file,0);
-	if (dat_string) DAT_Seek(f,dat_string);
+  	if(!f) Error("Can't find ",file,0);
+
+   Delay(20);
+
+  	if (dat_string) DAT_Seek(f,dat_string);
 	else fseek(f, 0, SEEK_SET);
 
    memset(line, 0, 64); // Reserve 64 bytes mem
@@ -208,11 +206,20 @@ void LoadMap(char *file, char* dat_string){
 	}
 
 	fclose(f);
-   
+   free(f);
    map_loaded = 1;
 }
 
+/////////////////////////////////////////////////////////
+// Unload map
+// - reset loaded map flag
+/////////////////////////////////////////////////////////
 void UnloadMap(void){
+	memset(map_data,0,sizeof(map_data));
+	memset(map_hotspot,0,sizeof(map_hotspot));
+	memset(map_collision,0,sizeof(map_collision));
+	memset(map_event,0,sizeof(map_event));
+   memset(map_sprites, 0, sizeof(map_sprites));
  	map_loaded = 0;
 }
 

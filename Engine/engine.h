@@ -18,17 +18,16 @@ typedef unsigned short word;
 typedef unsigned long  dword;
 
 typedef struct tagPLAYER{
-   byte healt;
    byte intell;
-   byte charm;
-   byte freak;
-   byte handsome;
-   byte badass;
+   byte popular;
+   byte good;
+
+   byte money;
+   byte cheats;
 
    byte day;
    byte hour;
    byte min;
-   byte money;
 
    byte floor;
    byte event;
@@ -148,16 +147,17 @@ extern byte panelScrolling;
 extern byte scrolling_enabled;
 extern PLAYER far player;
 extern byte speech_active;
+extern byte debug;
 
 void InitEngine(void);
 void Delay(int count);
 void Error(char *error, char *file, char *filename);
-void Update(int sprite_follow, int sprite);
+void Update(int sprite_follow);
 void ExitDOS(void);
 void MovePlayer(void);
 void ResetScroll(void);
-void Speech(int sprFace,int sprEnter,char* filename, char* dat_string,char * line1, char * line2, char * line3, char * line4);
-byte SpeechSelection(int optNum, int sprFace, int sprEnter,char* filename, char* dat_string,char * line1, char * line2, char * line3, char * line4);
+void Speech(char* face,char* filename, char* dat_string,char * line1, char * line2, char * line3, char * line4);
+byte SpeechSelection(int optNum, char* face,char* filename, char* dat_string,char * line1, char * line2, char * line3, char * line4);
 
 // External functions prototypes
 extern void (*Fade_out)(void);
@@ -178,7 +178,7 @@ extern void (*SetPalette)(unsigned char *pal);
 extern void (*LoadTiles)(char *file,char* dat_string);
 extern void (*SetMap)(int x, int y);
 extern void (*ScrollMap)(void);
-extern void (*UpdatePanel)(void);
+extern void (*PanelRefresh)(void);
 extern void (*LoadPanelBackground)(char *file,char* dat_string);
 extern void (*DrawMapBack)(void);
 
@@ -211,7 +211,8 @@ void VGA_ScrollMap(void);
 void VGA_Draw_MapBack(void);
 void VGA_Set_Window(void);
 void VGA_MoveWindow(void);
-void VGA_UpdatePanel(void);
+void VGA_PanelRefresh(void);
+void VGA_PanelUpdate(void);
 void VGA_LoadPanelBackground(char *file,char* dat_string);
 
 // VIDEO/CGA.c prototypes
@@ -284,6 +285,7 @@ extern word map_last_y;
 extern word map_scrollSide;
 extern byte map_loaded;
 void LoadMap(char *file, char* dat_string);
+void UnloadMap(void);
 
 // SPRITE/SPRITE.c prototypes
 extern SPRITE far *sprite;
@@ -295,6 +297,7 @@ extern byte spriteStack;
 extern SPRITE loadingAnimation;
 word CompileBitmap(word logical_width, unsigned char *bitmap, unsigned char *output);
 void ResetSpriteStack(void);
+void UnloadSprite(int sprite_number);
 
 void InitSprite(int sprite_number,int x,int y);
 void LoadSprite(char *file, char *dat_string, int sprite_number, byte size);
@@ -359,6 +362,7 @@ void GoToExt2_Gym(void);
 void GoToExt2_Right(void);
 
 // DAY10.c
+void D10_GoToFloor1(int x, int y);
 void D10_Events(byte event);
 void D10_Hotspots(byte hotspot);
 void GoToToniDoor(void);

@@ -177,27 +177,45 @@ void ResetSpriteStack(void){
 /////////////////////////////////////////////////////////
 // Unload a single loaded sprite
 /////////////////////////////////////////////////////////
-void Unload_sprite(int sprite_number){
+void UnloadSprite(int sprite_number){
 	SPRITE *s = &sprite[sprite_number];
 	int i;
-	s->init = 0;
-	for (i=0;i<s->nframes;i++){
-		farfree(s->frames[i].compiled_code);
-		//s->frames[i].compiled_code = NULL;
+   if(s->loaded==1){
+		s->init = 0;
+      s->loaded = 0;
+		for (i=0;i<s->nframes;i++){
+			farfree(s->frames[i].compiled_code);
+			s->frames[i].compiled_code = NULL;
+		}
+		farfree(s->frames);
+   	s->frames = NULL;
 	}
-	//farfree(s->frames);
-   //s->frames = NULL;
 }
 
 /////////////////////////////////////////////////////////
 // Unload all loaded sprites
 /////////////////////////////////////////////////////////
 void UnloadSprites(void){
-	int i = 0;
-	for (i=0;i<20;i++){Unload_sprite(i);}
+	int i;
+   int j;
+	SPRITE *s;
+	for (i=0;i<20;i++){
+   	s =  &sprite[i];
+      if(s != NULL){
+   		if(s->loaded == 1){
+      		s->init = 0;
+            s->loaded = 0;
+      		for (j=0;j<s->nframes;j++){
+      			farfree(s->frames[j].compiled_code);
+            	s->frames[j].compiled_code = NULL;
+      		}
+      		farfree(s->frames);
+         	s->frames = NULL;
+      	}
+      }
+   }
    ResetSpriteStack();
-   memset(map_sprites, 0, 1024);
-   vram_SpritesBack = 0xDF00; //0xD400;;
+   vram_SpritesBack = 0xDE00;
 }
 
 /////////////////////////////////////////////////////////
@@ -217,6 +235,10 @@ void LoadSprite(char *file, char *dat_string, int sprite_number, byte size){
    word fsize = 0;
    int siz;
    int code_size;
+
+   // Just 20 sprites allowed
+   sprintf(error1, "%d", sprite_number);
+   if(sprite_number>=20){ Error("Error max. sprite number ",error1,dat_string);}
 
    // Check sprite pointer
    sprintf(error1, "%d", sprite_number);
@@ -251,16 +273,18 @@ void LoadSprite(char *file, char *dat_string, int sprite_number, byte size){
 	}
 
    // Number of frames of the sprite
-   if (size == 8) siz = 3;
-	if (size == 16) siz = 4;
-	if (size == 32) siz = 5;
-	s->nframes = (s->width>>siz) * (s->height>>siz);
+   s->nframes = 1;
+   if (size == 8) { s->nframes = (s->width>>3) * (s->height>>3); }
+	if (size == 16) { s->nframes = (s->width>>4) * (s->height>>4); }
+	if (size == 32) { s->nframes = (s->width>>5) * (s->height>>5); }
+   if (size == 48) { s->nframes = (s->width>>5) * (s->height>>5); }
+   if (size == 64) { s->nframes = (s->width>>6) * (s->height>>6); }
 
 	//Estimated size
 	fsize = ((size * size * 7) >> 1) + 25;
 
    //calculate frames size
-	if ((s->frames = farcalloc(s->nframes,sizeof(SPRITEFRAME))) == NULL) { Error("Impossible allocate memory for sprite frames", 0,0);} //LT_Error("Error loading ",file);
+	if ((s->frames = farcalloc(s->nframes,sizeof(SPRITEFRAME))) == NULL) { Error("Impossible allocate memory for sprite frames", 0,0);}
 
 	for (frame = 0; frame < s->nframes; frame++){
       // Check avaliable memory
@@ -360,7 +384,7 @@ void ResetSpriteAnimation(int sprite_number, byte anim){
 void HideSprite(int sprite_number){
 	SPRITE *s = &sprite[sprite_number];
    s->hide = 1;
-   Update(0,0);
+   Update(0);
 }
 
 void ShowSprite(int sprite_number){

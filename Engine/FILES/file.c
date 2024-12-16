@@ -17,12 +17,16 @@ void DAT_Seek(FILE *fp,char *dat_string){
 	//Check LDAT file
 	//Seek data
 	fseek(fp,32,SEEK_SET);  // Check first line of names inside the .DAT
+
 	while(data_name == 0){  // Read 16 byte lines of a total of 64 lines
-		memset(name, 0, 16);
+		memset(name, 0, 17);
+
 		fgets(name, 17, fp); // Get filename
+
 		if (!stricmp(name,dat_string)) data_name = 1;  // Returns 0 if strings are equal
 		else fseek(fp,16,SEEK_CUR);  // Go to next line
-		line++;
+
+      line++;
 		if (line == 64) {fclose(fp); Error("Can't find inside DAT file: ",dat_string,0);}
 	}
 
@@ -57,7 +61,6 @@ void LoadImage_PCX(char* filename, char* dat_string){
   	word width;
    word height;
 
-   word num_colors;
    byte pal_colors = 0;
    byte first_color = 0;
    byte get_pal = 1;
@@ -96,7 +99,7 @@ void LoadImage_PCX(char* filename, char* dat_string){
    if (width > 320) Error("Only 320 pixels with image allowed",filename,dat_string);
    if (height > 200) Error("Only 200 pixels height image allowed",filename,dat_string);
    imageSize = (long) width * height;
-   if (imageSize > 64000) Error("Loading image bigger than destination memory",filename,dat_string);
+   if (imageSize > 64000L) Error("Loading image bigger than destination memory",filename,dat_string);
 
    // Skip some data with no use in this case, like hDpi, vDpi, EGA palette, planes, bytes per line, palette info, device width and device heigth
    fseek(fp, 116, SEEK_CUR);  // skip some more data like planes, bytes per line, palette info, device width and device heigth
@@ -105,9 +108,8 @@ void LoadImage_PCX(char* filename, char* dat_string){
    l = 0;
    while(l < imageSize ){
       // Get value
-      fread(&chr, sizeof(byte), 1, fp);
 
-      if (EOF == chr){ Error("Unexpected end of fole detected while loading image",filename,dat_string); }
+      if(fread(&chr, sizeof(byte), 1, fp) == 0){Error("Unexpected end of fole detected while loading image",filename,dat_string); }
 
       if (0xC0 == (0xC0 & chr)){ // is it a RLE repeater
          cnt =  0x3F & chr; // Get count
@@ -170,7 +172,6 @@ void LoadTransImage_PCX(char* filename, char* dat_string){
   	word width;
    word height;
 
-   word num_colors;
    byte pal_colors = 0;
    byte first_color = 0;
    byte get_pal = 1;
@@ -209,7 +210,7 @@ void LoadTransImage_PCX(char* filename, char* dat_string){
    if (width > 320) Error("Only 320 pixels with image allowed",filename,dat_string);
    if (height > 200) Error("Only 200 pixels height image allowed",filename,dat_string);
    imageSize = (long) width * height;
-   if (imageSize > 64000) Error("Loading image bigger than destination memory",filename,dat_string);
+   if (imageSize > 64000L) Error("Loading image bigger than destination memory",filename,dat_string);
 
    // Skip some data with no use in this case, like hDpi, vDpi, EGA palette, planes, bytes per line, palette info, device width and device heigth
    fseek(fp, 116, SEEK_CUR);  // skip some more data like planes, bytes per line, palette info, device width and device heigth
@@ -218,9 +219,7 @@ void LoadTransImage_PCX(char* filename, char* dat_string){
    l = 0;
    while(l < imageSize ){
       // Get value
-      fread(&chr, sizeof(byte), 1, fp);
-
-      if (EOF == chr){ Error("Unexpected end of fole detected while loading image",filename,dat_string); }
+      if(fread(&chr, sizeof(byte), 1, fp) == 0){ Error("Unexpected end of fole detected while loading image",filename,dat_string); }
 
       if (0xC0 == (0xC0 & chr)){ // is it a RLE repeater
          cnt =  0x3F & chr; // Get count
@@ -374,9 +373,20 @@ void LoadTileset_PCX(char* filename, char* dat_string)
    int cnt;
    byte chr;
 
+   debug = 211;
+   Update(0);
+
    fp = fopen(filename,"rb");
 	if(!fp)Error("Can't find ",filename,dat_string);
+   
+   debug = 212;
+   Update(0);
+
 	if (dat_string) DAT_Seek(fp,dat_string);
+
+   debug = 218;
+   Update(0);
+
 
    //Read header
    fread(&ident, sizeof(byte), 1, fp);
@@ -415,12 +425,7 @@ void LoadTileset_PCX(char* filename, char* dat_string)
    l = 0;
    while(l < imageSize ){
       // Get value
-      fread(&chr, sizeof(byte), 1, fp);
-
-      if (EOF == chr){
-      	//printf( " EOF detected  \n " );
-      	break;
-      }
+      if(fread(&chr, sizeof(byte), 1, fp) == 0){ break;}
 
       if (0xC0 == (0xC0 & chr)){ // is it a RLE repeater
          cnt =  0x3F & chr; // Get count
@@ -488,9 +493,7 @@ void LoadText(char* filename, char* dat_string, char* line,unsigned char* str, w
    while(found == 0)
    {
    	// search for firts char = '#'
-   	fread(&data, sizeof(byte), 1, fp);
-
-      if(data == EOF) { Error("Can't find string number xxx",0,0); }
+   	if(fread(&data, sizeof(byte), 1, fp)==0){Error("Can't find string number xxx",0,0); }
    	if(data == 35){
       	fread(&num, sizeof(byte), 3, fp);
       	if (!stricmp(line,num)){ // Returns 0 if strings are equal
@@ -512,7 +515,7 @@ void LoadText(char* filename, char* dat_string, char* line,unsigned char* str, w
 
          currLine ++;
 
-      	if (currLine == 80) {
+      	if (currLine == 120) {
       		fclose(fp);
    			Error(" Text line not found on file ",dat_string,line);
       	}
@@ -540,23 +543,13 @@ void LoadSprite_PCX(char* filename, char* dat_string, int sprite_number){
    byte version;
    byte encoding;
    byte bitsPerPixel;
-	byte planes;
    byte checkByte;
 
    word xMin;
    word xMax;
    word yMin;
    word yMax;
-
-   word hDpi;
-   word vDpi;
-
-   word bytesPerLine;
-   word paletteInfo;
-
-   word deviceWidth;
-   word deviceHeight;
-
+ 
    //byte pal_colors = 32;
    byte pal_colors = 43;
    byte first_color = 208;
@@ -597,15 +590,12 @@ void LoadSprite_PCX(char* filename, char* dat_string, int sprite_number){
    l = 0;
    while(l < imageSize ){
 
-      fread(&chr, sizeof(byte), 1, fp);   // Get value
-
-      if (EOF == chr){ Error("Unexpected EOF on PCX sprite", filename, dat_string); }
+      if(fread(&chr, sizeof(byte), 1, fp)==0){Error("Unexpected EOF on PCX sprite", filename, dat_string); }
       if (0xC0 == (0xC0 & chr)){ // is it a RLE repeater
 
          cnt =  0x3F & chr; // Get count
 
-         fread(&chr, sizeof(byte), 1, fp); // Get color
-         if (EOF == chr){ Error("Unexpected EOF on PCX sprite", filename, dat_string); }
+         if(fread(&chr, sizeof(byte), 1, fp) == 0){Error("Unexpected EOF on PCX sprite", filename, dat_string); }
 
          for (i = 0; i < cnt; i++){
          	if(chr != 0){ tempdata1[l] = chr + first_color; }

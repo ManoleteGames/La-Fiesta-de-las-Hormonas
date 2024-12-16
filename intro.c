@@ -84,8 +84,8 @@ void Intro(void){
             }
          	break;
           case 5: // Show spech
-            Speech(3,1,"GLB_STR.DAT","intro.txt","010","011","012",0);
-            Speech(3,1,"GLB_STR.DAT","intro.txt","014","015","017",0);
+            Speech("playerf.pcx","GLB_STR.DAT","intro.txt","010","011","012",0);
+            Speech("playerf.pcx","GLB_STR.DAT","intro.txt","014","015","017",0);
             step = 8;
             break;
          case 8:  // Wait ENTER key
@@ -173,7 +173,7 @@ void Intro(void){
          	step = 15;
          	break;
          case 15: // Show spech
-         	Speech(3,1,"GLB_STR.DAT","intro.txt","020","022",0,0);
+         	Speech("playerf.pcx","GLB_STR.DAT","intro.txt","020","022",0,0);
             step = 16;
             break;
          case 16: // Wait ENTER key
@@ -218,7 +218,7 @@ void Intro(void){
 
          case 19: // Wait for ENTER key
             if( keys[K_ENTER] != 1) {
-            	Update(0,0);
+            	Update(0);
             }
             else {
 					HideSprite(1);
@@ -226,7 +226,7 @@ void Intro(void){
             }
          	break;
          case 20: // Show speech
-           	Speech(3,1,"GLB_STR.DAT","intro.txt","024","025","026","027");
+           	Speech("playerf.pcx","GLB_STR.DAT","intro.txt","024","025","026","027");
             step = 22;
             break;
          case 22:  // Show back map (page 0)
@@ -309,12 +309,12 @@ void Intro(void){
       	   step = 28;
             break;
          case 28: // Show text box
-           	Speech(3,1,"GLB_STR.DAT","intro.txt","028","029","030","031");
+           	Speech("playerf.pcx","GLB_STR.DAT","intro.txt","028","029","030","031");
             step = 30;
    			break;
          case 30: // Show text box
             SetPage(1);
-				Speech(3,1,"GLB_STR.DAT","intro.txt","032","033","034","035");
+				Speech("playerf.pcx","GLB_STR.DAT","intro.txt","032","033","034","035");
             step = 37;
    			break;
          case 37: // Show spech
@@ -338,8 +338,8 @@ void Intro(void){
 
             Fade_in();
 
-            Speech(3,1,"GLB_STR.DAT","intro.txt","036","037","038","039");
-            Speech(3,1,"GLB_STR.DAT","intro.txt","040","041","042","043");
+            Speech("playerf.pcx","GLB_STR.DAT","intro.txt","036","037","038","039");
+            Speech("playerf.pcx","GLB_STR.DAT","intro.txt","040","041","042","043");
             step = 38;
             break;
 			case 38: // Wait ENTER key
@@ -349,7 +349,7 @@ void Intro(void){
             endIntro = 1;
             break;
       }
-      Update(0,0);  // sprite follow inactive for sprite 16
+      Update(0);  // sprite follow inactive for sprite 16
    }
    // End of intro
 }

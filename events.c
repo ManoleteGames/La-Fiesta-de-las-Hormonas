@@ -19,7 +19,7 @@ void GoToFloor2_Left(void){
    ResetLoadingInterrupt(); // Stop loading animation
    scrolling_enabled = 1;
 	SetMap(0,3);
-	Update(0,0);
+	Update(0);
 	Fade_in();
 }
 
@@ -38,7 +38,7 @@ void GoToFloor2_Right(void){
    ResetLoadingInterrupt(); // Stop loading animation
    scrolling_enabled = 1;
 	SetMap(16,10);
-   Update(0,0);
+   Update(0);
    Fade_in();
 }
 
@@ -57,7 +57,7 @@ void GoToExt1_Door(void){
    ResetLoadingInterrupt(); // Stop loading animation
    scrolling_enabled = 1;
 	SetMap(0,12);
-   Update(0,0);
+   Update(0);
    Fade_in();
 }
 
@@ -76,7 +76,7 @@ void GoToExt2_BackDoor(void){
    ResetLoadingInterrupt(); // Stop loading animation
    scrolling_enabled = 1;
 	SetMap(21,13);
-   Update(0,0);
+   Update(0);
    Fade_in();
 }
 
@@ -96,7 +96,7 @@ void GoToFloor1_Left(void){
    ResetLoadingInterrupt(); // Stop loading animation
    scrolling_enabled = 1;
    SetMap(0,3);
-   Update(0,0);
+   Update(0);
    Fade_in();
 }
 
@@ -117,7 +117,7 @@ void GoToFloor1_Right(void){
    ResetLoadingInterrupt(); // Stop loading animation
    scrolling_enabled = 1;
    SetMap(16,10);
-   Update(0,0);
+   Update(0);
    Fade_in();
 }
 
@@ -137,7 +137,7 @@ void GoToNextDay(void){
    ResetLoadingInterrupt(); // Stop loading animation
    scrolling_enabled = 1;
    SetMap(0,18);
-   Update(0,0);
+   Update(0);
    Fade_in();
 }
 
@@ -157,7 +157,7 @@ void GoToFloor1_Entry(void){
    ResetLoadingInterrupt(); // Stop loading animation
    scrolling_enabled = 1;
    SetMap(0,18);
-   Update(0,0);
+   Update(0);
    Fade_in();
 }
 
@@ -176,7 +176,7 @@ void GoToExt1_Right(void){
    ResetLoadingInterrupt(); // Stop loading animation
    scrolling_enabled = 1;
    SetMap(40,0);
-   Update(0,0);
+   Update(0);
    Fade_in();
 }
 
@@ -196,7 +196,7 @@ void GoToFloor1_BackDoor(void){
  	ResetLoadingInterrupt(); // Stop loading animation
 	scrolling_enabled = 1;
 	SetMap(7,0);
-   Update(0,0);
+   Update(0);
 	Fade_in();
 }
 
@@ -215,7 +215,7 @@ void GoToGym(void){
    InitSprite(1,200,96);
 	ResetLoadingInterrupt(); // Stop loading animation
 	SetMap(15,0);
-   Update(0,0);
+   Update(0);
 	Fade_in();
 }
 
@@ -235,7 +235,7 @@ void GoToExt2_Gym(void){
    ResetLoadingInterrupt(); // Stop loading animation
    scrolling_enabled = 1;
    SetMap(15,10);
-   Update(0,0);
+   Update(0);
    Fade_in();
 }
 
@@ -254,6 +254,6 @@ void GoToExt2_Right(void){
    ResetLoadingInterrupt(); // Stop loading animation
    scrolling_enabled = 1;
 	SetMap(40,12);
-   Update(0,0);
+   Update(0);
    Fade_in();
 }

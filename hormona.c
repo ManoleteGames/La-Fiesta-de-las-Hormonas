@@ -26,7 +26,7 @@ byte gym_event_mask[] = {0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 byte ext1_hotspot_mask[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 byte ext2_hotspot_mask[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 byte floor1_hotspot_mask[] = {0,1,1,1,0,1,0,1,1,0,1,1,1,0,0,0,0};
-byte floor2_hotspot_mask[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+byte floor2_hotspot_mask[] = {0,1,0,1,0,0,1,1,1,0,1,0,0,0,0,0,0};
 byte gym_hotspot_mask[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 
@@ -87,7 +87,7 @@ void Menu(void)
 
    // Draw menu options
    Draw_EmptyBox(13,12,14,4);
-   LoadText("SGLB_STR.DAT","global.txt","001",string,&length);
+   LoadText("GLB_STR.DAT","global.txt","001",string,&length);
    PrintText(15,13,length,string,1);
    LoadText("GLB_STR.DAT","global.txt","002",string,&length);
    PrintText(15,14,length,string,0);
@@ -162,7 +162,7 @@ void Menu(void)
       if(option > 4){ option = 4;}
 
       // Main loop
-      Update(0,0);
+      Update(0);
    }
 
    Fade_out();
@@ -174,74 +174,25 @@ void Menu(void)
 // - Starts the party...
 /////////////////////////////////////////////////////////
 void NewGame(void) {
-	SetLoadingInterrupt();   // Start loading animation
 
-   LoadFont("FONTS.DAT","FONT.bmp"); //Load text font
-	LoadMap("MAPS.DAT","floor1.tmx"); // Load floor 1 map
-	LoadTiles("TILESETS.DAT","floor1.pcx");
-   LoadSprite("SPRCHR.DAT","director.pcx",2, 32); //Load sprites to one of the fixed structs
-   LoadSprite("SPRCHR.DAT","david.pcx",3, 32); //Load sprites to one of the fixed structs
-   LoadSprite("SPRCHR.DAT","xavi.pcx",4, 32); //Load sprites to one of the fixed structs
-   LoadSprite("SPRCHR.DAT","alain.pcx",5, 32); //Load sprites to one of the fixed structs
-   LoadSprite("SPRCHR.DAT","antonio.pcx",6, 32); //Load sprites to one of the fixed structs
-   LoadSprite("SPRMISC.DAT","enter.pcx",7,16); //Load sprites to one of the fixed structs
-   LoadSprite("SPRFACE.DAT","playerf.pcx",8, 48); //Load sprites to one of the fixed structs
-   LoadSprite("SPRCHR.DAT","player.pcx",1, 32); //Load sprites to one of the fixed structs
-   LoadSprite("SPRMISC.DAT","smoke.pcx",9, 64); //Load sprites to one of the fixed structs
-
-   LoadPanelBackground("IMAGES.DAT","PANEL.pcx");
+	// Initialize player status
  	player.spriteNum = 1;
    player.floor = 1;
    player.day = 10;
    player.hour = 8;
    player.min = 45;
+
+   // Starting player status
+   player.intell = 10;
+   player.popular = 10;
+   player.good = 10;
    player.money = 0;
 
-   // Player status
-   player.healt = 50;
-   player.intell = 50;
-   player.charm = 50;
-   player.freak = 50;
-   player.handsome = 50;
-   player.badass = 50;
+   LoadFont("FONTS.DAT","FONT.bmp"); //Load text font
+   LoadPanelBackground("IMAGES.DAT","PANEL.pcx");
+   VGA_PanelUpdate();
 
-   SetSpriteAnimation(1,0,6,12,PlayerAnimation);
-   SetSpriteAnimation(2,0,15,12,DirectorAnimation);
-   SetSpriteAnimation(3,0,6,8,CharacterAnimation2);
-   SetSpriteAnimation(4,0,6,30,CharacterAnimation3);
-   SetSpriteAnimation(5,0,6,23,CharacterAnimation3);
-   SetSpriteAnimation(6,0,6,19,CharacterAnimation2);
-   SetSpriteAnimation(7,0,4,8,EnterAnimation);
-   SetSpriteAnimation(8,0,1,48,PlayerFaceAnimation);
-   SetSpriteAnimation(9,0,1,64,PlayerFaceAnimation);
-
-   ResetLoadingInterrupt(); // Stop loading animation
-   // Allow scroll
-   scrolling_enabled = 1;
-   // Draw map
-   SetMap(0,4);
-   Update(0,0);
-
-   InitSprite(2,512,402);
-
-   InitSprite(3,396,102);
-   InitSprite(4,408,122);
-   InitSprite(5,434,142);
-   InitSprite(6,396,142);
-   InitSprite(7,0,0);
-   InitSprite(8,0,0);
-   InitSprite(9,0,0);
-
-   InitSprite(1,100,185);
-
-   HideSprite(7);
-   HideSprite(8);
-   HideSprite(9);
-
-   Fade_in();
-
-   panelScrolling = 1;
-   showPanel = 1;
+   D10_GoToFloor1(100, 185);
 
    while( keys[K_ESC] != 1 )
    {
@@ -293,13 +244,18 @@ void NewGame(void) {
 			default:
 				Error("Undefined day number",0,0);
 				break;
-
       }
+
+      //debug
+      if(fp_keys[K_D]){
+      	if(debug == 1){debug=0;}
+         else{debug=1;}
+      }
+
 
       // Main loop
       MovePlayer();
-      Update(1,0);
-
+      Update(1);
    }
 }
 
@@ -317,17 +273,17 @@ void main(){
 
    InitEngine(); // Initialize system
 
-   //Logo(); // Show logos and stuff before start the party
+   Logo(); // Show logos and stuff before start the party
 
    while( keys[K_ESC] != 1 )
    {
-		//Menu(); // Show game main menu
+		Menu(); // Show game main menu
       option = 1;
 
       switch(option)
       {
       	case 1: // New game
-            //Intro();
+            Intro();
          	NewGame();
       		break;
          case 2: // Continue

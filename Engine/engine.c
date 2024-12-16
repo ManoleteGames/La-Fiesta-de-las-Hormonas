@@ -7,6 +7,7 @@
 unsigned char *error1;
 unsigned char *error2;
 unsigned char *string;
+byte debug;
 
 int scrollCameraFloat = 0;
 int scrollCameraArray[135] = {
@@ -110,7 +111,7 @@ void (*SetPalette)(unsigned char *pal);
 void (*LoadTiles)(char *file,char* dat_string);
 void (*SetMap)(int x, int y);
 void (*ScrollMap)(void);
-void (*UpdatePanel)(void);
+void (*PanelRefresh)(void);
 void (*LoadPanelBackground)(char *file,char* dat_string);
 void (*DrawMapBack)(void);
 
@@ -305,7 +306,7 @@ void LinkVideo(void){
 
          SetMap = VGA_SetMap;
          ScrollMap = VGA_ScrollMap;
-         UpdatePanel = VGA_UpdatePanel;
+         PanelRefresh = VGA_PanelRefresh;
          LoadPanelBackground = VGA_LoadPanelBackground;
 
          DrawMapBack = VGA_Draw_MapBack;
@@ -351,7 +352,7 @@ void Delay(int count){
 	while(waitcounter < count)
    {
    	waitcounter++;
-      Update(0,0);
+      Update(0);
    }
 }
 
@@ -415,7 +416,7 @@ void ExitDOS(void){
 
    //DeInitSoundCard();
 	//UnloadTileset();
-	//UnloadMap();
+	UnloadMap();
    UnloadSprites();
 
    if(error1){ farfree(error1); }
@@ -470,7 +471,6 @@ void Error(char *error, char *file, char *filename){
 //  ** See memory distribution for each video mode
 /////////////////////////////////////////////////////////
 void AllocateEngineMem(void){
-	unsigned char *dummy;
 
 	printf("***** Allocating memory ...\n");
 
@@ -507,12 +507,8 @@ void AllocateEngineMem(void){
    printf(" map_event allocated onto adddress: %p address \n", map_event);
    if ((map_sprites = farcalloc(8192L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate event data","map","sprites");
    printf(" map_sprites allocated onto adddress: %p address \n", map_event);
-   //   if ((player = farcalloc(1,sizeof(PLAYER))) == NULL) Error("Not enough RAM to allocate player predefined sprite struct","player",0);
-//   printf(" player allocated onto adddress: %p address \n", player);
-   if ((sprite = farcalloc(20,sizeof(SPRITE))) == NULL) Error("Not enough RAM to allocate 22 predefined sprite structs","sprite",0);
+   if ((sprite = farcalloc(20,sizeof(SPRITE))) == NULL) Error("Not enough RAM to allocate 20 predefined sprite structs","sprite",0);
    printf(" sprite allocated onto adddress: %p address \n", sprite);
-
-   //if(dummy ){ farfree(dummy); }
 
    printf(" - Memory allocated successfuly \n");
    getchar();
@@ -619,13 +615,12 @@ void ScrollFollow(void){
 /////////////////////////////////////////////////////////
 // Update system
 /////////////////////////////////////////////////////////
-void Update(int player_follow, int sprite){
-
+void Update(int player_follow){
 	HardwareScrolling();
 	if (player_follow) ScrollFollow();
 	if (scrolling_enabled) ScrollMap();
    if (speech_active == 0) Draw_Sprites();
-   UpdatePanel();
+   PanelRefresh();
    Update_FP_Keys();
 }
 
@@ -638,8 +633,8 @@ void MovePlayer(void){
 	byte half = s->width>>1;
 
    // Sprite tiles
-   long tile_number = 0;
-   word nextTile = 0;
+   //long tile_number = 0;
+   int tile_number = 0;
 
    // Collision flags
    byte left_coll = 0;
@@ -788,12 +783,15 @@ void MovePlayer(void){
 // Speech
 // - Speaking function
 /////////////////////////////////////////////////////////
-void Speech(int sprFace,int sprEnter,char* filename, char* dat_string,char * line1, char * line2, char * line3, char * line4){
-	SPRITE *s = &sprite[sprFace];
-  	SPRITE *e = &sprite[sprEnter];
+void Speech(char* face,char* filename, char* dat_string,char * line1, char * line2, char * line3, char * line4){
    word length;
    int newscroll_x;
    int newscroll_y;
+
+   LoadSprite("SPRMISC.DAT","enter.pcx",18,16); //Load sprites to one of the fixed structs
+   LoadSprite("SPRFACE.DAT",face,19, 48); //Load sprites to one of the fixed structs
+   SetSpriteAnimation(18,0,4,8,EnterAnimation);
+   SetSpriteAnimation(19,0,1,48,PlayerFaceAnimation);
 
    speech_active = 1;
 
@@ -807,18 +805,18 @@ void Speech(int sprFace,int sprEnter,char* filename, char* dat_string,char * lin
 		if(scroll_y < newscroll_y){scroll_y++;}
       if(scroll_y > newscroll_y){scroll_y--;}
 
-   	Update(0,0);
+   	Update(0);
    }
 
 	Draw_EmptyBox(0,0,5,5);
    Draw_EmptyBox(7,0,31,5);
 
-   s->pos_x = scroll_x;
-   s->pos_y = scroll_y;
-   Update(0,0);
+   sprite[19].pos_x = scroll_x + 4;
+   sprite[19].pos_y = scroll_y + 4;
+   Update(0);
 
-   ShowSprite(sprFace);
-   DrawSpriteDestructive(sprFace);
+   ShowSprite(19);
+   DrawSpriteDestructive(19);
 
    if(line1 != 0){
    	LoadText(filename,dat_string,line1,string,&length);
@@ -841,19 +839,24 @@ void Speech(int sprFace,int sprEnter,char* filename, char* dat_string,char * lin
 	   Delay(20);
    }
 
-   e->pos_x = scroll_x + 298;
-   e->pos_y = scroll_y + 34;
-   ShowSprite(sprEnter);
+   sprite[18].pos_x = scroll_x + 298;
+   sprite[18].pos_y = scroll_y + 34;
+   ShowSprite(18);
 
 	while( keys[K_ENTER] != 1) {
-  		Update(0,0);
-      DrawSpriteDestructive(sprEnter);
+  		Update(0);
+      DrawSpriteDestructive(18);
    }
    while( keys[K_ENTER] == 1) {
 		//wait
-      HideSprite(sprFace);
-      HideSprite(sprEnter);
+      HideSprite(19);
+      HideSprite(18);
    }
+
+   vram_SpritesBack -= (sprite[18].width*sprite[18].width)>>1;
+   vram_SpritesBack -= (sprite[19].width*sprite[19].width)>>1;
+   UnloadSprite(18);
+   UnloadSprite(19);
 
    speech_active = 0;
    if(map_loaded){ DrawMapBack(); }
@@ -863,13 +866,16 @@ void Speech(int sprFace,int sprEnter,char* filename, char* dat_string,char * lin
 // Speech selection
 // - Speaking function
 /////////////////////////////////////////////////////////
-byte SpeechSelection(int optNum, int sprFace, int sprEnter,char* filename, char* dat_string,char * line1, char * line2, char * line3, char * line4){
-	SPRITE *s = &sprite[sprFace];
-  	SPRITE *e = &sprite[sprEnter];
+byte SpeechSelection(int optNum, char* face,char* filename, char* dat_string,char * line1, char * line2, char * line3, char * line4){
    word length;
    byte option = 1;
    int newscroll_x;
    int newscroll_y;
+
+   LoadSprite("SPRMISC.DAT","enter.pcx",18,16); //Load sprites to one of the fixed structs
+   LoadSprite("SPRFACE.DAT",face,19, 48); //Load sprites to one of the fixed structs
+   SetSpriteAnimation(18,0,4,8,EnterAnimation);
+   SetSpriteAnimation(19,0,1,48,PlayerFaceAnimation);
 
    speech_active = 1;
 
@@ -883,18 +889,18 @@ byte SpeechSelection(int optNum, int sprFace, int sprEnter,char* filename, char*
 		if(scroll_y < newscroll_y){scroll_y++;}
       if(scroll_y > newscroll_y){scroll_y--;}
 
-   	Update(0,0);
+   	Update(0);
    }
 
 	Draw_EmptyBox(0,0,5,5);
    Draw_EmptyBox(7,0,31,5);
 
-   s->pos_x = scroll_x;
-   s->pos_y = scroll_y;
-   Update(0,0);
+   sprite[19].pos_x = scroll_x + 4;
+   sprite[19].pos_y = scroll_y + 4;
+   Update(0);
 
-   ShowSprite(sprFace);
-   DrawSpriteDestructive(sprFace);
+   ShowSprite(19);
+   DrawSpriteDestructive(19);
 
    if(line1 != 0){
    	LoadText(filename,dat_string,line1,string,&length);
@@ -913,9 +919,9 @@ byte SpeechSelection(int optNum, int sprFace, int sprEnter,char* filename, char*
    	PrintText(8,4,length,string,0);
    }
 
-   e->pos_x = scroll_x + 298;
-   e->pos_y = scroll_y + 34;
-   ShowSprite(sprEnter);
+   sprite[18].pos_x = scroll_x + 298;
+   sprite[18].pos_y = scroll_y + 34;
+   ShowSprite(18);
 
 	while( keys[K_ENTER] != 1) {
 		//selectopm
@@ -983,14 +989,20 @@ byte SpeechSelection(int optNum, int sprFace, int sprEnter,char* filename, char*
       if(option < 1){option = 1;}
       if(option > optNum){option = optNum;}
 
-      DrawSpriteDestructive(sprEnter);
-      Update(0,0);
+      DrawSpriteDestructive(18);
+      Update(0);
    }
    while( keys[K_ENTER] == 1) {
 		//wait
-      HideSprite(sprFace);
-      HideSprite(sprEnter);
+      HideSprite(19);
+      HideSprite(18);
    }
+
+   vram_SpritesBack -= (sprite[18].width*sprite[18].width)>>1;
+   vram_SpritesBack -= (sprite[19].width*sprite[19].width)>>1;
+   UnloadSprite(18);
+   UnloadSprite(19);
+
 
    speech_active = 0;
    if(map_loaded){ DrawMapBack(); }
