@@ -4,6 +4,7 @@
 
 #include "source\engine\engine.h"
 
+long maxMapSize = 8192L;
 word map_width;
 word map_height;
 word map_width_px;
@@ -215,11 +216,11 @@ void LoadMap(char *file, char* dat_string){
 // - reset loaded map flag
 /////////////////////////////////////////////////////////
 void UnloadMap(void){
-	memset(map_data,0,sizeof(map_data));
-	memset(map_hotspot,0,sizeof(map_hotspot));
-	memset(map_collision,0,sizeof(map_collision));
-	memset(map_event,0,sizeof(map_event));
-   memset(map_sprites, 0, sizeof(map_sprites));
+	memset(map_data,0,maxMapSize);
+	memset(map_hotspot,0,maxMapSize);
+	memset(map_collision,0,maxMapSize);
+	memset(map_event,0,maxMapSize);
+   memset(map_sprites, 0, maxMapSize);
  	map_loaded = 0;
 }
 

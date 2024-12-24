@@ -22,7 +22,7 @@ void Intro(void){
    LoadPanelBackground("IMAGES.DAT","PANEL.pcx");
 
    LoadSprite("SPRMISC.DAT","enter.pcx",1, 16); //Load sprites to one of the fixed structs
-   LoadSprite("SPRCHR.DAT","player.pcx",2, 32); //Load sprites to one of the fixed structs
+   LoadSprite("SPRCHR1.DAT","player.pcx",2, 32); //Load sprites to one of the fixed structs
    LoadSprite("SPRFACE.DAT","playerf.pcx",3, 48); //Load sprites to one of the fixed structs
    LoadSprite("SPRMISC.DAT","bird.pcx",4, 32); //Load sprites to one of the fixed structs
 
@@ -36,7 +36,7 @@ void Intro(void){
   	InitSprite(3,0,0);
    InitSprite(4,102,96);
    SetSpriteAnimation(1,0,4,8,EnterAnimation);
-   SetSpriteAnimation(2,13,4,8,PlayerAnimation); // Set animation >> right
+   SetSpriteAnimation(2,17,4,8,PlayerAnimation); // Set animation >> right
    SetSpriteAnimation(3,0,1,48,PlayerFaceAnimation);
    SetSpriteAnimation(4,0,14,8,BirdAnimation);
 
@@ -92,7 +92,7 @@ void Intro(void){
             HideSprite(1);
            	HideSprite(3);
             DrawMapBack();
-           	SetSpriteAnimation(2,13,4,12,PlayerAnimation); // Set animation >> right
+           	SetSpriteAnimation(2,17,4,12,PlayerAnimation); // Set animation >> right
             step = 9;
             break;
          case 9: // Move player sprite inside screen
@@ -114,7 +114,7 @@ void Intro(void){
 			   LoadMap("MAPS.DAT","floor1.tmx");
 			   LoadTiles("TILESETS.DAT","floor1.pcx");
             LoadSprite("SPRMISC.DAT","enter.pcx",1,16); //Load sprites to one of the fixed structs
-            LoadSprite("SPRCHR.DAT","player.pcx",2,32); //Load sprites to one of the fixed structs
+            LoadSprite("SPRCHR1.DAT","player.pcx",2,32); //Load sprites to one of the fixed structs
             LoadSprite("SPRFACE.DAT","playerf.pcx",3,48); //Load sprites to one of the fixed structs
 
             ResetLoadingInterrupt(); // Stop loading animation
@@ -129,7 +129,7 @@ void Intro(void){
   				InitSprite(3,0,0);
 
    			SetSpriteAnimation(1,0,4,8,EnterAnimation);
-   			SetSpriteAnimation(2,13,4,8,PlayerAnimation); // Set animation >> right
+   			SetSpriteAnimation(2,17,4,8,PlayerAnimation); // Set animation >> right
    			SetSpriteAnimation(3,0,1,48,PlayerFaceAnimation);
 
   				HideSprite(1);
@@ -235,8 +235,8 @@ void Intro(void){
 			   LoadMap("MAPS.DAT","floor1.tmx");   // Load floor 1 map
 			   LoadTiles("TILESETS.DAT","floor1.pcx");
             LoadSprite("SPRMISC.DAT","enter.pcx",1,16); //Load sprites to one of the fixed structs
-            LoadSprite("SPRCHR.DAT","player.pcx",2, 32); //Load sprites to one of the fixed structs
-            LoadSprite("SPRCHR.DAT","jessy.pcx",3, 32); //Load sprites to one of the fixed structs
+            LoadSprite("SPRCHR1.DAT","player.pcx",2, 32); //Load sprites to one of the fixed structs
+            LoadSprite("SPRCHR1.DAT","jessy.pcx",3, 32); //Load sprites to one of the fixed structs
 
             InitSprite(2,100,185);
             SetSpriteAnimation(2,0,6,12,PlayerAnimation); // Set static
@@ -262,7 +262,7 @@ void Intro(void){
          	break;
          case 24: // Load girl sprite
             InitSprite(3,120,364);
-            SetSpriteAnimation(3,25,4,8,JessyAnimation);
+            SetSpriteAnimation(3,25,4,8,JessyAnimation);  // Moving up
             step = 25;
          	break;
          case 25: // Move girl

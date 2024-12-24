@@ -4,12 +4,6 @@
 
 #include "source\engine\engine.h"
 
-byte ext1_event_mask[] = {0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0};
-byte ext2_event_mask[] = {0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0};
-byte floor1_event_mask[] = {0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0};
-byte floor2_event_mask[] = {0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-byte gym_event_mask[] = {0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-
 void D7_Events(byte event){
 	switch(player.floor){
    	case 1: // Floor 1

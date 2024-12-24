@@ -1357,9 +1357,102 @@ void VGA_Disable4Planes(void){ // dbg ??? why set GC index + 1 to 00ff??
 }
 
 /////////////////////////////////////////////////////////
+// Restore sprites background
+/////////////////////////////////////////////////////////
+void VGA_Restore_Sprites(void){
+   int lx;
+   int ly;
+   word next_scanline;
+   word bkgAddress;
+	word screenPrevAddress;
+   word rows;
+   word cols;
+   word spriteBkgAddress;
+	int spriteStackIndex; //sprite_number
+   byte spriteSize = 2;
+
+   VGA_Enable4Planes();
+
+   // Check for active sprites on the stack
+   for (spriteStackIndex = 0; spriteStackIndex < spriteStack; spriteStackIndex++)
+   {
+   	SPRITE *s = &sprite[spriteStackTable[spriteStackIndex]];
+		lx = s->last_x;
+		ly = s->last_y;
+      next_scanline = s->next_scanline;
+
+      // 1st. Restore the background if sprite has been initialized
+      if( s->init == 1)
+      {
+         rows = s->rows; //s->size;
+         cols = s->cols;
+         spriteBkgAddress = s->bkg_data;
+         screenPrevAddress = (ly<<6)+(ly<<4)+(ly<<3)+(lx>>spriteSize);
+
+         // Restore background to the previous position
+         asm{
+         	push 	ds
+				push 	di
+				push 	si
+
+				mov 	ax,0A000h
+				mov 	es,ax
+				mov 	di,screenPrevAddress	//es:di destination vram
+
+            mov 	ds,ax
+				mov 	si,spriteBkgAddress			//ds:si source vram
+				mov 	ax,rows
+				mov 	bx,next_scanline
+				mov 	dx,cols
+         }
+			scanline2:
+			asm{
+				mov	cx,dx //2
+				rep 	movsb //77			// copy bytes from ds:si to es:di
+				add 	di,bx
+				mov 	cx,dx
+				rep 	movsb				// copy bytes from ds:si to es:di
+				add 	di,bx
+				mov 	cx,dx
+				rep 	movsb				// copy bytes from ds:si to es:di
+				add 	di,bx
+				mov 	cx,dx
+				rep 	movsb				// copy bytes from ds:si to es:di
+				add 	di,bx
+				mov 	cx,dx
+				rep 	movsb				// copy bytes from ds:si to es:di
+				add 	di,bx
+				mov 	cx,dx
+				rep 	movsb				// copy bytes from ds:si to es:di
+				add 	di,bx
+				mov 	cx,dx
+	  			rep	movsb				// copy bytes from ds:si to es:di
+				add 	di,bx
+				mov 	cx,dx
+				rep	movsb				// copy bytes from ds:si to es:di
+				add 	di,bx				//632 -> 576
+				dec 	ax
+				jnz	scanline2
+			}
+
+			asm pop 	si
+			asm pop 	di
+			asm pop 	ds
+      }
+   }
+
+   VGA_Disable4Planes();
+
+   // Reset sprite collision map
+   memset(map_sprites, 0, maxMapSize);
+}
+
+
+/////////////////////////////////////////////////////////
 // Draw sprites
 /////////////////////////////////////////////////////////
 void VGA_Draw_Sprites(void){
+	int i;
    int x;
    int y;
    int lx;
@@ -1376,7 +1469,6 @@ void VGA_Draw_Sprites(void){
    byte spriteSize = 2;
    word aux;
 
-
    VGA_Enable4Planes();
 
    // Check for active sprites on the stack
@@ -1389,92 +1481,17 @@ void VGA_Draw_Sprites(void){
 		y = s->pos_y;
       next_scanline = s->next_scanline;
 
-      // 1st. Restore the background if sprite has been initialized
-      if( s->init == 1)
-      {
-         rows = s->rows; //s->size;
-         cols = s->cols;
-         spriteBkgAddress = s->bkg_data;
-         screenPrevAddress = (ly<<6)+(ly<<4)+(ly<<3)+(lx>>spriteSize);
-
-         // Restore background to the previous position
-         	asm{
-					push 	ds
-					push 	di
-					push 	si
-
-					mov 	ax,0A000h
-					mov 	es,ax
-					mov 	di,screenPrevAddress	//es:di destination vram
-
-					mov 	ds,ax
-					mov 	si,spriteBkgAddress			//ds:si source vram
-					mov 	ax,rows
-					mov 	bx,next_scanline
-					mov 	dx,cols
-				}
-				scanline2:
-				asm{
-					mov	cx,dx //2
-					rep 	movsb //77			// copy bytes from ds:si to es:di
-					add 	di,bx
-					mov 	cx,dx
-					rep 	movsb				// copy bytes from ds:si to es:di
-					add 	di,bx
-					mov 	cx,dx
-					rep 	movsb				// copy bytes from ds:si to es:di
-					add 	di,bx
-					mov 	cx,dx
-					rep 	movsb				// copy bytes from ds:si to es:di
-					add 	di,bx
-					mov 	cx,dx
-					rep 	movsb				// copy bytes from ds:si to es:di
-					add 	di,bx
-					mov 	cx,dx
-					rep 	movsb				// copy bytes from ds:si to es:di
-					add 	di,bx
-					mov 	cx,dx
-	  				rep	movsb				// copy bytes from ds:si to es:di
-					add 	di,bx
-					mov 	cx,dx
-					rep	movsb				// copy bytes from ds:si to es:di
-					add 	di,bx				//632 -> 576
-					dec 	ax
-					jnz	scanline2
-				}
-
-				asm pop 	si
-				asm pop 	di
-				asm pop 	ds
-
-         // if it is outside limits, reset init status
-      	//if((x < scroll_x) || (x > scroll_x + 304)){ s->init = 0; }
-         //if((x < (scroll_x + 8)) || (x > (scroll_x + 296))){ s->init = 0; }
-         if((x < (scroll_x + 16)) || (x > (scroll_x + 288)) || (y < (scroll_y)) || (y > (scroll_y + 184))){ s->init = 0; }
-         
-         // if hide is requested just hide it
-         if( s->hide ){
-         	s->hidden = 1;
-            s->init = 0;
-         }
-      }
-
-      // 2nd. Check for active sprites on the stack and copy background of new pos
+      // Check for active sprites on the stack and copy background of new pos
       if( s->init == 1)
       {
       	// Copy background only if new position is inside limits
-      	//if((x >= scroll_x) && (x <= scroll_x + 304)){
-         //if((x >= (scroll_x+8)) && (x <= (scroll_x + 296))){
-         if((x >= (scroll_x+16)) && (x <= (scroll_x + 288)) && (y >= (scroll_y)) && (y <= (scroll_y + 184))){
-
          	rows = s->rows; //s->size;
          	cols = s->cols;
          	spriteBkgAddress = s->bkg_data;
          	screenPrevAddress = (ly<<6)+(ly<<4)+(ly<<3)+(lx>>spriteSize);
             screenNewAddress = (y<<6)+(y<<4)+(y<<3)+(x>>spriteSize);
 
-
-            // 4th. Save new position background
+            // Save new position background
             asm{
 					push 	ds
 					push 	di
@@ -1524,83 +1541,75 @@ void VGA_Draw_Sprites(void){
 					pop 	di
 					pop 	ds
 				}
-         }
+         //}
       }
 
-      // 3rd. Save background if sprite has not being initialized
-      if( (s->init == 0) && (s->hidden == 0)){
-
+      // Save background if sprite has not being initialized
+      //if( (s->init == 0) && (s->hidden == 0)){
+      if(s->init == 0){
       	// Save background only if new position is inside limits
-      	//if((lx >= scroll_x) && (lx <= scroll_x + 304)){
-      	//if((lx >= (scroll_x+8)) && (lx <= (scroll_x + 296))){
-         if((lx >= (scroll_x+16)) && (lx <= (scroll_x + 288)) && (y >= (scroll_y)) && (y <= (scroll_y + 184))){
+        	rows = s->rows; // s->size;
+        	cols = s->cols;   //cols
+        	spriteBkgData = s->bkg_data;
 
-         	rows = s->rows; // s->size;
-         	cols = s->cols;   //cols
-         	spriteBkgData = s->bkg_data;
+         bkgAddress = (y<<6)+(y<<4)+(y<<3)+(x>>spriteSize);
 
+        	//Copy bkg chunk to a reserved VRAM part, before destroying it
+        	asm{
+				push 	ds
+				push 	di
+				push 	si
 
-            bkgAddress = (y<<6)+(y<<4)+(y<<3)+(x>>spriteSize);
+				mov 	ax,0A000h
+				mov 	ds,ax
+				mov	si,bkgAddress		//ds:si source vram
 
-         	//Copy bkg chunk to a reserved VRAM part, before destroying it
-         	asm{
-					push 	ds
-					push 	di
-					push 	si
+           	mov 	es,ax
+				mov	di,spriteBkgData	//es:di destination
 
-					mov 	ax,0A000h
-					mov 	ds,ax
-					mov	si,bkgAddress		//ds:si source vram
+				mov	ax,rows				//number of rows
+           	mov	bx,next_scanline  //
+           	mov	dx,cols
+        	}
+        	scanline1:
+			asm{
+				mov 	cx,dx				// copy width + 4 pixels
+				rep	movsb				// copy bytes from ds:si to es:di
+				add 	si,bx
+				mov 	cx,dx
+				rep	movsb				// copy bytes from ds:si to es:di
+				add 	si,bx
+				mov 	cx,dx
+				rep	movsb				// copy bytes from ds:si to es:di
+				add 	si,bx
+				mov 	cx,dx
+				rep	movsb				// copy bytes from ds:si to es:di
+				add 	si,bx
+				mov 	cx,dx
+				rep	movsb				// copy bytes from ds:si to es:di
+				add 	si,bx
+				mov 	cx,dx
+				rep	movsb				// copy bytes from ds:si to es:di
+				add 	si,bx
+				mov 	cx,dx
+				rep	movsb				// copy bytes from ds:si to es:di
+				add 	si,bx
+				mov 	cx,dx
+				rep	movsb				// copy bytes from ds:si to es:di
+				add 	si,bx
+				dec 	ax
+				jnz	scanline1
 
-            	mov 	es,ax
-					mov	di,spriteBkgData	//es:di destination
+        		pop 	si
+				pop 	di
+				pop 	ds
+			}
 
-					mov	ax,rows				//number of rows
-            	mov	bx,next_scanline  //
-            	mov	dx,cols
-         	}
-         	scanline1:
-				asm{
-					mov 	cx,dx				// copy width + 4 pixels
-					rep	movsb				// copy bytes from ds:si to es:di
-					add 	si,bx
-					mov 	cx,dx
-					rep	movsb				// copy bytes from ds:si to es:di
-					add 	si,bx
-					mov 	cx,dx
-					rep	movsb				// copy bytes from ds:si to es:di
-					add 	si,bx
-					mov 	cx,dx
-					rep	movsb				// copy bytes from ds:si to es:di
-					add 	si,bx
-					mov 	cx,dx
-					rep	movsb				// copy bytes from ds:si to es:di
-					add 	si,bx
-					mov 	cx,dx
-					rep	movsb				// copy bytes from ds:si to es:di
-					add 	si,bx
-					mov 	cx,dx
-					rep	movsb				// copy bytes from ds:si to es:di
-					add 	si,bx
-					mov 	cx,dx
-					rep	movsb				// copy bytes from ds:si to es:di
-					add 	si,bx
-					dec 	ax
-					jnz	scanline1
-
-         		pop 	si
-					pop 	di
-					pop 	ds
-				}
-
-         	s->init = 1;
-         }
+        	s->init = 1;
       }
    }
 
-
    VGA_Disable4Planes();
-
 
    // Print sprite in new position
    // Check for active sprites on the stack
@@ -1614,9 +1623,7 @@ void VGA_Draw_Sprites(void){
       if( s->init == 1){
 
 			// Write sprite on VGA only if it is inside visible screen
-      	//if((x >= scroll_x) && (x <= scroll_x + 304)){
-         //if((x >= (scroll_x+8)) && (x <= (scroll_x + 296))){
-         if((x >= (scroll_x+16)) && (x <= (scroll_x + 288))&& (y >= (scroll_y))&& (y <= (scroll_y + 184))){
+         if((x >= (scroll_x-32)) && (x <= (scroll_x + 320))&& (y >= (scroll_y-32))&& (y <= (scroll_y + 192))){
 
          	// Check animation enabled
       		if(s->animate == 1){
@@ -1635,35 +1642,6 @@ void VGA_Draw_Sprites(void){
 
 				if(s->hide == 0){
             	VGA_RunCompiledSprite(x,y,s->frames[s->frame].compiled_code);
-
-               if(map_loaded){
-               	// Update sprite on map position
-               	s->tile_x = (s->pos_x)>>4;
-               	s->tile_y = (s->pos_y)>>4;
-
-               	if( spriteStackTable[spriteStackIndex] != player.spriteNum){
-               		//Update map collision
-               		// -- reset old map collision
-               		aux = (((s->last_y-64)>>4) * map_width ) +  ((s->last_x)>>4);
-               		map_sprites[aux]  = 0;
-                  	map_sprites[aux + 1] = 0;
-                 		map_sprites[aux + map_width] = 0;
-                  	map_sprites[aux + map_width + 1] = 0;
-               		// -- set old map collision
-               		aux = (((s->pos_y-64)>>4) * map_width ) +  ((s->pos_x)>>4);
-               		map_sprites[aux]  = spriteStackTable[spriteStackIndex];
-                  	map_sprites[aux + 1] = spriteStackTable[spriteStackIndex];
-                  	map_sprites[aux + map_width] = spriteStackTable[spriteStackIndex];
-                  	map_sprites[aux + map_width + 1] = spriteStackTable[spriteStackIndex];
-               	}
-               }
-            }
-            else{
-         		aux = (((s->pos_y-64)>>4) * map_width ) +  ((s->pos_x)>>4);
-               map_sprites[aux]  = 0;
-               map_sprites[aux + 1] = 0;
-               map_sprites[aux + map_width] = 0;
-               map_sprites[aux + map_width + 1] = 0;
             }
       	}
       }
@@ -1671,6 +1649,37 @@ void VGA_Draw_Sprites(void){
    	s->last_x = x;
       s->last_y = y;
  	}
+
+   // Update sprite collision map
+   // - set collision map if sprite is currently shown
+   for (spriteStackIndex = 0; spriteStackIndex < spriteStack; spriteStackIndex++)
+   {
+   	SPRITE *s = &sprite[spriteStackTable[spriteStackIndex]];
+      int x = s->pos_x;
+		int y = s->pos_y;
+
+      // Do it just if it is initialized
+      if( s->init == 1){
+      	if(s->hide == 0){
+         	if(map_loaded){
+            	// Update sprite on map position
+               s->tile_x = (x)>>4;
+               s->tile_y = (y)>>4;
+
+               // Check collision only if is not the player sprite
+              	if( spriteStackTable[spriteStackIndex] != player.spriteNum){
+
+               	//Update map collision
+                  aux = (((y-64)>>4) * map_width ) +  ((x)>>4);
+                  map_sprites[aux]  = spriteStackTable[spriteStackIndex];
+                  map_sprites[aux + 1] = spriteStackTable[spriteStackIndex];
+                  map_sprites[aux + map_width] = spriteStackTable[spriteStackIndex];
+                  map_sprites[aux + map_width + 1] = spriteStackTable[spriteStackIndex];
+               }
+            }
+         }
+      }
+   }
 }
 
 /////////////////////////////////////////////////////////
@@ -2083,7 +2092,7 @@ void VGA_Draw_MapBack(void){
   	VGA_DrawMapRow(map_current_x,map_current_y+16,map_offset_x,map_offset_y+1,21);
    VGA_DrawMapRow(map_current_x,map_current_y+32,map_offset_x,map_offset_y+2,21);
    VGA_DrawMapRow(map_current_x,map_current_y+48,map_offset_x,map_offset_y+3,21);
-   VGA_DrawMapRow(map_current_x,map_current_y+64,map_offset_x,map_offset_y+4,21);
+   //VGA_DrawMapRow(map_current_x,map_current_y+64,map_offset_x,map_offset_y+4,21);
 
    VGA_Disable4Planes();
 }
@@ -2237,7 +2246,7 @@ void VGA_PanelRefresh(void){
       else{
          newPos = 353;
       }
-      
+
    	if(panelScrolling == 1){     // Move with scroll
    		if(scroll_wy > newPos){
       		scroll_wy --;
@@ -2281,6 +2290,32 @@ void VGA_PanelRefresh(void){
    sprintf(string, "%d", player.money);
    VGA_PrintPanelText(36,1,8,"   ");
    VGA_PrintPanelText(36,1,strlen(string),string);
+
+   // debug 1
+   sprintf(string, "%d", debug1);
+   VGA_PrintPanelText(1,3,8,"     ");
+   VGA_PrintPanelText(1,3,strlen(string),string);
+
+   // debug2
+   sprintf(string, "%d", debug2);
+   VGA_PrintPanelText(7,3,8,"     ");
+   VGA_PrintPanelText(7,3,strlen(string),string);
+
+   // debug3
+   sprintf(string, "%d", debug3);
+   VGA_PrintPanelText(14,3,8,"     ");
+   VGA_PrintPanelText(14,3,strlen(string),string);
+
+   // debug4
+   debug4 = player.collision;
+   sprintf(string, "%d", debug4);
+   VGA_PrintPanelText(21,3,8,"     ");
+   VGA_PrintPanelText(21,3,strlen(string),string);
+
+   // debug5
+   sprintf(string, "%d", debug5);
+   VGA_PrintPanelText(28,3,8,"     ");
+   VGA_PrintPanelText(28,3,strlen(string),string);
 }
 
 void VGA_PrintLine(int pos_x, int pos_y, int width_x, int width_y, byte color){

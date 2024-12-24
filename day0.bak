@@ -4,6 +4,11 @@
 
 #include "source\engine\engine.h"
 
+void GoToEnd(void){
+	Error("end game",0,0);
+
+}
+
 void D0_Events(byte event){
 	switch(player.floor){
    	case 1: // Floor 1

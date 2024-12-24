@@ -215,7 +215,6 @@ void UnloadSprites(void){
       }
    }
    ResetSpriteStack();
-   memset(map_sprites, 0, sizeof(map_sprites));
    vram_SpritesBack = 0xDE00;
 }
 

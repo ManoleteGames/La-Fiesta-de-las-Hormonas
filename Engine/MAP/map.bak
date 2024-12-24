@@ -4,6 +4,7 @@
 
 #include "source\engine\engine.h"
 
+long maxMapSize = 8192L;
 word map_width;
 word map_height;
 word map_width_px;
@@ -57,32 +58,16 @@ void LoadMap(char *file, char* dat_string){
 	char line[128];
 	char name[64]; //name of the layer in TILED
 
-   debug = 21;
-   Update(0);
-
    // Open DAT file and search TMX file inside
    f = fopen(file,"rb");
+  	if(!f) Error("Can't find ",file,0);
 
-   debug = 22;
-   Update(0);
+   Delay(20);
 
-	if(!f) Error("Can't find ",file,0);
-
-   debug = 23;
-   Update(0);
-
-	if (dat_string) DAT_Seek(f,dat_string);
+  	if (dat_string) DAT_Seek(f,dat_string);
 	else fseek(f, 0, SEEK_SET);
 
-
-   debug = 24;
-   Update(0);
-
-
    memset(line, 0, 64); // Reserve 64 bytes mem
-
-   debug = 29;
-   Update(0);
 
    // First read firstgid of first layer (first layer must be background, so firstgid must be "1"
 	while(start_gid == 0){	//read lines

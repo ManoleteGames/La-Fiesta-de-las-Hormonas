@@ -200,24 +200,6 @@ void GoToFloor1_BackDoor(void){
 	Fade_in();
 }
 
-/////////////////////////////////////////////////////////
-// Go to gym
-/////////////////////////////////////////////////////////
-void GoToGym(void){
-	SetLoadingInterrupt();   // Start loading animation
-   // Load gym map
-	LoadMap("MAPS.DAT","gym.tmx");
-	LoadTiles("TILESETS.DAT","gym.pcx");
-   LoadSprite("SPRCHR.DAT","player.pcx",1, 32); //Load sprites to one of the fixed structs
-   LoadPanelBackground("IMAGES.DAT","PANEL.pcx");
-   player.floor = 5;
-   SetSpriteAnimation(1,0,6,12,PlayerAnimation);
-   InitSprite(1,200,96);
-	ResetLoadingInterrupt(); // Stop loading animation
-	SetMap(15,0);
-   Update(0);
-	Fade_in();
-}
 
 /////////////////////////////////////////////////////////
 // Go to exterior 2 from gym

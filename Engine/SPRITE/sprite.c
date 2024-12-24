@@ -169,7 +169,7 @@ _Exit:
 void ResetSpriteStack(void){
 	int i;
 	spriteStack = 0;
-	for (i = 0; i<33; i++) spriteStackTable[i] = 0;
+	for (i = 0; i<33; i++) { spriteStackTable[i] = 0; }
 	//spriteAI[0] = 0;
 	//memset(spriteIdTable,0,19*256*2); // dgb why this numbeR??
 }

@@ -23,7 +23,6 @@ typedef struct tagPLAYER{
    byte good;
 
    byte money;
-   byte cheats;
 
    byte day;
    byte hour;
@@ -32,9 +31,33 @@ typedef struct tagPLAYER{
    byte floor;
    byte event;
    byte hotspot;
+   byte collision;
+
+   byte ext1_event_mask[16];
+	byte ext2_event_mask[16];
+	byte floor1_event_mask[16];
+	byte floor2_event_mask[16];
+	byte gym_event_mask[16];
+
+	byte ext1_hotspot_mask[16];
+	byte ext2_hotspot_mask[16];
+	byte floor1_hotspot_mask[16];
+	byte floor2_hotspot_mask[16];
+	byte gym_hotspot_mask[16];
+
+   byte mission_cheat;
+   byte mission_doll;
+
+   byte item_chalk;
+
+   int rel_freaks;
+   int rel_thugs;
+   int rel_jessy;
+
    byte spriteColl;
    byte move;
    byte oldMove;
+   byte facingLeft;
    byte act;
    byte state;
    byte oldState;
@@ -130,6 +153,11 @@ extern byte PlayerAnimation[];
 // Engine.c prototypes
 extern unsigned char *error1;
 extern unsigned char *error2;
+extern int debug1;
+extern int debug2;
+extern int debug3;
+extern int debug4;
+extern int debug5;
 extern unsigned char *string;
 extern word vram_LogicalWidth; // screen logical with on bytes in vram
 extern word vram_Font; // Font address in VRAM
@@ -173,6 +201,7 @@ extern void (*SetLoadingInterrupt)(void);
 extern void (*ResetLoadingInterrupt)(void);
 extern void (*PrintText)(word x, word y, word lineLength, unsigned char *string, byte color);
 extern void (*Draw_Sprites)(void);
+extern void (*Restore_Sprites)(void);
 extern void (*DrawSpriteDestructive)(int sprNum);
 extern void (*SetPalette)(unsigned char *pal);
 extern void (*LoadTiles)(char *file,char* dat_string);
@@ -203,6 +232,7 @@ void VGA_SetLoadingInterrupt(void);
 void VGA_ResetLoadingInterrupt(void);
 void VGA_PrintText(word x, word y, word lineLength, unsigned char *string, byte color);
 void VGA_Draw_Sprites(void);
+void VGA_Restore_Sprites(void);
 void VGA_DrawSpriteDestructive(int sprNum);
 void VGA_SetPalette(unsigned char *pal);
 void VGA_LoadTiles(char *file,char* dat_string);
@@ -266,6 +296,7 @@ void Reset_key_handler(void);
 void Update_FP_Keys(void);
 
 // MAP/MAP.c prototypes
+extern long maxMapSize;
 extern word *map_data;
 extern byte *map_flip;
 extern byte *map_collision;
@@ -334,17 +365,6 @@ extern byte BirdAnimation[];
 extern byte DirectorAnimation[];
 extern byte CharacterAnimation2[];
 extern byte CharacterAnimation3[];
-extern byte ext1_event_mask[];
-extern byte ext2_event_mask[];
-extern byte floor1_event_mask[];
-extern byte floor2_event_mask[];
-extern byte gym_event_mask[];
-extern byte ext1_hotspot_mask[];
-extern byte ext2_hotspot_mask[];
-extern byte floor1_hotspot_mask[];
-extern byte floor2_hotspot_mask[];
-extern byte gym_hotspot_mask[];
-
 
 // All day events
 void GoToFloor2_Left(void);

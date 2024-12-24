@@ -8,6 +8,7 @@ unsigned char *error1;
 unsigned char *error2;
 unsigned char *string;
 byte debug;
+int debug1,debug2,debug3,debug4,debug5;
 
 int scrollCameraFloat = 0;
 int scrollCameraArray[135] = {
@@ -106,6 +107,7 @@ void (*SetLoadingInterrupt)(void);
 void (*ResetLoadingInterrupt)(void);
 void (*PrintText)(word x, word y, word lineLength, unsigned char *string,byte color);
 void (*Draw_Sprites)(void);
+void (*Restore_Sprites)(void);
 void (*DrawSpriteDestructive)(int sprNum);
 void (*SetPalette)(unsigned char *pal);
 void (*LoadTiles)(char *file,char* dat_string);
@@ -301,6 +303,7 @@ void LinkVideo(void){
          ResetLoadingInterrupt = VGA_ResetLoadingInterrupt;
          PrintText = VGA_PrintText;
          Draw_Sprites = VGA_Draw_Sprites;
+         Restore_Sprites = VGA_Restore_Sprites;
          DrawSpriteDestructive = VGA_DrawSpriteDestructive;
          SetPalette = VGA_SetPalette;
 
@@ -497,15 +500,16 @@ void AllocateEngineMem(void){
 	//if ((music.sdata = farcalloc(65535L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate 64 Kb of music data","music","sdata");
    //printf(" music.sdata allocated onto adddress: %p address \n", music.sdata);
 	//if ((map_data = farcalloc(65535L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate map data","map","data");
-   if ((map_data = farcalloc(32768L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate map data","map","data");
+   //if ((map_data = farcalloc(32768L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate map data","map","data");
+   if ((map_data = farcalloc(maxMapSize,sizeof(byte))) == NULL) Error("Not enough RAM to allocate map data","map","data");
    printf(" map_data allocated onto adddress: %p address \n", map_data);
-	if ((map_collision = farcalloc(8192L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate collision data","map","collision");
+	if ((map_collision = farcalloc(maxMapSize,sizeof(byte))) == NULL) Error("Not enough RAM to allocate collision data","map","collision");
    printf(" map_collision allocated onto adddress: %p address \n", map_collision);
-   if ((map_hotspot = farcalloc(8192L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate hotspot data","map","hotspot");
+   if ((map_hotspot = farcalloc(maxMapSize,sizeof(byte))) == NULL) Error("Not enough RAM to allocate hotspot data","map","hotspot");
    printf(" map_hotspot allocated onto adddress: %p address \n", map_hotspot);
-   if ((map_event = farcalloc(8192L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate event data","map","event");
+   if ((map_event = farcalloc(maxMapSize,sizeof(byte))) == NULL) Error("Not enough RAM to allocate event data","map","event");
    printf(" map_event allocated onto adddress: %p address \n", map_event);
-   if ((map_sprites = farcalloc(8192L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate event data","map","sprites");
+   if ((map_sprites = farcalloc(maxMapSize,sizeof(byte))) == NULL) Error("Not enough RAM to allocate event data","map","sprites");
    printf(" map_sprites allocated onto adddress: %p address \n", map_event);
    if ((sprite = farcalloc(20,sizeof(SPRITE))) == NULL) Error("Not enough RAM to allocate 20 predefined sprite structs","sprite",0);
    printf(" sprite allocated onto adddress: %p address \n", sprite);
@@ -616,8 +620,10 @@ void ScrollFollow(void){
 // Update system
 /////////////////////////////////////////////////////////
 void Update(int player_follow){
+
 	HardwareScrolling();
 	if (player_follow) ScrollFollow();
+   if (speech_active == 0) Restore_Sprites();
 	if (scrolling_enabled) ScrollMap();
    if (speech_active == 0) Draw_Sprites();
    PanelRefresh();
@@ -670,52 +676,53 @@ void MovePlayer(void){
    down_coll = 0;
    player.event = 0;
    player.hotspot = 0;
+   player.collision = 0;
 
     // Up colision
-   if( (s->tile_y) <= 0){ up_coll = 1; }
+   if( (s->tile_y) <= 0){ up_coll = 1; player.collision = 99; }
    // Left colision
-	if( (s->tile_x) <= 0){ left_coll = 1; }
+	if( (s->tile_x) <= 0){ left_coll = 1; player.collision = 99;  }
 	// Right colision
-	if( (s->tile_x) >= map_width ){ right_coll = 1; }
+	if( (s->tile_x) >= map_width ){ right_coll = 1; player.collision = 99;  }
    // Down colision
-	if( (s->tile_y) >= map_height ){ down_coll = 1; }
+	if( (s->tile_y) >= map_height ){ down_coll = 1; player.collision = 99;  }
 
    // Check map collisions
    //if( (player.move == P_DWNLEFT) || (player.move == P_UPLEFT) || (player.move == P_LEFT) ){
    if( (player.move == 8) || (player.move == 6) || (player.move == 3) ){
   	   tile_number = ( ((s->pos_y + 4 - 64)>>4)* map_width ) +  s->tile_x - 1;
-   	if(map_collision[tile_number]  != 0) {  left_coll = 1; }
-      if(map_sprites[tile_number]  != 0) {  left_coll = 1; }
+   	if(map_collision[tile_number]  != 0) {  left_coll = 1; player.collision = map_collision[tile_number]; }
+      if(map_sprites[tile_number]  != 0) {  left_coll = 1; player.collision = map_sprites[tile_number]+10;  }
       tile_number = ( ((s->pos_y + s->height - 4 - 64)>>4)* map_width) +  s->tile_x - 1;
-     	if(map_collision[tile_number]  != 0) {  left_coll = 1; }
-      if(map_sprites[tile_number]  != 0) {  left_coll = 1; }
+     	if(map_collision[tile_number]  != 0) {  left_coll = 1; player.collision = map_collision[tile_number]; }
+      if(map_sprites[tile_number]  != 0) {  left_coll = 1; player.collision = map_sprites[tile_number]+10; }
    }
    //if( (player.move == P_UPRIGHT) || (player.move == P_UPLEFT) || (layer.move == P_UP) ){
    if( (player.move == 5) || (player.move == 6) || (player.move == 1) ){
       tile_number = ((s->tile_y-1) * map_width ) +  ((s->pos_x + 4)>>4);
-   	if(map_collision[tile_number]  != 0) {  up_coll = 1; }
-      if(map_sprites[tile_number]  != 0) {  up_coll = 1; }
+   	if(map_collision[tile_number]  != 0) {  up_coll = 1; player.collision = map_collision[tile_number]; }
+      if(map_sprites[tile_number]  != 0) {  up_coll = 1; player.collision = map_sprites[tile_number]+10; }
       tile_number = ((s->tile_y-1) * map_width ) +  ((s->pos_x + s->width - 4)>>4);
-     	if(map_collision[tile_number]  != 0) {  up_coll = 1; }
-      if(map_sprites[tile_number]  != 0) {  up_coll = 1; }
+     	if(map_collision[tile_number]  != 0) {  up_coll = 1; player.collision = map_collision[tile_number]; }
+      if(map_sprites[tile_number]  != 0) {  up_coll = 1; player.collision = map_sprites[tile_number]+10; }
    }
    //if( (player.move == P_UPRIGHT) || (player.move == P_DWNRIGHT) || (player.move == P_RIGHT) ){
    if( (player.move == 5) || (player.move == 7) || (player.move == 4) ){
       tile_number = ( ((s->pos_y + 4 - 64)>>4)* map_width ) +  s->tile_x + 1;
-   	if(map_collision[tile_number]  != 0) {  right_coll = 1; }
-      if(map_sprites[tile_number]  != 0) {  right_coll = 1; }
+   	if(map_collision[tile_number]  != 0) {  right_coll = 1; player.collision = map_collision[tile_number]; }
+      if(map_sprites[tile_number]  != 0) {  right_coll = 1; player.collision = map_sprites[tile_number]+10; }
       tile_number = ( ((s->pos_y + s->height - 4 - 64)>>4)* map_width) +  s->tile_x + 1;
-     	if(map_collision[tile_number]  != 0) {  right_coll = 1; }
-      if(map_sprites[tile_number]  != 0) {  right_coll = 1; }
+     	if(map_collision[tile_number]  != 0) {  right_coll = 1; player.collision = map_collision[tile_number]; }
+      if(map_sprites[tile_number]  != 0) {  right_coll = 1; player.collision = map_sprites[tile_number]+10; }
    }
    //if( (player.move == P_DWNLEFT) || (player.move == P_DWNRIGHT) || (player.move == P_DOWN) ){
    if( (player.move == 8) || (player.move == 7) || (player.move == 2) ){
       tile_number = ((s->tile_y+1) * map_width ) +  ((s->pos_x + 4)>>4);
-   	if(map_collision[tile_number]  != 0) {  down_coll = 1; }
-      if(map_sprites[tile_number]  != 0) {  down_coll = 1; }
+   	if(map_collision[tile_number]  != 0) {  down_coll = 1; player.collision = map_collision[tile_number]; }
+      if(map_sprites[tile_number]  != 0) {  down_coll = 1; player.collision = map_sprites[tile_number]+10; }
       tile_number = ((s->tile_y+1) * map_width ) +  ((s->pos_x + s->width - 4)>>4);
-     	if(map_collision[tile_number]  != 0) {  down_coll = 1; }
-      if(map_sprites[tile_number]  != 0) {  down_coll = 1; }
+     	if(map_collision[tile_number]  != 0) {  down_coll = 1; player.collision = map_collision[tile_number]; }
+      if(map_sprites[tile_number]  != 0) {  down_coll = 1; player.collision = map_sprites[tile_number]+10; }
    }
 
    // Player movement
@@ -746,28 +753,47 @@ void MovePlayer(void){
    if((player.oldMove !=  player.move)&& (s->animate == 1)){
    	switch (player.move){
       	case 1:
-            SetSpriteAnimation(player.spriteNum,25,4,12,PlayerAnimation);  // up
+         	// Check if it was facing left
+            if(player.facingLeft == 1){
+            	SetSpriteAnimation(player.spriteNum,21,4,12,PlayerAnimation);  // up left
+            }
+            else{
+               SetSpriteAnimation(player.spriteNum,25,4,12,PlayerAnimation);  // up right
+            }
          	break;
          case 2:
-         	SetSpriteAnimation(player.spriteNum,13,4,12,PlayerAnimation); // down
+         	// Check if it was facing left
+            if(player.facingLeft == 1){
+         		SetSpriteAnimation(player.spriteNum,13,4,12,PlayerAnimation); // down left
+            }
+            else{
+               SetSpriteAnimation(player.spriteNum,17,4,12,PlayerAnimation); // down right
+            }
          	break;
 	  		case 3:
-         	SetSpriteAnimation(player.spriteNum,17,4,12,PlayerAnimation);  // left
+            player.facingLeft = 1;
+         	SetSpriteAnimation(player.spriteNum,13,4,12,PlayerAnimation);  // left
+
          	break;
 			case 4:
-         	SetSpriteAnimation(player.spriteNum,13,4,12,PlayerAnimation);  // right
+         	player.facingLeft = 0;
+         	SetSpriteAnimation(player.spriteNum,17,4,12,PlayerAnimation);  // right
          	break;
          case 5:
+         	player.facingLeft = 0;
          	SetSpriteAnimation(player.spriteNum,25,4,12,PlayerAnimation);  // up + right
          	break;
          case 6:
+         	player.facingLeft = 1;
          	SetSpriteAnimation(player.spriteNum,21,4,12,PlayerAnimation);  // up + left
          	break;
          case 7:
-         	SetSpriteAnimation(player.spriteNum,13,4,12,PlayerAnimation);  // down + right
+         	player.facingLeft = 0;
+         	SetSpriteAnimation(player.spriteNum,17,4,12,PlayerAnimation);  // down + right
          	break;
          case 8:
-         	SetSpriteAnimation(player.spriteNum,17,4,12,PlayerAnimation);  // down + left
+         	player.facingLeft = 1;
+         	SetSpriteAnimation(player.spriteNum,13,4,12,PlayerAnimation);  // down + left
          	break;
       	default: // Static motion
      	   	s->aframes = 1;
