@@ -23,7 +23,7 @@ void Intro(void){
 
    LoadSprite("SPRMISC.DAT","enter.pcx",1, 16); //Load sprites to one of the fixed structs
    LoadSprite("SPRCHR1.DAT","player.pcx",2, 32); //Load sprites to one of the fixed structs
-   LoadSprite("SPRFACE.DAT","playerf.pcx",3, 48); //Load sprites to one of the fixed structs
+   LoadSprite("SPRFACE1.DAT","playerf.pcx",3, 48); //Load sprites to one of the fixed structs
    LoadSprite("SPRMISC.DAT","bird.pcx",4, 32); //Load sprites to one of the fixed structs
 
    ResetLoadingInterrupt(); // Stop loading animation
@@ -84,8 +84,8 @@ void Intro(void){
             }
          	break;
           case 5: // Show spech
-            Speech("playerf.pcx","GLB_STR.DAT","intro.txt","010","011","012",0);
-            Speech("playerf.pcx","GLB_STR.DAT","intro.txt","014","015","017",0);
+            Speech("SPRFACE1.DAT","playerf.pcx","GLB_STR.DAT","intro.txt","010","011","012",0);
+            Speech("SPRFACE1.DAT","playerf.pcx","GLB_STR.DAT","intro.txt","014","015","017",0);
             step = 8;
             break;
          case 8:  // Wait ENTER key
@@ -115,7 +115,7 @@ void Intro(void){
 			   LoadTiles("TILESETS.DAT","floor1.pcx");
             LoadSprite("SPRMISC.DAT","enter.pcx",1,16); //Load sprites to one of the fixed structs
             LoadSprite("SPRCHR1.DAT","player.pcx",2,32); //Load sprites to one of the fixed structs
-            LoadSprite("SPRFACE.DAT","playerf.pcx",3,48); //Load sprites to one of the fixed structs
+            LoadSprite("SPRFACE1.DAT","playerf.pcx",3,48); //Load sprites to one of the fixed structs
 
             ResetLoadingInterrupt(); // Stop loading animation
 
@@ -173,7 +173,7 @@ void Intro(void){
          	step = 15;
          	break;
          case 15: // Show spech
-         	Speech("playerf.pcx","GLB_STR.DAT","intro.txt","020","022",0,0);
+         	Speech("SPRFACE1.DAT","playerf.pcx","GLB_STR.DAT","intro.txt","020","022",0,0);
             step = 16;
             break;
          case 16: // Wait ENTER key
@@ -195,7 +195,7 @@ void Intro(void){
 
          	LoadImage("IMAGES.DAT","cartel.pcx",2); // Load menu background image to non visible page
             LoadSprite("SPRMISC.DAT","enter.pcx",1,16); //Load sprites to one of the fixed structs
-            LoadSprite("SPRFACE.DAT","playerf.pcx",3, 48); //Load sprites to one of the fixed structs
+            LoadSprite("SPRFACE1.DAT","playerf.pcx",3, 48); //Load sprites to one of the fixed structs
 
             InitSprite(1,0,0);
   				InitSprite(3,0,0);
@@ -226,7 +226,7 @@ void Intro(void){
             }
          	break;
          case 20: // Show speech
-           	Speech("playerf.pcx","GLB_STR.DAT","intro.txt","024","025","026","027");
+           	Speech("SPRFACE1.DAT","playerf.pcx","GLB_STR.DAT","intro.txt","024","025","026","027");
             step = 22;
             break;
          case 22:  // Show back map (page 0)
@@ -287,7 +287,7 @@ void Intro(void){
 
          	LoadImage("IMAGES.DAT","jessy.pcx",2); // Load menu background image to non visible page
             LoadSprite("SPRMISC.DAT","enter.pcx",1,16); //Load sprites to one of the fixed structs
-            LoadSprite("SPRFACE.DAT","playerf.pcx",3, 48); //Load sprites to one of the fixed structs
+            LoadSprite("SPRFACE1.DAT","playerf.pcx",3, 48); //Load sprites to one of the fixed structs
 
             ResetLoadingInterrupt();   // Stop loading animation
 
@@ -309,12 +309,12 @@ void Intro(void){
       	   step = 28;
             break;
          case 28: // Show text box
-           	Speech("playerf.pcx","GLB_STR.DAT","intro.txt","028","029","030","031");
+           	Speech("SPRFACE1.DAT","playerf.pcx","GLB_STR.DAT","intro.txt","028","029","030","031");
             step = 30;
    			break;
          case 30: // Show text box
             SetPage(1);
-				Speech("playerf.pcx","GLB_STR.DAT","intro.txt","032","033","034","035");
+				Speech("SPRFACE1.DAT","playerf.pcx","GLB_STR.DAT","intro.txt","032","033","034","035");
             step = 37;
    			break;
          case 37: // Show spech
@@ -322,7 +322,7 @@ void Intro(void){
 
             LoadImage("IMAGES.DAT","player.pcx",2); // Load menu background image to non visible page
             LoadSprite("SPRMISC.DAT","enter.pcx",1,16); //Load sprites to one of the fixed structs
-            LoadSprite("SPRFACE.DAT","playerf.pcx",3, 48); //Load sprites to one of the fixed structs
+            LoadSprite("SPRFACE1.DAT","playerf.pcx",3, 48); //Load sprites to one of the fixed structs
 
             ResetLoadingInterrupt();   // Stop loading animation
 
@@ -338,8 +338,8 @@ void Intro(void){
 
             Fade_in();
 
-            Speech("playerf.pcx","GLB_STR.DAT","intro.txt","036","037","038","039");
-            Speech("playerf.pcx","GLB_STR.DAT","intro.txt","040","041","042","043");
+            Speech("SPRFACE1.DAT","playerf.pcx","GLB_STR.DAT","intro.txt","036","037","038","039");
+            Speech("SPRFACE1.DAT","playerf.pcx","GLB_STR.DAT","intro.txt","040","041","042","043");
             step = 38;
             break;
 			case 38: // Wait ENTER key

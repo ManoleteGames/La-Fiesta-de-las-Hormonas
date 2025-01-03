@@ -8,6 +8,7 @@
 #include "source\engine\keyb\keyb.h"
 
 byte option = 1;
+byte existingSaveGame = 0;
 byte PlayerAnimation[] = {0,0,0,0,0,0,0,1,2,1,0,2,1,3,4,3,5,6,7,6,8,9,10,9,11,12,13,12,14};
 byte PlayerFaceAnimation[] = {0,1,2};
 byte JessyAnimation[] = {0,0,0,0,0,0,0,1,2,1,0,2,1,3,4,3,5,6,7,6,8,9,10,9,11,12,13,12,14};
@@ -16,6 +17,8 @@ byte BirdAnimation[] = {0,1,2,3,4,3,4,3,2,1,0,0,0,0,0};
 byte DirectorAnimation[] = {0,1,0,1,0,0,2,2,3,3,4,0,0,0,1};
 byte CharacterAnimation2[] = {0,0,0,1,0,0,0};
 byte CharacterAnimation3[] = {0,0,0,1,2,0,0};
+byte speakerMenu[16] = {56,52,51,45,40,30,25,15,10,5,0,0,0,0,0,0};
+
 
 /////////////////////////////////////////////////////////
 // Logo function
@@ -57,6 +60,7 @@ void Menu(void)
 {
    word length;
    int menu_pos[5] = {92,100,108,116,124};
+   int confirm_pos[3] = {92,108,116};
    byte MenuCursorAnimation[8] = {0,1,2,3,3,3,3,3};
 
    // Load animation
@@ -73,15 +77,22 @@ void Menu(void)
    SetPage(2);
 
    // Draw menu options
+   option = 1;
    Draw_EmptyBox(13,12,14,4);
    LoadText("GLB_STR.DAT","global.txt","001",string,&length);
-   PrintText(15,13,length,string,1);
-   LoadText("GLB_STR.DAT","global.txt","002",string,&length);
-   PrintText(15,14,length,string,0);
+   if(option == 1){PrintText(15,13,length,string,1);}
+   else{PrintText(15,13,length,string,0);}
+   if(existingSaveGame){
+   	LoadText("GLB_STR.DAT","global.txt","002",string,&length);
+   	if(option == 2){PrintText(15,14,length,string,1);}
+   	else{PrintText(15,14,length,string,0);}
+   }
    LoadText("GLB_STR.DAT","global.txt","003",string,&length);
-   PrintText(15,15,length,string,0);
+   if(option == 3){PrintText(15,15,length,string,1);}
+   else{PrintText(15,15,length,string,0);}
    LoadText("GLB_STR.DAT","global.txt","004",string,&length);
-   PrintText(15,16,length,string,0);
+   if(option == 4){PrintText(15,16,length,string,1);}
+   else{PrintText(15,16,length,string,0);}
 
    Fade_in();
 
@@ -90,6 +101,8 @@ void Menu(void)
       sprite[1].pos_y = menu_pos[option] + vga_page[2];
 
       if( fp_keys[K_UP] == 1) {
+
+      	PlaySpeaker_SFX(speakerMenu);
 
       	switch(option){
          	case 1: // Do nothing
@@ -104,9 +117,18 @@ void Menu(void)
             case 3: // Rewrite old and new option
                LoadText("GLB_STR.DAT","global.txt","003",string,&length);
 				   PrintText(15,15,length,string,0);
-               option--; // Change option
-               LoadText("GLB_STR.DAT","global.txt","002",string,&length);
-				   PrintText(15,14,length,string,1);
+               if(existingSaveGame){
+                  option--; // Change option
+                  LoadText("GLB_STR.DAT","global.txt","002",string,&length);
+				   	PrintText(15,14,length,string,1);
+               }
+               else
+               {
+               	option--; // Change option
+                  option--; // Change option
+                  LoadText("GLB_STR.DAT","global.txt","001",string,&length);
+				   	PrintText(15,13,length,string,1);
+               }
 				  	break;
             case 4: // Rewrite old and new option
                LoadText("GLB_STR.DAT","global.txt","004",string,&length);
@@ -118,13 +140,24 @@ void Menu(void)
          }
       }
       if( fp_keys[K_DOWN] == 1){
+
+      	PlaySpeaker_SFX(speakerMenu);
+
       	switch(option){
          	case 1: // Rewrite old and new option
                LoadText("GLB_STR.DAT","global.txt","001",string,&length);
 				   PrintText(15,13,length,string,0);
-               option++; // Change option
-               LoadText("GLB_STR.DAT","global.txt","002",string,&length);
-				   PrintText(15,14,length,string,1);
+               if(existingSaveGame){
+                  option++;
+               	LoadText("GLB_STR.DAT","global.txt","002",string,&length);
+				   	PrintText(15,14,length,string,1);
+               }
+               else{
+               	option++; // Change option
+                  option++;
+               	LoadText("GLB_STR.DAT","global.txt","003",string,&length);
+				   	PrintText(15,15,length,string,1);
+               }
             	break;
             case 2: // Rewrite old and new option
                LoadText("GLB_STR.DAT","global.txt","002",string,&length);
@@ -148,26 +181,171 @@ void Menu(void)
      	if(option < 1){ option = 1;}
       if(option > 4){ option = 4;}
 
-      // Main loop
       Update(0);
+   }
+
+   PlaySpeaker_SFX(speakerMenu);
+
+   // wait until enter key is released
+   while( keys[K_ENTER] == 1 )
+   {
+   	// do nothig..
+   }
+
+   sprite[1].pos_y = 0;
+   Update(0);
+
+   // New game confirmation only if any existing savegame
+   if((option == 1) && (existingSaveGame == 1)){
+
+      // Draw confirmation options
+      option = 1;
+      Draw_EmptyBox(10,10,21,6);
+      LoadText("GLB_STR.DAT","global.txt","015",string,&length);
+      PrintText(12,11,length,string,0);
+      LoadText("GLB_STR.DAT","global.txt","016",string,&length);
+      PrintText(11,12,length,string,0);
+
+      LoadText("GLB_STR.DAT","global.txt","020",string,&length);
+      PrintText(16,14,length,string,1);
+      LoadText("GLB_STR.DAT","global.txt","021",string,&length);
+      PrintText(16,15,length,string,0);
+
+   	while( keys[K_ENTER] != 1 )
+   	{
+      	sprite[1].pos_y = confirm_pos[option] + vga_page[2];
+
+      	if( fp_keys[K_UP] == 1) {
+
+         	PlaySpeaker_SFX(speakerMenu);
+
+      		switch(option){
+         		case 1: // Do nothing
+            		break;
+            	case 2: // Rewrite old and new option
+	            	option--; // Change option
+               	LoadText("GLB_STR.DAT","global.txt","020",string,&length);
+      				PrintText(16,14,length,string,1);
+      				LoadText("GLB_STR.DAT","global.txt","021",string,&length);
+      				PrintText(16,15,length,string,0);
+				  		break;
+            }
+         }
+         if( fp_keys[K_DOWN] == 1){
+
+         	PlaySpeaker_SFX(speakerMenu);
+
+      		switch(option){
+         		case 1: // Rewrite old and new option
+               	option++; // Change option
+               	LoadText("GLB_STR.DAT","global.txt","020",string,&length);
+      				PrintText(16,14,length,string,0);
+      				LoadText("GLB_STR.DAT","global.txt","021",string,&length);
+      				PrintText(16,15,length,string,1);
+				  		break;
+            	case 2: // Rewrite old and new option
+               	break;
+            }
+         }
+
+         if(option < 1){ option = 1;}
+      	if(option > 2){ option = 2;}
+
+      	Update(0);
+   	}
+
+      PlaySpeaker_SFX(speakerMenu);
+
+      if(option == 2){option = 0;}
    }
 
    Fade_out();
 }
 
+/////////////////////////////////////////////////////////
+// Main loop
+// - Starts the party...
+/////////////////////////////////////////////////////////
+void MainLoop(void) {
+	while( keys[K_ESC] != 1 )
+   {
+   	switch(player.day){
+      	case 10: // 1st day
+         	D10_Events(player.event);
+            if(keys[K_ENTER] == 1){ D10_Hotspots(player.hotspot); }
+            break;
+         case 9: // 2nd day
+         	D9_Events(player.event);
+            if(keys[K_ENTER] == 1){ D9_Hotspots(player.hotspot); }
+            break;
+         case 8: // 3rd day
+         	D8_Events(player.event);
+            if(keys[K_ENTER] == 1){ D8_Hotspots(player.hotspot); }
+            break;
+      	case 7: // 4th day
+         	D7_Events(player.event);
+            if(keys[K_ENTER] == 1){ D7_Hotspots(player.hotspot); }
+            break;
+         case 6: // 5th day
+         	D6_Events(player.event);
+            if(keys[K_ENTER] == 1){ D6_Hotspots(player.hotspot); }
+            break;
+         case 5: // 6th day
+         	D5_Events(player.event);
+            if(keys[K_ENTER] == 1){ D5_Hotspots(player.hotspot); }
+            break;
+      	case 4: // 7th day
+         	D4_Events(player.event);
+            if(keys[K_ENTER] == 1){ D4_Hotspots(player.hotspot); }
+            break;
+         case 3: // 8th day
+         	D3_Events(player.event);
+            if(keys[K_ENTER] == 1){ D3_Hotspots(player.hotspot); }
+            break;
+         case 2: // 9th day
+         	D2_Events(player.event);
+            if(keys[K_ENTER] == 1){ D2_Hotspots(player.hotspot); }
+            break;
+      	case 1: // 10 day. Last one
+           	D1_Events(player.event);
+            if(keys[K_ENTER] == 1){ D1_Hotspots(player.hotspot); }
+            break;
+         case 0: // End game
+				D0_Events(player.event);
+            if(keys[K_ENTER] == 1){ D0_Hotspots(player.hotspot); }
+            break;
+			default:
+				Error("Undefined day number",0,0);
+				break;
+      }
+
+      //debug
+      if(fp_keys[K_D]){
+      	if(debug == 1){debug=0;}
+         else{debug=1;}
+      }
+
+
+      // Main loop
+      MovePlayer();
+      Update(1);
+   }
+
+   while( keys[K_ESC] == 1 )
+   {
+   	// Wait until esc key is releassed
+   }
+}
 
 /////////////////////////////////////////////////////////
 // New game
-// - Starts the party...
+// - Initialize game and call main loop function
 /////////////////////////////////////////////////////////
 void NewGame(void) {
 
 	// Initialize player status
- 	player.spriteNum = 1;
    player.floor = 1;
    player.day = 10;
-   player.hour = 8;
-   player.min = 45;
 
    // Starting player status
    player.intell = 10;
@@ -316,7 +494,7 @@ void NewGame(void) {
    player.floor2_hotspot_mask[9] = 0;
    player.floor2_hotspot_mask[10] = 1;
    player.floor2_hotspot_mask[11] = 1;
-   player.floor2_hotspot_mask[12] = 0;
+   player.floor2_hotspot_mask[12] = 1;
    player.floor2_hotspot_mask[13] = 0;
    player.floor2_hotspot_mask[14] = 0;
    player.floor2_hotspot_mask[15] = 0;
@@ -342,7 +520,7 @@ void NewGame(void) {
 
    player.item_chalk = 0;
 
-   player.rel_freaks = 0;
+   player.rel_nerds = 0;
    player.rel_thugs = 0;
    player.rel_jessy = 0;
 
@@ -352,68 +530,789 @@ void NewGame(void) {
 
    D10_GoToFloor1(100, 185);
 
-   while( keys[K_ESC] != 1 )
+   MainLoop();
+}
+
+/////////////////////////////////////////////////////////
+// Load game
+/////////////////////////////////////////////////////////
+void LoadGame(void){
+	FILE *savefile;
+   byte buffer[900];
+   int spare;
+   int i;
+   byte aux1 = 0;
+   byte aux2 = 0;
+
+   savefile = fopen("savegame.ini","rb+");
+   fread(buffer,1,900,savefile);
+   fclose(savefile);
+
+	player.intell	= (buffer[26]-48)*100 + (buffer[27]-48)*10 + (buffer[28]-48);
+	player.popular = (buffer[41]-48)*100 + (buffer[42]-48)*10 + (buffer[43]-48);
+   player.good 	= (buffer[56]-48)*100 + (buffer[57]-48)*10 + (buffer[58]-48);
+   player.money 	= (buffer[71]-48)*100 + (buffer[72]-48)*10 + (buffer[73]-48);
+   player.day 		= (buffer[86]-48)*100 + (buffer[87]-48)*10 + (buffer[88]-48);
+   player.floor 	= (buffer[101]-48)*100 + (buffer[102]-48)*10 + (buffer[103]-48);
+   player.mission_cheat = (buffer[116]-48)*100 + (buffer[117]-48)*10 + (buffer[118]-48);
+   player.mission_doll  = (buffer[131]-48)*100 + (buffer[132]-48)*10 + (buffer[133]-48);
+   player.item_chalk   = (buffer[146]-48)*100 + (buffer[147]-48)*10 + (buffer[148]-48);
+   player.item_bag     = (buffer[161]-48)*100 + (buffer[162]-48)*10 + (buffer[163]-48);
+   player.rel_nerds    = (buffer[176]-48)*100 + (buffer[177]-48)*10 + (buffer[178]-48);
+   player.rel_thugs    = (buffer[191]-48)*100 + (buffer[192]-48)*10 + (buffer[193]-48);
+   player.rel_jessy    = (buffer[206]-48)*100 + (buffer[207]-48)*10 + (buffer[208]-48);
+   player.scn_main	  = (buffer[221]-48)*100 + (buffer[222]-48)*10 + (buffer[223]-48);
+   player.scn_nerds	  = (buffer[236]-48)*100 + (buffer[237]-48)*10 + (buffer[238]-48);
+   player.scn_director = (buffer[251]-48)*100 + (buffer[252]-48)*10 + (buffer[253]-48);
+   player.scn_janitor  = (buffer[266]-48)*100 + (buffer[267]-48)*10 + (buffer[268]-48);
+   player.scn_thugs 	  = (buffer[281]-48)*100 + (buffer[282]-48)*10 + (buffer[283]-48);
+   player.scn_girls    = (buffer[296]-48)*100 + (buffer[297]-48)*10 + (buffer[298]-48);
+   player.scn_jessy    = (buffer[311]-48)*100 + (buffer[312]-48)*10 + (buffer[313]-48);
+   spare					  = (buffer[326]-48)*100 + (buffer[327]-48)*10 + (buffer[328]-48);   //var 21
+   spare					  = (buffer[341]-48)*100 + (buffer[342]-48)*10 + (buffer[343]-48);   //var 22
+   spare					  = (buffer[356]-48)*100 + (buffer[357]-48)*10 + (buffer[358]-48);   //var 23
+   spare					  = (buffer[371]-48)*100 + (buffer[372]-48)*10 + (buffer[373]-48);   //var 24
+   spare					  = (buffer[386]-48)*100 + (buffer[387]-48)*10 + (buffer[388]-48);   //var 25
+   spare					  = (buffer[401]-48)*100 + (buffer[402]-48)*10 + (buffer[403]-48);   //var 26
+   spare					  = (buffer[416]-48)*100 + (buffer[417]-48)*10 + (buffer[418]-48);   //var 27
+   spare					  = (buffer[431]-48)*100 + (buffer[432]-48)*10 + (buffer[433]-48);   //var 28
+   spare					  = (buffer[446]-48)*100 + (buffer[447]-48)*10 + (buffer[448]-48);   //var 29
+   spare					  = (buffer[461]-48)*100 + (buffer[462]-48)*10 + (buffer[463]-48);   //var 30
+   sprite[player.spriteNum].pos_x  = (buffer[476]-48)*100 + (buffer[477]-48)*10 + (buffer[478]-48);   //pos x
+   sprite[player.spriteNum].pos_y  = (buffer[491]-48)*100 + (buffer[492]-48)*10 + (buffer[493]-48);   //pos y
+   spare					  = (buffer[506]-48)*100 + (buffer[507]-48)*10 + (buffer[508]-48);   //var 33
+   spare					  = (buffer[521]-48)*100 + (buffer[522]-48)*10 + (buffer[523]-48);   //var 34
+
+   // ext1 event mask
+   aux1 = (buffer[536]-48)*100 + (buffer[537]-48)*10 + (buffer[538]-48);   //E1EM1
+   aux2 = (buffer[551]-48)*100 + (buffer[552]-48)*10 + (buffer[553]-48);   //E1EM2
+   spare = aux1 | (aux2<<8);
+   for(i = 0; i<16; i++){
+      player.ext1_event_mask[i] = spare & 0x01;
+      spare = (spare >> 1);
+   }
+
+   // ext2 event mask
+   aux1 = (buffer[566]-48)*100 + (buffer[567]-48)*10 + (buffer[568]-48);   //E2EM1
+   aux2 = (buffer[581]-48)*100 + (buffer[582]-48)*10 + (buffer[583]-48);   //E2EM2
+   spare = aux1 | (aux2<<8);
+   for(i = 0; i<16; i++){
+      player.ext2_event_mask[i] = spare & 0x01;
+      spare = (spare >> 1);
+   }
+
+   // floor1 event mask
+   aux1 = (buffer[596]-48)*100 + (buffer[597]-48)*10 + (buffer[598]-48);   //F1EM1
+   aux2 = (buffer[611]-48)*100 + (buffer[612]-48)*10 + (buffer[613]-48);   //F1EM2
+   spare = aux1 | (aux2<<8);
+
+   for(i = 0; i<16; i++){
+      player.floor1_event_mask[i] = spare & 0x01;
+      spare = (spare >> 1);
+   }
+
+   // floor2 event mask
+   aux1 = (buffer[626]-48)*100 + (buffer[627]-48)*10 + (buffer[628]-48);   //F2EM1
+   aux2 = (buffer[641]-48)*100 + (buffer[642]-48)*10 + (buffer[643]-48);   //F2EM2
+   spare = aux1 | (aux2<<8);
+   for(i = 0; i<16; i++){
+      player.floor2_event_mask[i] = spare & 0x01;
+      spare = (spare >> 1);
+   }
+
+   // gym event mask
+   aux1 = (buffer[656]-48)*100 + (buffer[657]-48)*10 + (buffer[658]-48);   //GYEM1
+   aux2 = (buffer[671]-48)*100 + (buffer[672]-48)*10 + (buffer[673]-48);   //GYEM2
+   spare = aux1 | (aux2<<8);
+   for(i = 0; i<16; i++){
+      player.gym_event_mask[i] = spare & 0x01;
+      spare = (spare >> 1);
+   }
+
+   // ext1 hotspot mask
+   aux1 = (buffer[686]-48)*100 + (buffer[687]-48)*10 + (buffer[688]-48);   //E1HS1
+   aux2 = (buffer[701]-48)*100 + (buffer[702]-48)*10 + (buffer[703]-48);   //E1HS2
+   spare = aux1 | (aux2<<8);
+   for(i = 0; i<16; i++){
+      player.ext1_hotspot_mask[i] = spare & 0x01;
+      spare = (spare >> 1);
+   }
+
+   // ext2 hotspot mask
+   aux1 = (buffer[716]-48)*100 + (buffer[717]-48)*10 + (buffer[718]-48);   //E2HS1
+   aux2 = (buffer[731]-48)*100 + (buffer[732]-48)*10 + (buffer[733]-48);   //E2HS2
+   spare = aux1 | (aux2<<8);
+   for(i = 0; i<16; i++){
+      player.ext2_hotspot_mask[i] = spare & 0x01;
+      spare = (spare >> 1);
+   }
+
+   // floor1 hotspot mask
+   aux1 = (buffer[746]-48)*100 + (buffer[747]-48)*10 + (buffer[748]-48);   //F1HS1
+   aux2 = (buffer[761]-48)*100 + (buffer[762]-48)*10 + (buffer[763]-48);   //F1HS2
+   spare = aux1 | (aux2<<8);
+
+   for(i = 0; i<16; i++){
+      player.floor1_hotspot_mask[i] = spare & 0x01;
+      spare = (spare >> 1);
+   }
+
+   // floor2 hotspot mask
+   aux1 = (buffer[776]-48)*100 + (buffer[777]-48)*10 + (buffer[778]-48);   //F2HS1
+   aux2 = (buffer[791]-48)*100 + (buffer[792]-48)*10 + (buffer[793]-48);   //F2HS2
+   spare = aux1 | (aux2<<8);
+   for(i = 0; i<16; i++){
+      player.floor2_hotspot_mask[i] = spare & 0x01;
+      spare = (spare >> 1);
+   }
+
+   // gym hotspot mask
+   aux1 = (buffer[806]-48)*100 + (buffer[807]-48)*10 + (buffer[808]-48);   //GYHS1
+   aux2 = (buffer[821]-48)*100 + (buffer[822]-48)*10 + (buffer[823]-48);   //GYHS2
+   spare = aux1 | (aux2<<8);
+   for(i = 0; i<16; i++){
+      player.gym_hotspot_mask[i] = spare & 0x01;
+      spare = (spare >> 1);
+   }
+
+
+   //sprintf(error1, "%d", player.good);
+   //sprintf(error2, "%d", player.money);
+   //Error("buffer 25 value",error1, error2);
+}
+
+/////////////////////////////////////////////////////////
+// Save game
+/////////////////////////////////////////////////////////
+void SaveGame(void){
+	FILE *savefile;
+   int i;
+   byte aux1 = 0;
+   byte aux2 = 0;
+
+   panelScrolling = 0;
+   showPanel = 0;
+   Update(0);
+
+   savefile = fopen("savegame.ini","w");
+   fprintf(savefile,"#SAVEG\n");
+   fprintf(savefile,"------\n");
+   fprintf(savefile,"[1]INTEL =%03u\n",player.intell);
+   fprintf(savefile,"[2]POPUL =%03u\n",player.popular);
+	fprintf(savefile,"[3]GOOD  =%03u\n",player.good);
+	fprintf(savefile,"[4]MONEY =%03u\n",player.money);
+	fprintf(savefile,"[5]DAY   =%03u\n",player.day);
+	fprintf(savefile,"[6]FLOOR =%03u\n",player.floor);
+	fprintf(savefile,"[7]CHEAT =%03u\n",player.mission_cheat);
+	fprintf(savefile,"[8]DOLL  =%03u\n",player.mission_doll);
+	fprintf(savefile,"[9]ICHAL =%03u\n",player.item_chalk);
+	fprintf(savefile,"[10]IBAG =%03u\n",player.item_bag);
+   fprintf(savefile,"[11]RELN =%03u\n",player.rel_nerds);
+   fprintf(savefile,"[12]RELT =%03u\n",player.rel_thugs);
+   fprintf(savefile,"[13]RELJ =%03u\n",player.rel_jessy);
+   fprintf(savefile,"[14]SCNMA=%03u\n",player.scn_main);
+   fprintf(savefile,"[15]SCNNE=%03u\n",player.scn_nerds);
+   fprintf(savefile,"[16]SCNDI=%03u\n",player.scn_director);
+   fprintf(savefile,"[17]SCNJA=%03u\n",player.scn_janitor);
+   fprintf(savefile,"[18]SNCTH=%03u\n",player.scn_thugs);
+   fprintf(savefile,"[19]SCNGI=%03u\n",player.scn_girls);
+   fprintf(savefile,"[20]SCNJE=%03u\n",player.scn_jessy);
+   fprintf(savefile,"[21]VAR21=%03u\n",0);
+   fprintf(savefile,"[22]VAR22=%03u\n",0);
+   fprintf(savefile,"[23]VAR23=%03u\n",0);
+   fprintf(savefile,"[24]VAR24=%03u\n",0);
+   fprintf(savefile,"[25]VAR25=%03u\n",0);
+   fprintf(savefile,"[26]VAR26=%03u\n",0);
+   fprintf(savefile,"[27]VAR27=%03u\n",0);
+   fprintf(savefile,"[28]VAR28=%03u\n",0);
+   fprintf(savefile,"[29]VAR29=%03u\n",0);
+   fprintf(savefile,"[30]VAR30=%03u\n",0);
+   fprintf(savefile,"[31]POSX =%03u\n",sprite[player.spriteNum].pos_x);
+   fprintf(savefile,"[32]POSY =%03u\n",sprite[player.spriteNum].pos_y);
+   fprintf(savefile,"[33]VAR33=%03u\n",0);
+   fprintf(savefile,"[34]VAR34=%03u\n",0);
+
+   // ext 1 event mask
+   aux1 = 0;
+   for(i = 7; i>0; i--){
+   	aux1 = (aux1 << 1);
+      aux1 = aux1 | player.ext1_event_mask[i];
+   }
+   fprintf(savefile,"[35]E1EM1=%03u\n",aux1);
+
+   aux2 = 0;
+   for(i = 15; i>7; i--){
+   	aux2 = (aux2 << 1);
+      aux2 = aux2 | player.ext1_event_mask[i];
+   }
+   fprintf(savefile,"[36]E1EM2=%03u\n",aux2);
+
+   // ext 2 event mask
+   aux1 = 0;
+   for(i = 7; i>0; i--){
+   	aux1 = (aux1 << 1);
+      aux1 = aux1 | player.ext2_event_mask[i];
+   }
+   fprintf(savefile,"[37]E2EM1=%03u\n",aux1);
+
+   aux2 = 0;
+   for(i = 15; i>7; i--){
+   	aux2 = (aux2 << 1);
+      aux2 = aux2 | player.ext2_event_mask[i];
+   }
+   fprintf(savefile,"[38]E2EM2=%03u\n",aux2);
+
+   // floor 1 event mask
+   aux1 = 0;
+   for(i = 7; i>0; i--){
+   	aux1 = (aux1 << 1);
+      aux1 = aux1 | player.floor1_event_mask[i];
+   }
+   fprintf(savefile,"[39]F1EM1=%03u\n",aux1);
+
+   aux2 = 0;
+   for(i = 15; i>7; i--){
+   	aux2 = (aux2 << 1);
+      aux2 = aux2 | player.floor1_event_mask[i];
+   }
+   fprintf(savefile,"[40]F1EM2=%03u\n",aux2);
+
+   // floor 2 event mask
+   aux1 = 0;
+   for(i = 7; i>0; i--){
+   	aux1 = (aux1 << 1);
+      aux1 = aux1 | player.floor2_event_mask[i];
+   }
+   fprintf(savefile,"[41]F2EM1=%03u\n",aux1);
+
+   aux2 = 0;
+   for(i = 15; i>7; i--){
+   	aux2 = (aux2 << 1);
+      aux2 = aux2 | player.floor2_event_mask[i];
+   }
+   fprintf(savefile,"[42]F2EM2=%03u\n",aux2);
+
+   // gym event mask
+   aux1 = 0;
+   for(i = 7; i>0; i--){
+   	aux1 = (aux1 << 1);
+      aux1 = aux1 | player.gym_event_mask[i];
+   }
+   fprintf(savefile,"[43]GYEM1=%03u\n",aux1);
+
+   aux2 = 0;
+   for(i = 15; i>7; i--){
+   	aux2 = (aux2 << 1);
+      aux2 = aux2 | player.gym_event_mask[i];
+   }
+   fprintf(savefile,"[44]GYEM2=%03u\n",aux2);
+
+   // ext 1 hotspot mask
+   aux1 = 0;
+   for(i = 7; i>0; i--){
+   	aux1 = (aux1 << 1);
+      aux1 = aux1 | player.ext1_hotspot_mask[i];
+   }
+   fprintf(savefile,"[45]E1HS1=%03u\n",aux1);
+
+   aux2 = 0;
+   for(i = 15; i>7; i--){
+   	aux2 = (aux2 << 1);
+      aux2 = aux2 | player.ext1_hotspot_mask[i];
+   }
+   fprintf(savefile,"[46]E1HS2=%03u\n",aux2);
+
+   // ext 2 hotspot mask
+   aux1 = 0;
+   for(i = 7; i>0; i--){
+   	aux1 = (aux1 << 1);
+      aux1 = aux1 | player.ext2_hotspot_mask[i];
+   }
+   fprintf(savefile,"[47]E2HS1=%03u\n",aux1);
+
+   aux2 = 0;
+   for(i = 15; i>7; i--){
+   	aux2 = (aux2 << 1);
+      aux2 = aux2 | player.ext2_hotspot_mask[i];
+   }
+   fprintf(savefile,"[48]E2HS2=%03u\n",aux2);
+
+   // floor 1 hotspot mask
+   aux1 = 0;
+   for(i = 7; i>0; i--){
+   	aux1 = (aux1 << 1);
+      aux1 = aux1 | player.floor1_hotspot_mask[i];
+   }
+   fprintf(savefile,"[49]F1HS1=%03u\n",aux1);
+
+   aux2 = 0;
+   for(i = 15; i>7; i--){
+   	aux2 = (aux2 << 1);
+      aux2 = aux2 | player.floor1_hotspot_mask[i];
+   }
+   fprintf(savefile,"[50]F1HS2=%03u\n",aux2);
+
+   // floor 2 hotspot mask
+   aux1 = 0;
+   for(i = 7; i>0; i--){
+   	aux1 = (aux1 << 1);
+      aux1 = aux1 | player.floor2_hotspot_mask[i];
+   }
+   fprintf(savefile,"[51]F2HS1=%03u\n",aux1);
+
+   aux2 = 0;
+   for(i = 15; i>7; i--){
+   	aux2 = (aux2 << 1);
+      aux2 = aux2 | player.floor2_hotspot_mask[i];
+   }
+   fprintf(savefile,"[52]F2HS2=%03u\n",aux2);
+
+   // gym hotspot mask
+   aux1 = 0;
+   for(i = 7; i>0; i--){
+   	aux1 = (aux1 << 1);
+      aux1 = aux1 | player.gym_hotspot_mask[i];
+   }
+   fprintf(savefile,"[43]GYHS1=%03u\n",aux1);
+
+   aux2 = 0;
+   for(i = 15; i>7; i--){
+   	aux2 = (aux2 << 1);
+      aux2 = aux2 | player.gym_hotspot_mask[i];
+   }
+   fprintf(savefile,"[44]GYHS2=%03u\n",aux2);
+
+   fclose(savefile);
+
+   existingSaveGame = 1;
+}
+
+/////////////////////////////////////////////////////////
+// Check savegame
+// - Returns true if there is any file saved
+/////////////////////////////////////////////////////////
+byte CheckSavegame() {
+	FILE *savefile;
+   savefile = fopen("savegame.ini","rb+");
+
+   // No hay partida guardada
+   if(savefile == NULL){
+   	fclose(savefile);
+		return 0;
+   }
+   else
    {
-   	switch(player.day){
-      	case 10: // 1st day
-         	D10_Events(player.event);
-            if(keys[K_ENTER] == 1){ D10_Hotspots(player.hotspot); }
-            break;
-         case 9: // 2nd day
-         	D9_Events(player.event);
-            if(keys[K_ENTER] == 1){ D9_Hotspots(player.hotspot); }
-            break;
-         case 8: // 3rd day
-         	D8_Events(player.event);
-            if(keys[K_ENTER] == 1){ D8_Hotspots(player.hotspot); }
-            break;
-      	case 7: // 4th day
-         	D7_Events(player.event);
-            if(keys[K_ENTER] == 1){ D7_Hotspots(player.hotspot); }
-            break;
-         case 6: // 5th day
-         	D6_Events(player.event);
-            if(keys[K_ENTER] == 1){ D6_Hotspots(player.hotspot); }
-            break;
-         case 5: // 6th day
-         	D5_Events(player.event);
-            if(keys[K_ENTER] == 1){ D5_Hotspots(player.hotspot); }
-            break;
-      	case 4: // 7th day
-         	D4_Events(player.event);
-            if(keys[K_ENTER] == 1){ D4_Hotspots(player.hotspot); }
-            break;
-         case 3: // 8th day
-         	D3_Events(player.event);
-            if(keys[K_ENTER] == 1){ D3_Hotspots(player.hotspot); }
-            break;
-         case 2: // 9th day
-         	D2_Events(player.event);
-            if(keys[K_ENTER] == 1){ D2_Hotspots(player.hotspot); }
-            break;
-      	case 1: // 10 day. Last one
-           	D1_Events(player.event);
-            if(keys[K_ENTER] == 1){ D1_Hotspots(player.hotspot); }
-            break;
-         case 0: // End game
-				D0_Events(player.event);
-            if(keys[K_ENTER] == 1){ D0_Hotspots(player.hotspot); }
-            break;
-			default:
-				Error("Undefined day number",0,0);
-				break;
+      fclose(savefile);
+   	return 1;
+   }
+}
+
+/////////////////////////////////////////////////////////
+// Continue game
+// -Load last savegame and call main loop
+/////////////////////////////////////////////////////////
+void ContinueGame(void) {
+
+   LoadFont("FONTS.DAT","FONT.bmp"); //Load text font
+   LoadPanelBackground("IMAGES.DAT","PANEL.pcx");
+   VGA_PanelUpdate();
+
+   switch(player.day){
+   	case 10:
+      	if(player.floor == 1){D10_GoToFloor1(sprite[player.spriteNum].pos_x, sprite[player.spriteNum].pos_y);}
+         if(player.floor == 2){D10_GoToFloor2(sprite[player.spriteNum].pos_x, sprite[player.spriteNum].pos_y);}
+         if(player.floor == 3){D10_GoToExt1(sprite[player.spriteNum].pos_x, sprite[player.spriteNum].pos_y);}
+         if(player.floor == 4){D10_GoToExt2(sprite[player.spriteNum].pos_x, sprite[player.spriteNum].pos_y);}
+         if(player.floor == 5){D10_GoToGym(sprite[player.spriteNum].pos_x, sprite[player.spriteNum].pos_y);}
+      	break;
+      case 9:
+      	break;
+   	case 8:
+      	break;
+      case 7:
+      	break;
+      case 6:
+      	break;
+      case 5:
+      	break;
+      case 4:
+      	break;
+   	case 3:
+      	break;
+      case 2:
+      	break;
+      case 1:
+      	break;
+      default:
+      	break;
+   }
+
+
+	MainLoop();
+}
+
+/////////////////////////////////////////////////////////
+// Options
+// - ...
+/////////////////////////////////////////////////////////
+void Options(){
+
+	byte end;
+	word length;
+   int menu_pos[8] = {20,76,92,100,116,124,140,156};
+   byte MenuCursorAnimation[8] = {0,1,2,3,3,3,3,3};
+
+	// Draw menu options
+   end = 0;
+   option = 1;
+   sprite[1].pos_x = 84;
+
+   Draw_EmptyBox(10,8,23,13);
+
+   // Video mode
+   LoadText("GLB_STR.DAT","global.txt","025",string,&length);
+   PrintText(12,10,length,string,1);
+
+   switch(video_mode){
+   	case 1: //VGA
+         PrintText(23,10,10,"VGA       ",0);
+      	break;
+      case 2: //EGA
+         PrintText(23,10,10,"EGA       ",0);
+      	break;
+      case 3: //CGA
+      	PrintText(23,10,10,"CGA       ",0);
+         break;
+      case 4: //Tandy
+      	PrintText(23,10,10,"TANDY     ",0);
+         break;
+      default:
+      	break;
+   }
+
+   // Sound mode
+   LoadText("GLB_STR.DAT","global.txt","030",string,&length);
+   PrintText(12,12,length,string,0);
+
+   switch(sfx_mode){
+   	case 0: // OFF
+         PrintText(23,12,10,"OFF       ",0);
+         break;
+   	case 1: //PC speaker
+         PrintText(23,12,10,"PC SPEAKER",0);
+      	break;
+      case 2: //Tandy
+         PrintText(23,12,10,"TANDY     ",0);
+      	break;
+      case 3: //Adlib
+      	PrintText(23,12,10,"ADLIB     ",0);
+         break;
+      case 4: //Sound blaster
+      	PrintText(23,12,10,"S.BLASTER ",0);
+         break;
+      default:
+      	PrintText(23,12,10,"??        ",0);
+      	break;
+   }
+
+   // Sound volume
+   LoadText("GLB_STR.DAT","global.txt","040",string,&length);
+   PrintText(12,13,length,string,0);
+
+   sprintf(string, "%d", sfx_volume);
+   PrintText(23,13,10,string,0);
+
+   // Music mode
+   LoadText("GLB_STR.DAT","global.txt","035",string,&length);
+   PrintText(12,15,length,string,0);
+
+   switch(music_mode){
+   	case 0: // OFF
+         PrintText(23,15,10,"OFF       ",0);
+         break;
+   	case 1: //PC speaker
+         PrintText(23,15,10,"PC SPEAKER",0);
+      	break;
+      case 2: //Tandy
+         PrintText(23,15,10,"TANDY     ",0);
+      	break;
+      case 3: //Adlib or SB
+      	PrintText(23,15,10,"ADLIB SB  ",0);
+         break;
+      default:
+      	PrintText(23,15,10,"??        ",0);
+      	break;
+   }
+
+   // Music volume
+   LoadText("GLB_STR.DAT","global.txt","041",string,&length);
+   PrintText(12,16,length,string,0);
+
+   sprintf(string, "%d", music_volume);
+   PrintText(23,16,10,string,0);
+
+   // Language
+	LoadText("GLB_STR.DAT","global.txt","045",string,&length);
+   PrintText(12,18,length,string,0);
+
+   switch(language){
+   	case 1: //spanish
+         PrintText(23,18,10,"ESPANOL   ",0);
+      	break;
+      case 2: //english
+         PrintText(23,18,10,"ENGLISH   ",0);
+      	break;
+      default:
+      	PrintText(23,18,10,"??",0);
+      	break;
+   }
+
+   // Go back
+   LoadText("GLB_STR.DAT","global.txt","050",string,&length);
+   PrintText(12,20,length,string,0);
+
+   Fade_in();
+
+   while( end == 0 )
+   {
+      sprite[1].pos_y = menu_pos[option] + vga_page[2];
+
+      if( fp_keys[K_UP] == 1) {
+
+      	switch(option){
+         	case 1: // Do nothing
+            	break;
+            case 2: // Rewrite old and new option
+               LoadText("GLB_STR.DAT","global.txt","030",string,&length);
+   				PrintText(12,12,length,string,0);
+	            option--; // Change option
+               LoadText("GLB_STR.DAT","global.txt","025",string,&length);
+   				PrintText(12,10,length,string,1);
+				  	break;
+            case 3: // Rewrite old and new option
+               LoadText("GLB_STR.DAT","global.txt","040",string,&length);
+               PrintText(12,13,length,string,0);
+               option--; // Change option
+               LoadText("GLB_STR.DAT","global.txt","030",string,&length);
+   				PrintText(12,12,length,string,1);
+				  	break;
+            case 4: // Rewrite old and new option
+               LoadText("GLB_STR.DAT","global.txt","035",string,&length);
+   				PrintText(12,15,length,string,0);
+               option--; // Change option
+               LoadText("GLB_STR.DAT","global.txt","040",string,&length);
+               PrintText(12,13,length,string,1);
+               break;
+            case 5: // Rewrite old and new option
+               LoadText("GLB_STR.DAT","global.txt","041",string,&length);
+   				PrintText(12,16,length,string,0);
+               option--; // Change option
+               LoadText("GLB_STR.DAT","global.txt","035",string,&length);
+   				PrintText(12,15,length,string,1);
+               break;
+            case 6: // Rewrite old and new option
+               LoadText("GLB_STR.DAT","global.txt","045",string,&length);
+   				PrintText(12,18,length,string,0);
+               option--; // Change option
+               LoadText("GLB_STR.DAT","global.txt","041",string,&length);
+   				PrintText(12,16,length,string,1);
+               break;
+            case 7: // Rewrite old and new option
+               LoadText("GLB_STR.DAT","global.txt","050",string,&length);
+   				PrintText(12,20,length,string,0);
+               option--; // Change option
+               LoadText("GLB_STR.DAT","global.txt","045",string,&length);
+   				PrintText(12,18,length,string,1);
+               break;
+         }
+      }
+      if( fp_keys[K_DOWN] == 1){
+      	switch(option){
+         	case 1: // Rewrite old and new option
+               LoadText("GLB_STR.DAT","global.txt","025",string,&length);
+   				PrintText(12,10,length,string,0);
+               option++;
+               LoadText("GLB_STR.DAT","global.txt","030",string,&length);
+   				PrintText(12,12,length,string,1);
+            	break;
+            case 2: // Rewrite old and new option
+               LoadText("GLB_STR.DAT","global.txt","030",string,&length);
+   				PrintText(12,12,length,string,0);
+	            option++; // Change option
+               LoadText("GLB_STR.DAT","global.txt","040",string,&length);
+   				PrintText(12,13,length,string,1);
+				  	break;
+            case 3: // Rewrite old and new option
+               LoadText("GLB_STR.DAT","global.txt","040",string,&length);
+   				PrintText(12,13,length,string,0);
+               option++; // Change option
+               LoadText("GLB_STR.DAT","global.txt","035",string,&length);
+   				PrintText(12,15,length,string,1);
+				  	break;
+            case 4: // Rewrite old and new option
+				  	LoadText("GLB_STR.DAT","global.txt","035",string,&length);
+   				PrintText(12,15,length,string,0);
+               option++; // Change option
+               LoadText("GLB_STR.DAT","global.txt","041",string,&length);
+   				PrintText(12,16,length,string,1);
+				  	break;
+            case 5: // Rewrite old and new option
+				  	LoadText("GLB_STR.DAT","global.txt","041",string,&length);
+   				PrintText(12,16,length,string,0);
+               option++; // Change option
+               LoadText("GLB_STR.DAT","global.txt","045",string,&length);
+   				PrintText(12,18,length,string,1);
+				  	break;
+            case 6: // Do nothing
+            	LoadText("GLB_STR.DAT","global.txt","045",string,&length);
+   				PrintText(12,18,length,string,0);
+               option++; // Change option
+               LoadText("GLB_STR.DAT","global.txt","050",string,&length);
+   				PrintText(12,20,length,string,1);
+				  	break;
+            case 7:
+            	break;
+         }
       }
 
-      //debug
-      if(fp_keys[K_D]){
-      	if(debug == 1){debug=0;}
-         else{debug=1;}
+     	if(option < 1){ option = 1;}
+      if(option > 7){ option = 7;}
+
+   	if(fp_keys[K_ENTER]){
+      	switch(option){
+            case 1: 	// video mode
+            	switch(video_mode){
+   					case 1: //VGA
+                  	video_mode = 2;
+         				PrintText(23,10,10,"EGA       ",0);
+      					break;
+      				case 2: //EGA
+                  	video_mode = 3;
+         				PrintText(23,10,10,"CGA       ",0);
+      					break;
+      				case 3: //CGA
+                  	video_mode = 4;
+      					PrintText(23,10,10,"TANDY     ",0);
+         				break;
+                  case 4: //Tandy
+                  	video_mode = 1;
+      					PrintText(23,10,10,"VGA       ",0);
+         				break;
+      				default:
+      					break;
+               }
+               break;
+            case 2: 	// audio mode
+            	switch(sfx_mode){
+   					case 0: // OFF
+                  	sfx_mode = 1;
+         				PrintText(23,12,10,"PC SPEAKER",0);
+         				break;
+   					case 1: //PC speaker
+                  	sfx_mode = 2;
+     					   PrintText(23,12,10,"TANDY     ",0);
+      					break;
+      				case 2: //Tandy
+                  	sfx_mode = 3;
+         				PrintText(23,12,10,"ADLIB     ",0);
+      					break;
+      				case 3: //Adlib
+                  	sfx_mode = 4;
+      					PrintText(23,12,10,"S.BLASTER ",0);
+                     break;
+      				case 4: //Sound blaster
+                  	sfx_mode = 0;
+      					PrintText(23,12,10,"OFF       ",0);
+                     break;
+      				default:
+      					break;
+   				}
+               break;
+            case 4: 	// music mode
+            	switch(music_mode){
+   					case 0: // OFF
+							music_mode = 1;
+         				PrintText(23,15,10,"PC SPEAKER",0);
+         				break;
+   					case 1: //PC speaker
+                  	music_mode = 2;
+         				PrintText(23,15,10,"TANDY     ",0);
+      					break;
+      				case 2: //Tandy
+                  	music_mode = 3;
+         				PrintText(23,15,10,"ADLIB-SB  ",0);
+      					break;
+      				case 3: //Adlib or SB
+                  	music_mode = 0;
+      					PrintText(23,15,10,"OFF       ",0);
+                     break;
+      				default:
+      					break;
+   				}
+               break;
+            case 6: // language
+            	if(language == 1){
+               	language = 2;
+                  PrintText(23,18,10,"ENGLISH      ",0);
+               }
+               else{
+               	language = 1;
+                  PrintText(23,18,10,"ESPANOL      ",0);
+               }
+            	break;
+         	case 7:  // go back
+            	// SaveSettings();
+            	end = 1;
+            	break;
+            default:
+            	break;
+         }
       }
 
+      if(fp_keys[K_RIGHT]){
+      	switch(option){
+            case 3: 	// audio volume +
+            	if(sfx_volume < 100){sfx_volume ++;}
+               sprintf(string, "%d", sfx_volume);
+               PrintText(23,13,10,"          ",0);
+   				PrintText(23,13,strlen(string),string,0);
+               break;
+            case 5:
+            	if(music_volume < 100){music_volume ++;}
+               sprintf(string, "%d", music_volume);
+               PrintText(23,16,10,"          ",0);
+				   PrintText(23,16,strlen(string),string,0);
+            	break; // music volume +
+            default:
+            	break;
+         }
+      }
 
-      // Main loop
-      MovePlayer();
-      Update(1);
+      if(fp_keys[K_LEFT]){
+      	switch(option){
+            case 3: 	// audio volume -
+            	if(sfx_volume > 0){sfx_volume --; }
+               sprintf(string, "%d", sfx_volume);
+               PrintText(23,13,10,"          ",0);
+   				PrintText(23,13,strlen(string),string,0);
+               break;
+            case 5:
+            	if(music_volume > 0){music_volume --;}
+               sprintf(string, "%d", music_volume);
+               PrintText(23,16,10,"          ",0);
+				   PrintText(23,16,strlen(string),string,0);
+            	break; // music volume -
+            default:
+            	break;
+         }
+      }
+
+      // Wait until enter key is released
+      while(keys[K_ENTER] == 1){
+      	// do nothing
+      }
+
+      Update(0);
    }
 }
 
@@ -433,28 +1332,32 @@ void main(){
 
    //Logo(); // Show logos and stuff before start the party
 
+   player.spriteNum = 1; // Player sprite is always sprite 1!
+   existingSaveGame = CheckSavegame();
+
    while( keys[K_ESC] != 1 )
    {
-		//Menu(); // Show game main menu
-      option = 1;
-
+		Menu(); // Show game main menu
       switch(option)
       {
       	case 1: // New game
-            Intro();
-         	NewGame();
+         	//Intro();
+            NewGame();
+            SaveGame();
       		break;
          case 2: // Continue
-
+         	LoadGame();
+            ContinueGame();
+            SaveGame();
          	break;
          case 3: // Options
-
+            Options();
          	break;
          case 4: // Exit
          	ExitDOS();
          	break;
          default:
-         	ExitDOS();
+         	//ExitDOS();
          	break;
       }
    }

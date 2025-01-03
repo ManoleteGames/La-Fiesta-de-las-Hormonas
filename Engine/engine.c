@@ -359,7 +359,6 @@ void Delay(int count){
    }
 }
 
-
 /////////////////////////////////////////////////////////
 // Load configuration
 /////////////////////////////////////////////////////////
@@ -809,13 +808,13 @@ void MovePlayer(void){
 // Speech
 // - Speaking function
 /////////////////////////////////////////////////////////
-void Speech(char* face,char* filename, char* dat_string,char * line1, char * line2, char * line3, char * line4){
+void Speech(char* facefile, char* face,char* filename, char* dat_string,char * line1, char * line2, char * line3, char * line4){
    word length;
    int newscroll_x;
    int newscroll_y;
 
    LoadSprite("SPRMISC.DAT","enter.pcx",18,16); //Load sprites to one of the fixed structs
-   LoadSprite("SPRFACE.DAT",face,19, 48); //Load sprites to one of the fixed structs
+   LoadSprite(facefile,face,19, 48); //Load sprites to one of the fixed structs
    SetSpriteAnimation(18,0,4,8,EnterAnimation);
    SetSpriteAnimation(19,0,1,48,PlayerFaceAnimation);
 
@@ -892,14 +891,14 @@ void Speech(char* face,char* filename, char* dat_string,char * line1, char * lin
 // Speech selection
 // - Speaking function
 /////////////////////////////////////////////////////////
-byte SpeechSelection(int optNum, char* face,char* filename, char* dat_string,char * line1, char * line2, char * line3, char * line4){
+byte SpeechSelection(int optNum, char* facefile, char* face,char* filename, char* dat_string,char * line1, char * line2, char * line3, char * line4){
    word length;
    byte option = 1;
    int newscroll_x;
    int newscroll_y;
 
    LoadSprite("SPRMISC.DAT","enter.pcx",18,16); //Load sprites to one of the fixed structs
-   LoadSprite("SPRFACE.DAT",face,19, 48); //Load sprites to one of the fixed structs
+   LoadSprite(facefile,face,19, 48); //Load sprites to one of the fixed structs
    SetSpriteAnimation(18,0,4,8,EnterAnimation);
    SetSpriteAnimation(19,0,1,48,PlayerFaceAnimation);
 
@@ -1035,3 +1034,46 @@ byte SpeechSelection(int optNum, char* face,char* filename, char* dat_string,cha
 
    return option;
 }
+
+/////////////////////////////////////////////////////////
+//  Set item
+// - Sets item on panel position
+/////////////////////////////////////////////////////////
+void SetItem(int pos, int spriteNum, char* itemImg){
+	// Update panel item
+	LoadSprite("SPRMISC.DAT",itemImg,16, 32); //Load sprites to one of the fixed structs
+   switch(pos){
+   	case 1:
+   		sprite[spriteNum].pos_x = 221;
+      	break;
+      case 2:
+      	sprite[spriteNum].pos_x = 247;
+      	break;
+   }
+   sprite[spriteNum].pos_y = 0;
+   DrawSpriteDestructive(spriteNum);
+   UnloadSprite(spriteNum);
+}
+
+/////////////////////////////////////////////////////////
+//  Reset item
+// - Sets item on panel position
+/////////////////////////////////////////////////////////
+void ResetItem(int pos, int spriteNum){
+  // Update panel item
+	LoadSprite("SPRMISC.DAT","eitem.pcx",16, 32); //Load sprites to one of the fixed structs
+   switch(pos){
+   	case 1:
+   		sprite[spriteNum].pos_x = 221;
+      	break;
+      case 2:
+      	sprite[spriteNum].pos_x = 247;
+      	break;
+   }
+   sprite[spriteNum].pos_y = 0;
+   DrawSpriteDestructive(spriteNum);
+   UnloadSprite(spriteNum);
+}
+
+
+

@@ -2277,15 +2277,6 @@ void VGA_PanelRefresh(void){
    if(player.day >= 10){ VGA_PrintPanelText(1,1,strlen(string),string); }
    else{	VGA_PrintPanelText(2,1,strlen(string),string); }
 
-	// current time
-   VGA_PrintPanelText(28,1,8,"  :  ");
-   sprintf(string, "%d", player.hour);
-   if(player.hour >= 10) { VGA_PrintPanelText(28,1,strlen(string),string); }
-   else{VGA_PrintPanelText(29,1,strlen(string),string); }
-   sprintf(string, "%d", player.min);
-	if(player.min >= 10){ VGA_PrintPanelText(31,1,strlen(string),string);}
-   else{VGA_PrintPanelText(32,1,strlen(string),string);}
-
    // money
    sprintf(string, "%d", player.money);
    VGA_PrintPanelText(36,1,8,"   ");

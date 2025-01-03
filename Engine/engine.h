@@ -25,8 +25,6 @@ typedef struct tagPLAYER{
    byte money;
 
    byte day;
-   byte hour;
-   byte min;
 
    byte floor;
    byte event;
@@ -49,8 +47,9 @@ typedef struct tagPLAYER{
    byte mission_doll;
 
    byte item_chalk;
+   byte item_bag;
 
-   int rel_freaks;
+   int rel_nerds;
    int rel_thugs;
    int rel_jessy;
 
@@ -65,6 +64,15 @@ typedef struct tagPLAYER{
    byte tile_y;
 
    word spriteNum;
+
+   // Scene counters
+   byte scn_main;
+   byte scn_nerds;
+   byte scn_director;
+   byte scn_janitor;
+   byte scn_thugs;
+   byte scn_girls;
+   byte scn_jessy;
 
 } PLAYER;
 
@@ -148,6 +156,9 @@ typedef struct tagSPRITE{				// structure for a sprite
 
 #define KEYB_IRQ        9
 
+#define SPEAKER_IRQ     8
+#define ADLIB_PORT 	   0x388
+
 extern byte PlayerAnimation[];
 
 // Engine.c prototypes
@@ -171,11 +182,17 @@ extern int scroll_x;   // Scroll X
 extern int scroll_y;   // Scroll Y
 extern int scroll_wy;   // Scroll window Y
 extern byte showPanel;
-extern byte panelScrolling; 
+extern byte panelScrolling;
 extern byte scrolling_enabled;
 extern PLAYER far player;
 extern byte speech_active;
 extern byte debug;
+extern byte video_mode;  //0-undef; 1-vga; 2-ega; 3-cga; 4-tandy
+extern byte music_mode;	//0-undef; 1-Speaker; 2-tandy; 3-FM Chip (Adlib & Sound blaster)
+extern byte music_volume; // 0..100
+extern byte sfx_mode;	//0-undef; 1-Speaker; 2-tandy; 3-adlib; 4-sound blaster
+extern byte sfx_volume; // 0..100
+extern byte language;	//1-spanish; 2-english
 
 void InitEngine(void);
 void Delay(int count);
@@ -184,8 +201,10 @@ void Update(int sprite_follow);
 void ExitDOS(void);
 void MovePlayer(void);
 void ResetScroll(void);
-void Speech(char* face,char* filename, char* dat_string,char * line1, char * line2, char * line3, char * line4);
-byte SpeechSelection(int optNum, char* face,char* filename, char* dat_string,char * line1, char * line2, char * line3, char * line4);
+void Speech(char* facefile, char* face,char* filename, char* dat_string,char * line1, char * line2, char * line3, char * line4);
+byte SpeechSelection(int optNum, char* facefile, char* face,char* filename, char* dat_string,char * line1, char * line2, char * line3, char * line4);
+void SetItem(int pos, int spriteNum, char* itemImg);
+void ResetItem(int pos, int spriteNum);
 
 // External functions prototypes
 extern void (*Fade_out)(void);
@@ -294,6 +313,9 @@ extern int fp_keys[256];
 void Set_key_handler(void);
 void Reset_key_handler(void);
 void Update_FP_Keys(void);
+
+// SOUND/SPEAKER.c prototypes
+void PlaySpeaker_SFX(byte *note_array);
 
 // MAP/MAP.c prototypes
 extern long maxMapSize;

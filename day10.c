@@ -5,20 +5,17 @@
 #include "source\engine\engine.h"
 
 // Existing scenes
-// 0. Freaks appear on the arcade machine.
-//    Thugs assault after speak with freaks
+// 0. Nerds appear on the arcade machine.
+//    Thugs assault after speak with nerds
 //    Jessy and her friends are on the second floor speaking
-// 1. Freaks move to the backschool and play a chalk painted heroquest on the floor.
+// 1. Nerds move to the backschool and play a chalk painted heroquest on the floor.
 //		Thugs smoke on the backschool and paint with chalk on the wall
 //		Jessy and her friends are on the second floor speaking
 // 2. All are on the second floor waiting for the maths exam.
-// 3. Freaks are on the second floor speaking
-//		Thugs assault you after go down to the first floor.
-//    Jessy and her frieds are on the caffe shop
+// 3. Nerds are on the first floor speaking
+//		Thugs are on ext 1.
+//    Jessy and her frieds are on the second floor speacking
 
-byte scene = 1;
-byte freaks = 0;
-byte director = 0;
 
 void D10_GoToFloor1(int x, int y){
 	int mapx,mapy;
@@ -43,8 +40,8 @@ void D10_GoToFloor1(int x, int y){
    SetSpriteAnimation(2,0,15,12,DirectorAnimation);
    InitSprite(2,512,402);
 
-   // Load nerd sprites
-   if( scene == 0){
+   // Load nerd sprites only during scene 0
+   if((player.scn_main == 0)||(player.scn_main == 3)){
 
    	LoadSprite("SPRCHR1.DAT","david.pcx",3, 32); //Load sprites to one of the fixed structs
    	LoadSprite("SPRCHR1.DAT","xavi.pcx",4, 32); //Load sprites to one of the fixed structs
@@ -100,24 +97,19 @@ void D10_GoToFloor2(int x, int y){
 	LoadMap("MAPS.DAT","floor2.tmx");
 	LoadTiles("TILESETS.DAT","floor2.pcx");
 
-   // Load jessy and friends sprites
-   if(( scene == 0)||(scene == 1)){
-
-   	LoadSprite("SPRCHR1.DAT","jessy.pcx",3, 32); //Load sprites to one of the fixed structs
-   	LoadSprite("SPRCHR1.DAT","vane.pcx",4, 32); //Load sprites to one of the fixed structs
-   	LoadSprite("SPRCHR1.DAT","fany.pcx",5, 32); //Load sprites to one of the fixed structs
-   	SetSpriteAnimation(3,0,6,8,CharacterAnimation2);
-   	SetSpriteAnimation(4,0,6,30,CharacterAnimation3);
-   	SetSpriteAnimation(5,0,6,23,CharacterAnimation3);
-   	InitSprite(3,158,170);
-   	InitSprite(4,132,182);
-   	InitSprite(5,188,182);
-   }
+   LoadSprite("SPRCHR1.DAT","jessy.pcx",3, 32); //Load sprites to one of the fixed structs
+   LoadSprite("SPRCHR1.DAT","vane.pcx",4, 32); //Load sprites to one of the fixed structs
+   LoadSprite("SPRCHR1.DAT","fany.pcx",5, 32); //Load sprites to one of the fixed structs
+   SetSpriteAnimation(3,0,6,8,CharacterAnimation2);
+   SetSpriteAnimation(4,0,6,30,CharacterAnimation3);
+   SetSpriteAnimation(5,0,6,23,CharacterAnimation3);
+   InitSprite(3,158,170);
+   InitSprite(4,132,182);
+   InitSprite(5,188,182);
 
    LoadSprite("SPRCHR1.DAT","player.pcx",player.spriteNum, 32); //Load sprites to one of the fixed structs
    SetSpriteAnimation(player.spriteNum,0,6,12,PlayerAnimation);
    InitSprite(player.spriteNum,x,y);
-
 
    player.floor = 2;
 
@@ -161,6 +153,21 @@ void D10_GoToExt1(int x, int y){
    SetSpriteAnimation(player.spriteNum,0,6,12,PlayerAnimation);
    InitSprite(player.spriteNum,x,y);
 
+   // Load thugs sprites
+   if( player.scn_main == 3){
+      LoadSprite("SPRCHR1.DAT","toni.pcx",7, 32); //Load sprites to one of the fixed structs
+   	LoadSprite("SPRCHR1.DAT","jon.pcx",8, 32); //Load sprites to one of the fixed structs
+   	LoadSprite("SPRCHR1.DAT","erik.pcx",9, 32); //Load sprites to one of the fixed structs
+
+      SetSpriteAnimation(7,0,6,30,CharacterAnimation3);
+   	SetSpriteAnimation(8,0,6,23,CharacterAnimation2);
+   	SetSpriteAnimation(9,0,6,19,CharacterAnimation2);
+
+      InitSprite(7,208,362);
+   	InitSprite(8,244,362);
+   	InitSprite(9,276,362);
+   }
+
    player.floor = 3;
 
    ResetLoadingInterrupt(); // Stop loading animation
@@ -200,8 +207,12 @@ void D10_GoToExt2(int x, int y){
 	LoadMap("MAPS.DAT","ext2.tmx");
 	LoadTiles("TILESETS.DAT","ext2.pcx");
 
+   // Disable hotspots by default
+   player.ext2_hotspot_mask[1] = 0;
+   player.ext2_hotspot_mask[2] = 0;
+
    // Load nerd and thugs sprites
-   if( scene == 1){
+   if( player.scn_main == 1){
 
    	LoadSprite("SPRCHR1.DAT","david.pcx",3, 32); //Load sprites to one of the fixed structs
    	LoadSprite("SPRCHR1.DAT","xavi.pcx",4, 32); //Load sprites to one of the fixed structs
@@ -230,12 +241,16 @@ void D10_GoToExt2(int x, int y){
       InitSprite(7,808,362);
    	InitSprite(8,844,362);
    	InitSprite(9,776,362);
+
+      // Enable hotspots
+      player.ext2_hotspot_mask[1] = 1;
+   	player.ext2_hotspot_mask[2] = 1;
+
    }
 
    LoadSprite("SPRCHR1.DAT","player.pcx",player.spriteNum, 32); //Load sprites to one of the fixed structs
    SetSpriteAnimation(player.spriteNum,0,6,12,PlayerAnimation);
    InitSprite(player.spriteNum,x,y);
-
 
    player.floor = 4;
 
@@ -276,6 +291,11 @@ void D10_GoToGym(int x, int y){
    // Load gym map
 	LoadMap("MAPS.DAT","gym.tmx");
 	LoadTiles("TILESETS.DAT","gym.pcx");
+
+   LoadSprite("SPRCHR2.DAT","sensei.pcx",2, 32); //Load sprites to one of the fixed structs
+   SetSpriteAnimation(2,0,6,30,CharacterAnimation3);
+   InitSprite(2,208,162);
+
    LoadSprite("SPRCHR1.DAT","player.pcx",player.spriteNum, 32); //Load sprites to one of the fixed structs
 	SetSpriteAnimation(player.spriteNum,0,6,12,PlayerAnimation);
    InitSprite(player.spriteNum,x,y);
@@ -334,41 +354,40 @@ void D10_GoToNerds(void){
 
    Fade_in();
 
-   Speech("antof.pcx","D10_STR.DAT","D10NERD.TXT","001","002","003",0);
-   Speech("xavif.pcx","D10_STR.DAT","D10NERD.TXT","005","006","007","008");
-   Speech("alainf.pcx","D10_STR.DAT","D10NERD.TXT","010","011","012","013");
-   Speech("davidf.pcx","D10_STR.DAT","D10NERD.TXT","017","018","019","020");
-   option = SpeechSelection(4,"playerf.pcx","D10_STR.DAT","D10NERD.TXT","022","023","024","025");
+   Speech("SPRFACE1.DAT","antof.pcx","D10_STR.DAT","D10NERD.TXT","001","002","003",0);
+   Speech("SPRFACE1.DAT","xavif.pcx","D10_STR.DAT","D10NERD.TXT","005","006","007","008");
+   Speech("SPRFACE1.DAT","alainf.pcx","D10_STR.DAT","D10NERD.TXT","010","011","012","013");
+   Speech("SPRFACE1.DAT","davidf.pcx","D10_STR.DAT","D10NERD.TXT","017","018","019","020");
+   option = SpeechSelection(4,"SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10NERD.TXT","022","023","024","025");
 
    switch(option){
    	case 1: // VAYA PANDA DE FRIKIS ESTAIS HECHOS
-         Speech("xavif.pcx","D10_STR.DAT","D10NERD.TXT","027","028",0,0);
-         Speech("alainf.pcx","D10_STR.DAT","D10NERD.TXT","029","030",0,0);
-         Speech("antof.pcx","D10_STR.DAT","D10NERD.TXT","031","032","033",0);
-         Speech("playerf.pcx","D10_STR.DAT","D10NERD.TXT","047","048","049",0);
-         player.rel_freaks ++;
+         Speech("SPRFACE1.DAT","xavif.pcx","D10_STR.DAT","D10NERD.TXT","027","028",0,0);
+         Speech("SPRFACE1.DAT","alainf.pcx","D10_STR.DAT","D10NERD.TXT","029","030",0,0);
+         Speech("SPRFACE1.DAT","antof.pcx","D10_STR.DAT","D10NERD.TXT","031","032","033",0);
+         Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10NERD.TXT","047","048","049",0);
+         player.rel_nerds --;
       	break;
      	case 2: // OS HABEIS ENTERADO QUE HAY UN BAILE?
-         Speech("alainf.pcx","D10_STR.DAT","D10NERD.TXT","035","036","037","038");
-         Speech("davidf.pcx","D10_STR.DAT","D10NERD.TXT","039","040","041",0);
-         Speech("xavif.pcx","D10_STR.DAT","D10NERD.TXT","043","044","045",0);
-         Speech("davidf.pcx","D10_STR.DAT","D10NERD.TXT","051","052","053","054");
-         Speech("playerf.pcx","D10_STR.DAT","D10NERD.TXT","047","048","049",0);
+         Speech("SPRFACE1.DAT","alainf.pcx","D10_STR.DAT","D10NERD.TXT","035","036","037","038");
+         Speech("SPRFACE1.DAT","davidf.pcx","D10_STR.DAT","D10NERD.TXT","039","040","041",0);
+         Speech("SPRFACE1.DAT","xavif.pcx","D10_STR.DAT","D10NERD.TXT","043","044","045",0);
+         Speech("SPRFACE1.DAT","davidf.pcx","D10_STR.DAT","D10NERD.TXT","051","052","053","054");
+         Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10NERD.TXT","047","048","049",0);
       	break;
       case 3: // SILVER AXE ES LO MEJOR!
-         Speech("davidf.pcx","D10_STR.DAT","D10NERD.TXT","055","056","057",0);
-         Speech("alainf.pcx","D10_STR.DAT","D10NERD.TXT","058","059","060","061");
-         Speech("antof.pcx","D10_STR.DAT","D10NERD.TXT","062","063",0,0);
-         Speech("playerf.pcx","D10_STR.DAT","D10NERD.TXT","047","048","049",0);
-         player.rel_freaks ++;
-         player.rel_freaks ++;
+         Speech("SPRFACE1.DAT","davidf.pcx","D10_STR.DAT","D10NERD.TXT","055","056","057",0);
+         Speech("SPRFACE1.DAT","alainf.pcx","D10_STR.DAT","D10NERD.TXT","058","059","060","061");
+         Speech("SPRFACE1.DAT","antof.pcx","D10_STR.DAT","D10NERD.TXT","062","063",0,0);
+         Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10NERD.TXT","047","048","049",0);
+         player.rel_nerds ++;
       	break;
       case 4: // DONDE ESTE UN JUEGO DE NAVES...
-         Speech("alainf.pcx","D10_STR.DAT","D10NERD.TXT","065","066","067",0);
-         Speech("xavif.pcx","D10_STR.DAT","D10NERD.TXT","068","069",0,0);
-         Speech("alainf.pcx","D10_STR.DAT","D10NERD.TXT","071","072",0,0);
-         Speech("playerf.pcx","D10_STR.DAT","D10NERD.TXT","047","048","049",0);
-         player.rel_freaks ++;
+         Speech("SPRFACE1.DAT","alainf.pcx","D10_STR.DAT","D10NERD.TXT","065","066","067",0);
+         Speech("SPRFACE1.DAT","xavif.pcx","D10_STR.DAT","D10NERD.TXT","068","069",0,0);
+         Speech("SPRFACE1.DAT","alainf.pcx","D10_STR.DAT","D10NERD.TXT","071","072",0,0);
+         Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10NERD.TXT","047","048","049",0);
+         player.rel_nerds ++;
       	break;
    }
 }
@@ -418,48 +437,77 @@ void D10_GoToMacarras(void){
 
    Fade_in();
 
-   Speech("tonif.pcx","D10_STR.DAT","D10MACA.TXT","001","002","003",0);
-   Speech("jonf.pcx","D10_STR.DAT","D10MACA.TXT","005",0,0,0);
-   Speech("tonif.pcx","D10_STR.DAT","D10MACA.TXT","009",0,0,0);
-   Speech("erikf.pcx","D10_STR.DAT","D10MACA.TXT","013",0,0,0);
-   Speech("tonif.pcx","D10_STR.DAT","D10MACA.TXT","017","018","019","020");
-   option = SpeechSelection(4,"playerf.pcx","D10_STR.DAT","D10MACA.TXT","023","024","025","026");
+   Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","001","002","003",0);
+   Speech("SPRFACE1.DAT","jonf.pcx","D10_STR.DAT","D10THUG.TXT","005",0,0,0);
+   Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","009",0,0,0);
+   Speech("SPRFACE1.DAT","erikf.pcx","D10_STR.DAT","D10THUG.TXT","013",0,0,0);
+   Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","017","018","019","020");
+   option = SpeechSelection(4,"SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10THUG.TXT","023","024","025","026");
    switch(option){
    	case 1: //A FUMARME UN PITI AL RECRE
          player.rel_thugs ++;
-         Speech("tonif.pcx","D10_STR.DAT","D10MACA.TXT","029","030","031",0);
+         player.scn_thugs = 11;
+         Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","029","030","031",0);
          break;
       case 2: //SOLO PASABA POR AQUI
-        	Speech("tonif.pcx","D10_STR.DAT","D10MACA.TXT","035","036","037",0);
-         Speech("jonf.pcx","D10_STR.DAT","D10MACA.TXT","039",0,0,0);
-         Speech("tonif.pcx","D10_STR.DAT","D10MACA.TXT","040",0,0,0);
-         Speech("erikf.pcx","D10_STR.DAT","D10MACA.TXT","041",0,0,0);
+        	Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","035","036","037",0);
+         Speech("SPRFACE1.DAT","jonf.pcx","D10_STR.DAT","D10THUG.TXT","039",0,0,0);
+         Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","040",0,0,0);
+         Speech("SPRFACE1.DAT","erikf.pcx","D10_STR.DAT","D10THUG.TXT","041",0,0,0);
+         player.scn_thugs = 10;
          break;
       case 3: //A CLASE, COMO ES DEBIDO
          player.rel_thugs --;
-         Speech("tonif.pcx","D10_STR.DAT","D10MACA.TXT","047","048","049","050");
-         Speech("jonf.pcx","D10_STR.DAT","D10MACA.TXT","051",0,0,0);
-         Speech("tonif.pcx","D10_STR.DAT","D10MACA.TXT","040",0,0,0);
-         Speech("erikf.pcx","D10_STR.DAT","D10MACA.TXT","041",0,0,0);
+         Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","047","048","049","050");
+         Speech("SPRFACE1.DAT","jonf.pcx","D10_STR.DAT","D10THUG.TXT","051",0,0,0);
+         Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","040",0,0,0);
+         Speech("SPRFACE1.DAT","erikf.pcx","D10_STR.DAT","D10THUG.TXT","041",0,0,0);
+         player.scn_thugs = 12;
          break;
       case 4: //APARTATE MATON, O ME CHIVO
-	      player.rel_thugs --;
          player.rel_thugs --;
-         Speech("jonf.pcx","D10_STR.DAT","D10MACA.TXT","043","044",0,0);
-         Speech("erikf.pcx","D10_STR.DAT","D10MACA.TXT","045",0,0,0);
-         Speech("tonif.pcx","D10_STR.DAT","D10MACA.TXT","046",0,0,0);
-         Speech("tonif.pcx","D10_STR.DAT","D10MACA.TXT","035","036","037",0);
-         Speech("jonf.pcx","D10_STR.DAT","D10MACA.TXT","039",0,0,0);
-         Speech("tonif.pcx","D10_STR.DAT","D10MACA.TXT","040",0,0,0);
-         Speech("erikf.pcx","D10_STR.DAT","D10MACA.TXT","041",0,0,0);
+         Speech("SPRFACE1.DAT","jonf.pcx","D10_STR.DAT","D10THUG.TXT","043","044",0,0);
+         Speech("SPRFACE1.DAT","erikf.pcx","D10_STR.DAT","D10THUG.TXT","045",0,0,0);
+         Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","046",0,0,0);
+         Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","035","036","037",0);
+         Speech("SPRFACE1.DAT","jonf.pcx","D10_STR.DAT","D10THUG.TXT","039",0,0,0);
+         Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","040",0,0,0);
+         Speech("SPRFACE1.DAT","erikf.pcx","D10_STR.DAT","D10THUG.TXT","041",0,0,0);
+         player.scn_thugs = 13;
          break;
    }
+}
+
+/////////////////////////////////////////////////////////
+// Go to encounter with girls on second floor
+/////////////////////////////////////////////////////////
+void D10_GoToGirls(void){
+ 	byte option;
+
+   panelScrolling = 0;
+   showPanel = 0;
+   Update(0);
+
+	SetLoadingInterrupt();   // Start loading animation
+
+   LoadImage("IMAGES.DAT","girls.pcx",2); // Load menu background image to non visible page
+
+   ResetLoadingInterrupt();   // Stop loading animation
+
+   SetPage(2);
+   Update(0);
+
+   Fade_in();
+
+   Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GIRL.TXT","001","002",0,0);
+
 }
 
 /////////////////////////////////////////////////////////
 // Day 10. Events
 /////////////////////////////////////////////////////////
 void D10_Events(byte event){
+	byte option;
 	switch(player.floor){
    	case 1: // Floor 1
 			if(player.floor1_event_mask[event] == 1){
@@ -468,18 +516,22 @@ void D10_Events(byte event){
 	         if(player.event == 3){ D10_GoToExt1(128,365);}
             if(player.event == 4){ D10_GoToExt2(484,384);}
             if(player.event == 9){
-					director = 1;
-               scene = 1;
+					player.scn_director = 1;
+               player.scn_main = 1; // Set scene 1
+               player.scn_nerds = 10;  // Set nerds status at 10, ext 2 dialogs)
                D10_GoToMacarras();
+            	// thugs status updated inside function
+               // 10 - neutral
+               // 11 - colega
+               // 12 - empollon
+               // 13 - chivato
    				// Update player status
    				player.day = 10;
-   				player.hour = 8;
-   				player.min = 55;
-               player.floor1_event_mask[9] = 0; // Disable event
+               player.floor1_event_mask[9] = 0; // Disable thugs assault event
                player.floor1_hotspot_mask[4] = 1;  // Enable hotspot arcade
    				player.floor1_hotspot_mask[11] = 0;  // Disable hotspot nerds
                D10_GoToFloor1(232, 155);
-   				Speech("playerf.pcx","D10_STR.DAT","D10MACA.TXT","052","053","054","055");
+   				Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10THUG.TXT","052","053","054","055");
             }
 		   }
       	break;
@@ -491,7 +543,26 @@ void D10_Events(byte event){
       	break;
      	case 3: // Ext 1
       	if(player.ext1_event_mask[event] == 1){
-         	if(player.event == 1){ D10_GoToNextDay(32,365);}
+         	if(player.event == 1){
+
+            	if(player.scn_main < 99){ // misiones sin terminar
+               	Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","058","059",0,0);
+                  option = SpeechSelection(2,"SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","066","067",0,0);
+               }
+               else{
+               	Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","062",0,0,0);
+                  option = SpeechSelection(2,"SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","065","067",0,0);
+               }
+
+   				switch(option){
+				   	case 1: // IR A CASA
+                 	   D10_GoToNextDay(32,365);
+                     break;
+                  case 2: // VOLVER AL INSTI
+                  	D10_GoToExt1(32, 365);
+                     break;
+               }
+            }
          	if(player.event == 2){ D10_GoToFloor1(32,395);}
            	if(player.event == 3){ D10_GoToExt2(784,456);}
 		   }
@@ -517,12 +588,12 @@ void D10_Hotspots(byte hotspot){
    	case 1: // Floor 1
 			if(player.floor1_hotspot_mask[hotspot] == 1){
             if(player.hotspot == 1){ // NEWS BOARD
-               Speech("playerf.pcx","D10_STR.DAT","D10GLB.TXT","001","002",0,0);
+               Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","001","002",0,0);
             }
 
             if(player.hotspot == 2){ // EXTINGUISHER
-               Speech("playerf.pcx","D10_STR.DAT","D10GLB.TXT","005","006","007",0);
-   				option = SpeechSelection(2,"playerf.pcx","D10_STR.DAT","D10GLB.TXT","010","011",0,0);
+               Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","005","006","007",0);
+   				option = SpeechSelection(2,"SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","010","011",0,0);
 
    				switch(option){
 				   	case 1: // ABRIR EXTINTOR
@@ -564,32 +635,32 @@ void D10_Hotspots(byte hotspot){
                      SetSpriteAnimation(1,0,6,8,PlayerAnimation);   // Stand up
                      ShowSprite(1);
                      Update(0);
-			        		Speech("playerf.pcx","D10_STR.DAT","D10GLB.TXT","013",0,0,0);
+			        		Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","013",0,0,0);
 
                      EndGameExtinguisher();
 
 			      		break;
      					case 2: // NO ABRIR EXTINTOR
-         				Speech("playerf.pcx","D10_STR.DAT","D10GLB.TXT","015",0,0,0);
+         				Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","015",0,0,0);
       					break;
                }
             }
 
             if(player.hotspot == 3){ // GIRLS BATHROOM
-               Speech("playerf.pcx","D10_STR.DAT","D10GLB.TXT","041","042",0,0);
+               Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","041","042",0,0);
             }
 
             if(player.hotspot == 4){ // ARCADE
-               Speech("playerf.pcx","D10_STR.DAT","D10GLB.TXT","078","079",0,0);
+               Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","078","079",0,0);
             }
 
             if(player.hotspot == 5){ // BAR
-               Speech("playerf.pcx","D10_STR.DAT","D10GLB.TXT","003","004",0,0);
+               Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","003","004",0,0);
             }
 
             if(player.hotspot == 6){ // EXAMENES
-               Speech("playerf.pcx","D10_STR.DAT","D10GLB.TXT","081","082",0,0);
-   				option = SpeechSelection(2,"playerf.pcx","D10_STR.DAT","D10GLB.TXT","085","086",0,0);
+               Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","081","082",0,0);
+   				option = SpeechSelection(2,"SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","085","086",0,0);
 
    				switch(option){
 				   	case 1: // COGER LOS EXAMENES
@@ -597,172 +668,203 @@ void D10_Hotspots(byte hotspot){
                      player.mission_cheat = 1;
                      player.floor2_hotspot_mask[3] = 0;
                      SetSpriteAnimation(1,0,6,12,PlayerAnimation);
-                     Speech("playerf.pcx","D10_STR.DAT","D10GLB.TXT","088","089",0,0);
-                     director = 3;
+                     Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","088","089",0,0);
+                     player.scn_director = 3;
 			      		break;
      					case 2: // NO COGER EXAMENES
       					player.good++;
                      player.mission_cheat = 0;
-         				Speech("playerf.pcx","D10_STR.DAT","D10GLB.TXT","091","092",0,0);
+         				Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","091","092",0,0);
       					break;
                }
             }
 
             if(player.hotspot == 7){ // HACK COMPUTER
-               Speech("playerf.pcx","D10_STR.DAT","D10GLB.TXT","020","021","022","023");
-               Speech("playerf.pcx","D10_STR.DAT","D10GLB.TXT","025",0,0,0);
-               Speech("pcf.pcx","D10_STR.DAT","D10GLB.TXT","028",0,0,0);
-               Speech("playerf.pcx","D10_STR.DAT","D10GLB.TXT","029",0,0,0);
+               Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","020","021","022","023");
+               Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","025",0,0,0);
+               Speech("SPRFACE2.DAT","pcf.pcx","D10_STR.DAT","D10GLB.TXT","028",0,0,0);
+               Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","029",0,0,0);
             }
 
             if(player.hotspot == 8){ // WC
-               Speech("playerf.pcx","D10_STR.DAT","D10GLB.TXT","031","032","033","034");
-               Speech("playerf.pcx","D10_STR.DAT","D10GLB.TXT","035","036",0,0);
+               Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","031","032","033","034");
+               Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","035","036",0,0);
             }
 
             if(player.hotspot == 10){ // TAQUILLAS
-               Speech("playerf.pcx","D10_STR.DAT","D10GLB.TXT","038","039","040",0);
+               Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","038","039","040",0);
             }
 
-            if(player.hotspot == 11){ // NERDS
+            if(player.hotspot == 11){ // NERDS near arcade machine
 
-					if(freaks == 1){
-            		Speech("playerf.pcx","D10_STR.DAT","D10GLB.TXT","017","018","019",0);
-               }
-               else{
-
-            		D10_GoToNerds();
-   					// Update player status
-   					player.day = 10;
-   					player.hour = 8;
-   					player.min = 45;
-
-   					player.floor1_event_mask[9] = 1; // Enable event
-   					D10_GoToFloor1(355, 155);
-                  freaks = 1;
-
+            	switch(player.scn_nerds){
+               	case 0: //first time speak
+                  	D10_GoToNerds();
+   						// Update player status
+   						player.floor1_event_mask[9] = 1; // Enable event. thugs assault
+   						D10_GoToFloor1(355, 155);
+                  	player.scn_nerds ++;
+                  	break;
+                  case 1: // second time speak
+                  	Speech("SPRFACE1.DAT","xavif.pcx","D10_STR.DAT","D10NERD.TXT","075","076","077",0);
+                     Speech("SPRFACE1.DAT","davidf.pcx","D10_STR.DAT","D10NERD.TXT","080","081",0,0);
+                  	Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","017","018","019",0);
+                     player.scn_nerds ++;
+                  	break;
+                  case 2:
+                  	Speech("SPRFACE1.DAT","davidf.pcx","D10_STR.DAT","D10NERD.TXT","082","083","084",0);
+                  	Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","017","018","019",0);
+                     player.scn_nerds ++;
+                  	break;
+                  case 3:
+                     Speech("SPRFACE1.DAT","antof.pcx","D10_STR.DAT","D10NERD.TXT","086","087","088","089");
+                     Speech("SPRFACE1.DAT","xavif.pcx","D10_STR.DAT","D10NERD.TXT","091","092",0,0);
+                     Speech("SPRFACE1.DAT","antof.pcx","D10_STR.DAT","D10NERD.TXT","094","095",0,0);
+                  	Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","017","018","019",0);
+                     player.scn_nerds ++;
+                  	break;
+                  case 4:
+                  	Speech("SPRFACE1.DAT","alainf.pcx","D10_STR.DAT","D10NERD.TXT","097","098","099","100");
+                     Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","017","018","019",0);
+                     player.scn_nerds ++;
+                  	break;
+                  default:
+                  	Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","017","018","019",0);
+                  	break;
                }
             }
 
             if(player.hotspot == 12){ // DIRECTOR
-               Speech("directf.pcx","D10_STR.DAT","D10DIR.TXT","001",0,0,0);
-               if(director == 0){ option = SpeechSelection(2,"playerf.pcx","D10_STR.DAT","D10DIR.TXT","005","006",0,0);}
-               if(director == 1){ option = SpeechSelection(3,"playerf.pcx","D10_STR.DAT","D10DIR.TXT","005","006","007",0);}
-               if(director == 2){ option = SpeechSelection(4,"playerf.pcx","D10_STR.DAT","D10DIR.TXT","005","006","007","009");}
-               if(director == 3){ option = SpeechSelection(4,"playerf.pcx","D10_STR.DAT","D10DIR.TXT","005","006","007","008");}
+               Speech("SPRFACE2.DAT","directf.pcx","D10_STR.DAT","D10DIR.TXT","001",0,0,0);
+               if(player.scn_director == 0){ option = SpeechSelection(2,"SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10DIR.TXT","005","006",0,0);}
+               if(player.scn_director == 1){ option = SpeechSelection(3,"SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10DIR.TXT","005","006","007",0);}
+               if(player.scn_director == 2){ option = SpeechSelection(4,"SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10DIR.TXT","005","006","007","009");}
+               if(player.scn_director == 3){ option = SpeechSelection(4,"SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10DIR.TXT","005","006","007","008");}
    				switch(option){
 				   	case 1: // NADA, SOLO  A SALUDAR
-                     Speech("directf.pcx","D10_STR.DAT","D10DIR.TXT","010","011","012","013");
+                     Speech("SPRFACE2.DAT","directf.pcx","D10_STR.DAT","D10DIR.TXT","010","011","012","013");
 			      		break;
      					case 2: // ESO QUE SUENA ES UN JUEGO?
-         				Speech("directf.pcx","D10_STR.DAT","D10DIR.TXT","015","016","017",0);
-           				Speech("directf.pcx","D10_STR.DAT","D10DIR.TXT","011","012","013",0);
+         				Speech("SPRFACE2.DAT","directf.pcx","D10_STR.DAT","D10DIR.TXT","015","016","017",0);
+           				Speech("SPRFACE2.DAT","directf.pcx","D10_STR.DAT","D10DIR.TXT","011","012","013",0);
       					break;
                   case 3: // QUIERO DENUNCIAR ACOSO ESCOLAR
-							Speech("directf.pcx","D10_STR.DAT","D10DIR.TXT","019","020","021","022");
-							Speech("directf.pcx","D10_STR.DAT","D10DIR.TXT","024","025","026","027");
-                     Speech("directf.pcx","D10_STR.DAT","D10DIR.TXT","029","030","031","032");
-                     Speech("directf.pcx","D10_STR.DAT","D10DIR.TXT","034","011","012","013");
-                     Speech("playerf.pcx","D10_STR.DAT","D10DIR.TXT","036","037",0,0);
+							Speech("SPRFACE2.DAT","directf.pcx","D10_STR.DAT","D10DIR.TXT","019","020","021","022");
+							Speech("SPRFACE2.DAT","directf.pcx","D10_STR.DAT","D10DIR.TXT","024","025","026","027");
+                     Speech("SPRFACE2.DAT","directf.pcx","D10_STR.DAT","D10DIR.TXT","029","030","031","032");
+                     Speech("SPRFACE2.DAT","directf.pcx","D10_STR.DAT","D10DIR.TXT","034","011","012","013");
+                     Speech("SPRFACE2.DAT","playerf.pcx","D10_STR.DAT","D10DIR.TXT","036","037",0,0);
       					break;
                   case 4: // DAR TIZAS O EXAMENES ROBADOS
-                     if(director == 3){
+                  	if(player.scn_director == 2){  // tizas
+                     	Speech("SPRFACE2.DAT","directf.pcx","D10_STR.DAT","D10DIR.TXT","051","052","053","054");
+                  		Speech("SPRFACE2.DAT","directf.pcx","D10_STR.DAT","D10DIR.TXT","045","046","047",0);
+                     	Speech("SPRFACE2.DAT","directf.pcx","D10_STR.DAT","D10DIR.TXT","049","011","012","013");
+
+                        player.item_chalk = 0;
+                        ResetItem(2,16);
+
+                        player.mission_cheat = 4;
+                        player.scn_director = 1;
+                     }
+                     if(player.scn_director == 3){ // examenes
               	   		player.mission_cheat = 0;
                      	player.good ++;
-                  		Speech("directf.pcx","D10_STR.DAT","D10DIR.TXT","040","041","042","043");
-                  		Speech("directf.pcx","D10_STR.DAT","D10DIR.TXT","045","046","047",0);
-                     	Speech("directf.pcx","D10_STR.DAT","D10DIR.TXT","049","011","012","013");
-                        director = 1;
+                  		Speech("SPRFACE2.DAT","directf.pcx","D10_STR.DAT","D10DIR.TXT","040","041","042","043");
+                  		Speech("SPRFACE2.DAT","directf.pcx","D10_STR.DAT","D10DIR.TXT","045","046","047",0);
+                     	Speech("SPRFACE2.DAT","directf.pcx","D10_STR.DAT","D10DIR.TXT","049","011","012","013");
+                        player.scn_director = 1;
                      }
-                     if(director == 4){
-                     	Speech("directf.pcx","D10_STR.DAT","D10DIR.TXT","051","052","053","054");
-                  		Speech("directf.pcx","D10_STR.DAT","D10DIR.TXT","045","046","047",0);
-                     	Speech("directf.pcx","D10_STR.DAT","D10DIR.TXT","049","011","012","013");
-                        player.item_chalk = 0;
-                        player.mission_cheat = 4;
-                        director = 1;
-                     }
+
                      break;
                }
             }
             if(player.hotspot == 13){ // CONSERJE
-               switch(player.mission_cheat){
+               switch(player.scn_janitor){
                	case 0:
-                  	Speech("conserf.pcx","D10_STR.DAT","D10CNS.TXT","001","002",0,0);
-               		Speech("playerf.pcx","D10_STR.DAT","D10CNS.TXT","005","006",0,0);
-                  	option = SpeechSelection(4,"playerf.pcx","D10_STR.DAT","D10CNS.TXT","010","011","012","013");
+                  	Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","001","002",0,0);
+               		Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10CNS.TXT","005","006",0,0);
+                  	option = SpeechSelection(4,"SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10CNS.TXT","010","011","012","013");
                		switch(option){
 				   			case 1: // FOTOCOPIAS
-                     		Speech("conserf.pcx","D10_STR.DAT","D10CNS.TXT","018","019","020","021");
+                     		Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","018","019","020","021");
 			      				break;
      							case 2: // UNA RATA?
-         						Speech("conserf.pcx","D10_STR.DAT","D10CNS.TXT","025","026","027",0);
-           						Speech("playerf.pcx","D10_STR.DAT","D10CNS.TXT","029","030","031",0);
-                     		Speech("conserf.pcx","D10_STR.DAT","D10CNS.TXT","033",0,0,0);
+         						Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","025","026","027",0);
+           						Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10CNS.TXT","029","030","031",0);
+                     		Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","033",0,0,0);
       							break;
                   		case 3: // NECESITO TIZAS
-									Speech("conserf.pcx","D10_STR.DAT","D10CNS.TXT","035","036","037",0);
-									Speech("playerf.pcx","D10_STR.DAT","D10CNS.TXT","039","040",0,0);
-                     		Speech("conserf.pcx","D10_STR.DAT","D10CNS.TXT","043","044","045",0);
-                     		Speech("conserf.pcx","D10_STR.DAT","D10CNS.TXT","047","048","049","050");
+									Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","035","036","037",0);
+									Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10CNS.TXT","039","040",0,0);
+                     		Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","043","044","045",0);
+                     		Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","047","048","049","050");
                         	if(player.mission_cheat == 0){player.mission_cheat = 1;}
+                           player.scn_janitor++;
       							break;
                   		case 4: // SALUDAR
-                  			Speech("conserf.pcx","D10_STR.DAT","D10DIR.TXT","055",0,0,0);
+                  			Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","055",0,0,0);
                      		break;
                		}
                      break;
-                  case 1: // Acusación sin pruebas
-                     Speech("conserf.pcx","D10_STR.DAT","D10CNS.TXT","059","060","061",0);
-                		option = SpeechSelection(4,"playerf.pcx","D10_STR.DAT","D10CNS.TXT","066","067","068","069");
+                  case 1: // Acusación
+                     Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","059","060","061",0);
+                		option = SpeechSelection(4,"SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10CNS.TXT","066","067","068","069");
                		switch(option){
 				   			case 1: // TONI Y SUS SECUACES
-                     		Speech("conserf.pcx","D10_STR.DAT","D10CNS.TXT","075","076","077","078");
-                           Speech("conserf.pcx","D10_STR.DAT","D10CNS.TXT","047","048","049","050");
+                        	if(player.scn_thugs < 20){
+                     			Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","075","076","077","078");
+                           	Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","047","048","049","050");
+                           }
+                           else{
+                           	Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10CNS.TXT","100","101","102","103");
+                     			Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","105","106","107",0);
+                     			player.floor1_hotspot_mask[13] = 0; // Disable janitor hotspot
+                     			sprite[7].hide = 1;  // Hide janitor sprite
+                     			player.mission_cheat = 5;  // Update mision cheat status
+                              player.scn_janitor = 10;  // Update janitor status
+                           }
 			      				break;
      							case 2: // LOS FRIKIS
-         						Speech("conserf.pcx","D10_STR.DAT","D10CNS.TXT","080","081","082",0);
-           						Speech("conserf.pcx","D10_STR.DAT","D10CNS.TXT","084","085","086","087");
-                           Speech("conserf.pcx","D10_STR.DAT","D10CNS.TXT","047","048","049","050");
+                        	if(player.scn_nerds < 20){
+         							Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","080","081","082",0);
+           							Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","084","085","086","087");
+                           	Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","047","048","049","050");
+                           }
+                           else{
+                     			Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10CNS.TXT","109","110","111","112");
+                     			Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","113","114","115","116");
+                     			player.floor1_hotspot_mask[13] = 0; // Disable janitor hotspot
+                     			sprite[7].hide = 1;  // Hide janitor sprite
+                     			player.mission_cheat = 5; // Update mision cheat status
+                              player.scn_janitor = 10;  // Update janitor status
+                           }
       							break;
                   		case 3: // DIRECTOR
-                        	Speech("conserf.pcx","D10_STR.DAT","D10CNS.TXT","090","091","092","093");
-									Speech("conserf.pcx","D10_STR.DAT","D10CNS.TXT","095","096",0,0);
+                        	if(player.scn_director < 20){
+                        		Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","090","091","092","093");
+										Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","095","096",0,0);
+                           }
+                           else{
+                              Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","059","060","061",0);
+                     			Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10CNS.TXT","121","122","123",0);
+                     			Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","125","126","127","128");
+                     			player.floor1_hotspot_mask[13] = 0;  // Disable janitor hotspot
+                     			sprite[7].hide = 1;   // Hide janitor sprite
+                     			player.mission_cheat = 5;  // Update mision cheat status
+                              player.scn_janitor = 10;  // Update janitor status
+                           }
       							break;
                   		case 4: // NO LO SE
-                        	Speech("conserf.pcx","D10_STR.DAT","D10CNS.TXT","047","048","049","050");
+                        	Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","047","048","049","050");
                      		break;
                		}
                   	break;
-                  case 2:  // Acusación con pruebas a Tony y sus secuaces
-                  	Speech("conserf.pcx","D10_STR.DAT","D10CNS.TXT","059","060","061",0);
-                     Speech("playerf.pcx","D10_STR.DAT","D10CNS.TXT","100","101","102","103");
-                     Speech("conserf.pcx","D10_STR.DAT","D10CNS.TXT","105","106","107",0);
-                     player.floor1_hotspot_mask[13] = 0;
-                     sprite[7].hide = 1;
-                     player.mission_cheat = 5;
+                  case 10:  // Last interaction
+                     Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","001","002",0,0);
+                     Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10CNS.TXT","013",0,0,0);
+                     Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","055",0,0,0);
                      break;
-		            case 3:  // Acusación a los frikis
-                  	Speech("conserf.pcx","D10_STR.DAT","D10CNS.TXT","059","060","061",0);
-                     Speech("playerf.pcx","D10_STR.DAT","D10CNS.TXT","109","110","111","112");
-                     Speech("conserf.pcx","D10_STR.DAT","D10CNS.TXT","113","114","115","116");
-                     player.floor1_hotspot_mask[13] = 0;
-                     sprite[7].hide = 1;
-                     player.mission_cheat = 5;
-                  	break;
-                  case 4:  // Acusación al director
-                  	Speech("conserf.pcx","D10_STR.DAT","D10CNS.TXT","059","060","061",0);
-                     Speech("playerf.pcx","D10_STR.DAT","D10CNS.TXT","121","122","123",0);
-                     Speech("conserf.pcx","D10_STR.DAT","D10CNS.TXT","125","126","127","128");
-                     player.floor1_hotspot_mask[13] = 0;
-                     sprite[7].hide = 1;
-                     player.mission_cheat = 5;
-                  	break;
-                  case 5:  //
-                  	Speech("conserf.pcx","D10_STR.DAT","D10CNS.TXT","001","002",0,0);
-                     Speech("playerf.pcx","D10_STR.DAT","D10CNS.TXT","013",0,0,0);
-                     Speech("conserf.pcx","D10_STR.DAT","D10DIR.TXT","055",0,0,0);
-                  	break;
                   default:
                   	break;
                }
@@ -773,14 +875,14 @@ void D10_Hotspots(byte hotspot){
       	if(player.floor2_hotspot_mask[hotspot] == 1){
 
             if(player.hotspot == 1){ // COMPUTER
-               Speech("playerf.pcx","D10_STR.DAT","D10GLB.TXT","020","021","022","023");
-               Speech("playerf.pcx","D10_STR.DAT","D10GLB.TXT","025","026","027","028");
-               Speech("playerf.pcx","D10_STR.DAT","D10GLB.TXT","029",0,0,0);
+               Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","020","021","022","023");
+               Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","025","026","027","028");
+               Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","029",0,0,0);
             }
 
             if(player.hotspot == 6){ // EXTINGUISHER
-               Speech("playerf.pcx","D10_STR.DAT","D10GLB.TXT","005","006","007",0);
-   				option = SpeechSelection(2,"playerf.pcx","D10_STR.DAT","D10GLB.TXT","010","011",0,0);
+               Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","005","006","007",0);
+   				option = SpeechSelection(2,"SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","010","011",0,0);
 
    				switch(option){
 				   	case 1: // ABRIR EXTINTOR
@@ -822,41 +924,68 @@ void D10_Hotspots(byte hotspot){
                      SetSpriteAnimation(1,0,6,8,PlayerAnimation);   // Stand up
                      ShowSprite(1);
                      Update(0);
-			        		Speech("playerf.pcx","D10_STR.DAT","D10GLB.TXT","013",0,0,0);
+			        		Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","013",0,0,0);
 
                      EndGameExtinguisher();
 
 			      		break;
      					case 2: // NO ABRIR EXTINTOR
-         				Speech("playerf.pcx","D10_STR.DAT","D10GLB.TXT","015",0,0,0);
+         				Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","015",0,0,0);
       					break;
                }
             }
 
             if(player.hotspot == 7){ // boys bathroom
-               Speech("playerf.pcx","D10_STR.DAT","D10GLB.TXT","078","079",0,0);
+               Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","078","079",0,0);
             }
 
             if(player.hotspot == 8){ // GIRLS BATHROOM
-               Speech("playerf.pcx","D10_STR.DAT","D10GLB.TXT","041","042",0,0);
+               Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","041","042",0,0);
             }
 
             if(player.hotspot == 10){ // WINDOW
-               Speech("playerf.pcx","D10_STR.DAT","D10GLB.TXT","095","096",0,0);
+               Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","095","096",0,0);
             }
             if(player.hotspot == 11){ // BOARD
-               Speech("playerf.pcx","D10_STR.DAT","D10GLB.TXT","045","046",0,0);
-               option = SpeechSelection(2,"playerf.pcx","D10_STR.DAT","D10GLB.TXT","049","050",0,0);
+               Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","045","046",0,0);
+               option = SpeechSelection(2,"SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","049","050",0,0);
                switch(option){
 				   	case 1: // Pintar cipote
-                     Speech("playerf.pcx","D10_STR.DAT","D10GLB.TXT","052","053",0,0);
+                     Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","052","053",0,0);
                   	break;
                   case 2:
-                  	Speech("playerf.pcx","D10_STR.DAT","D10GLB.TXT","054","055",0,0);
+                  	Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","054","055",0,0);
                      player.item_chalk = 1;
-                     director = 2;
+
+                     SetItem(2,16,"chalk.pcx");
+
+                     player.scn_director = 2;
                      player.floor2_hotspot_mask[11] = 0;
                      break;
+               }
+            }
+            if(player.hotspot == 12){ // GIRLS
+               switch(player.scn_girls){
+               	case 0: //first time speak
+                  	D10_GoToGirls();
+   						D10_GoToFloor2(155, 200);
+                  	player.scn_girls ++;
+                  	break;
+                  case 1: // second time speak
+                     Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GGIRL.TXT","054","055",0,0);
+                  	break;
+                  case 2:
+                     Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GGIRL.TXT","054","055",0,0);
+                  	break;
+                  case 3:
+                     Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GGIRL.TXT","054","055",0,0);
+                  	break;
+                  case 4:
+                     Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GGIRL.TXT","054","055",0,0);
+                  	break;
+                  default:
+                     Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GGIRL.TXT","054","055",0,0);
+                  	break;
                }
             }
 		   }
@@ -868,7 +997,93 @@ void D10_Hotspots(byte hotspot){
       	break;
       case 4: // Ext 2
       	if(player.ext2_hotspot_mask[hotspot] == 1){
+         	 if(player.hotspot == 1){ // NERDS
+               switch(player.scn_nerds){
+               	case 10:
+                     Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10NERD.TXT","104","105","106",0);
+                     Speech("SPRFACE1.DAT","davidf.pcx","D10_STR.DAT","D10NERD.TXT","118","119",0,0);
+                     option = SpeechSelection(2,"SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10NERD.TXT","102","103",0,0);
+                  	switch(option){
+                  	case 1: // Vaya pedazo de frikis
+                     	Speech("SPRFACE1.DAT","xavif.pcx","D10_STR.DAT","D10NERD.TXT","107","108",0,0);
+                        Speech("SPRFACE1.DAT","antof.pcx","D10_STR.DAT","D10NERD.TXT","118","119",0,0);
+                        player.rel_nerds --;
+                        break;
+                     case 2:
+                     	Speech("SPRFACE1.DAT","xavif.pcx","D10_STR.DAT","D10NERD.TXT","114","115","116",0);
+                        player.rel_nerds ++;
+                        break;
+                  	}
+                     player.scn_nerds = 20;
+                  	break;
+                  case 20:
+                     Speech("SPRFACE1.DAT","davidf.pcx","D10_STR.DAT","D10NERD.TXT","121",0,0,0);
+                  	Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10NERD.TXT","144","145","146",0);
+                  	player.scn_nerds++;
+                  	break;
+                  case 21:
+                     Speech("SPRFACE1.DAT","davidf.pcx","D10_STR.DAT","D10NERD.TXT","121",0,0,0);
+                  	Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10NERD.TXT","144","145","146",0);
+                  	player.scn_nerds++;
+                  	break;
+                  case 22:
+                     Speech("SPRFACE1.DAT","davidf.pcx","D10_STR.DAT","D10NERD.TXT","121",0,0,0);
+                  	Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10NERD.TXT","144","145","146",0);
+                  	player.scn_nerds++;
+                  	break;
+                  default:
+                  	Speech("SPRFACE1.DAT","davidf.pcx","D10_STR.DAT","D10NERD.TXT","121",0,0,0);
+                  	Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10NERD.TXT","144","145","146",0);
+                  	break;
+               }
+            }
 
+            if(player.hotspot == 2){ // THUGS
+               switch(player.scn_thugs){
+               	case 10:  // neutral relation
+                     Speech("SPRFACE1.DAT","erikf.pcx","D10_STR.DAT","D10THUG.TXT","058","059",0,0);
+                     Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","060",0,0,0);
+                     option = SpeechSelection(2,"SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10THUG.TXT","062","063","064",0);
+                  	switch(option){
+                  	case 1: // si solo pasaba por aquí
+                     	Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","066","067",0,0);
+                        Speech("SPRFACE1.DAT","erikf.pcx","D10_STR.DAT","D10THUG.TXT","068",0,0,0);
+                        Speech("SPRFACE1.DAT","jonf.pcx","D10_STR.DAT","D10THUG.TXT","069","070",0,0);
+                        Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","071",0,0,0);
+                        Speech("SPRFACE1.DAT","erikf.pcx","D10_STR.DAT","D10THUG.TXT","072",0,0,0);
+                        player.scn_thugs = 21;
+                        break;
+                     case 2: // A fumarme un fly
+                     	Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","074","075","076","077");
+                        player.rel_thugs ++;
+                        player.scn_thugs = 22;
+                        break;
+                     case 3: // se os va a caer el pelo
+                        Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","079","080","081",0);
+                        Speech("SPRFACE1.DAT","erikf.pcx","D10_STR.DAT","D10THUG.TXT","082","083",0,0);
+                        Speech("SPRFACE1.DAT","jonf.pcx","D10_STR.DAT","D10THUG.TXT","086","087",0,0);
+                        Speech("SPRFACE1.DAT","erikf.pcx","D10_STR.DAT","D10THUG.TXT","089","090",0,0);
+                        Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","092","093",0,0);
+                        player.rel_thugs --;
+                        player.scn_thugs = 23;
+                     	break;
+                  	}
+                  	break;
+                  case 11: // a fumarme un piti (rel ++)
+
+                  	break;
+                  case 12: // empollon
+
+                  	break;
+                  case 13: // chivata
+
+                  	break;
+                  default:
+
+
+                  	break;
+               }
+            }
 		   }
       	break;
       case 5: // Gym
