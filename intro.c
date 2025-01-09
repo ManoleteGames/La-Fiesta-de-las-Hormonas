@@ -26,6 +26,8 @@ void Intro(void){
    LoadSprite("SPRFACE1.DAT","playerf.pcx",3, 48); //Load sprites to one of the fixed structs
    LoadSprite("SPRMISC.DAT","bird.pcx",4, 32); //Load sprites to one of the fixed structs
 
+   LoadMusic(1);
+
    ResetLoadingInterrupt(); // Stop loading animation
 
    scrolling_enabled = 1;
@@ -57,7 +59,12 @@ void Intro(void){
             step = 1;
 	         break;
          case 1:	// Wait end of sequence
-         	Delay(100);
+            Delay(30);
+         	PlaySound(1);
+         	Delay(10);
+            PlaySound(1);
+            Delay(80);
+            PlayNonStopMusic();
             step = 2;
             HideSprite(4);
             break;
@@ -191,6 +198,7 @@ void Intro(void){
             }
             break;
          case 18: // Show board
+
          	SetLoadingInterrupt();   // Start loading animation
 
          	LoadImage("IMAGES.DAT","cartel.pcx",2); // Load menu background image to non visible page
@@ -243,7 +251,7 @@ void Intro(void){
 
             ResetLoadingInterrupt(); // Stop loading animation
 
-			   // Allow scroll
+            // Allow scroll
 			   scrolling_enabled = 1;
             // Draw map
 			   SetMap(0,0);
@@ -340,6 +348,9 @@ void Intro(void){
 
             Speech("SPRFACE1.DAT","playerf.pcx","GLB_STR.DAT","intro.txt","036","037","038","039");
             Speech("SPRFACE1.DAT","playerf.pcx","GLB_STR.DAT","intro.txt","040","041","042","043");
+
+            Fade_out();
+            
             step = 38;
             break;
 			case 38: // Wait ENTER key
@@ -351,5 +362,7 @@ void Intro(void){
       }
       Update(0);  // sprite follow inactive for sprite 16
    }
+
+   UnloadMusic();
    // End of intro
 }

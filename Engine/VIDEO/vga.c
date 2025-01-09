@@ -72,9 +72,6 @@ unsigned char vga_loadingPalette[] = { //Loading transition palette
 	0xff,0xff,0xff	   //colour 1
 };
 
-// Old handler
-void interrupt (*old_loading_handler)(void);
-
 // variables for mode 13
 byte pix;
 byte p[4] = {0,2,4,6};
@@ -121,37 +118,37 @@ byte VGA_Present(void){
 
 	if (regs.h.al == 0x1A) // 0x1A - means a valid request in AH
    {
-		printf(" - VGA card detected\n");
+		printf(" - VGA or compatible card present \n");
 
       switch( regs.h.bl)
       {
       	case 0x00:
          	printf(" -- No display\n");
-            printf(" -- no compatible video card was detected\n");
+            printf(" -- Present VGA card configuration is not compatible \n");
             break;
          case 0x01:
          	printf(" -- MDA with monochrome display\n");
-            printf(" -- no compatible video card was detected\n");
+            printf(" -- Present VGA card configuration is not compatible \n");
             break;
          case 0x02:
          	printf(" -- CGA with color display\n");
-            printf(" -- no compatible video card was detected\n");
+            printf(" -- Present VGA card configuration is not compatible \n");
             break;
          case 0x04:
          	printf(" -- EGA with color display\n");
-            printf(" -- no compatible video card was detected\n");
+            printf(" -- Present VGA card configuration is not compatible \n");
             break;
          case 0x05:
          	printf(" -- EGA with monochorme display\n");
-            printf(" -- no compatible video card was detected\n");
+            printf(" -- Present VGA card configuration is not compatible \n");
             break;
       	case 0x06:
          	printf(" -- Professional graphics controller\n");
-            printf(" -- no compatible video card was detected\n");
+            printf(" -- Present VGA card configuration is not compatible \n");
             break;
          case 0x07:
          	printf(" -- VGA with analog monochorme display\n");
-            printf(" -- no compatible video card was detected\n");
+            printf(" -- Present VGA card configuration is not compatible \n");
             break;
          case 0x08:
          	printf(" -- VGA with analog color display \n");
@@ -159,19 +156,19 @@ byte VGA_Present(void){
             break;
          case 0x0A:
          	printf(" -- MCGA with digital color display\n");
-            printf(" -- no compatible video card was detected\n");
+            printf(" -- Present VGA card configuration is not compatible \n");
             break;
          case 0x0B:
          	printf(" -- MCGA with analog monochorme display\n");
-            printf(" -- no compatible video card was detected\n");
+            printf(" -- Present VGA card configuration is not compatible \n");
             break;
          case 0x0C:
          	printf(" -- MCGA with analog color display\n");
-            printf(" -- no compatible video card was detected\n");
+            printf(" -- Present VGA card configuration is not compatible \n");
             break;
          default:
 				printf(" -- Unknown configuration %u \n",regs.h.bl );
-            printf(" -- no compatible video card was detected\n");
+            printf(" -- Present VGA card configuration is not compatible \n");
       }
    }
 
@@ -1237,101 +1234,6 @@ void VGA_RunCompiledSprite(word XPos, word YPos, char *Sprite){
 		pop si
 	}
 }
-
-/////////////////////////////////////////////////////////
-// Loading transition interrupt (private)
-/////////////////////////////////////////////////////////
-void interrupt VGA_LoadingTransition(void){
-	// Rotate palette colors 243-->249	asm CLI
-
-   // Acknowledge interrupt
-	asm mov al,020h
-	asm mov dx,020h
-	asm out dx, al	//PIC, EOI
-
-   VGA_RotatePaletteAsync(243, 249);
-
-	asm STI
-}
-
-/////////////////////////////////////////////////////////
-// Set loading transition interrupt (public)
-// - sets an animation on the page 1, meanwhile images
-//   can be loaded on other pages.
-/////////////////////////////////////////////////////////
-void VGA_SetLoadingInterrupt(void){
-	unsigned long spd = 1193182L/30; //
-
-	VGA_Fade_out();
-
-   VGA_LoadTransImage("images.DAT","loading.pcx");
-
-   VGA_SetPage(1);
-
-   scrolling_enabled = 0;
-
-	//Wait Vsync
-	VGA_Vsync();
-
-   UnloadSprites();
-   UnloadMap();
-
-	asm CLI
-
-	//set timer on programable internal time interrupt
-   // -   Bits         Usage
-	//   6 and 7      Select channel :
-   //		             0 0 = Channel 0
-   //		             0 1 = Channel 1
-   //		             1 0 = Channel 2
-   //		             1 1 = Read-back command (8254 only)
-	//	  4 and 5      Access mode :
-   //		             0 0 = Latch count value command
-   //		             0 1 = Access mode: lobyte only
-   //		             1 0 = Access mode: hibyte only
-   //		             1 1 = Access mode: lobyte/hibyte
-	//		1 to 3       Operating mode :
-   //		             0 0 0 = Mode 0 (interrupt on terminal count)
-   //		             0 0 1 = Mode 1 (hardware re-triggerable one-shot)
-   //		             0 1 0 = Mode 2 (rate generator)
-   //		             0 1 1 = Mode 3 (square wave generator)
-   //		             1 0 0 = Mode 4 (software triggered strobe)
-   //		             1 0 1 = Mode 5 (hardware triggered strobe)
-   //		             1 1 0 = Mode 2 (rate generator, same as 010b)
-   //		             1 1 1 = Mode 3 (square wave generator, same as 011b)
-	//		0            BCD/Binary mode: 0 = 16-bit binary, 1 = four-digit BCD
-	outportb(PTI_MODE, 0x36); // 0b0011 0110 >> Channel 0, lobyte/hibyte, Mode 3 (square wave), 16bit binary
-	outportb(PTI_CH0, (word)(spd % 0x100));	//lo-byte
-	outportb(PTI_CH0, (word)(spd / 0x100));	//hi-byte
-
-   old_loading_handler = getvect(0x1C); // Save old IRQ
-
-	//set interrupt handler
-	setvect(0x1C, VGA_LoadingTransition);		//interrupt 1C not available on NEC 9800-series PCs.
-
-	asm STI
-}
-
-/////////////////////////////////////////////////////////
-// Reset loading transition interrupt (public)
-/////////////////////////////////////////////////////////
-void VGA_ResetLoadingInterrupt(void){
-
-	asm CLI
-
-	//set frame counter
-	outportb(PTI_MODE, 0x36);
-  	outportb(PTI_CH0, 0xFF);	//lo-byte
-	outportb(PTI_CH0, 0xFF);	//hi-byte
-
-   // Restore old handler
-	setvect(0x1C, old_loading_handler);
-
-	asm STI
-
-	VGA_Fade_out();
-}
-
 
 /////////////////////////////////////////////////////////
 // Enable 4 planes

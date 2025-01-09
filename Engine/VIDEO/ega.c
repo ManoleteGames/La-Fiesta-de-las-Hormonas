@@ -26,28 +26,29 @@ byte EGA_Present(void){
   	int86(0x10, &regs, &regs);
 
   	if (regs.h.bh == 0) {  // 0-Color mode; 1-mono mode
-		printf(" - EGA card detected\n");
+		printf(" - EGA card present \n");
      	switch( regs.h.bl)
    	{
   	  		case 0x00:
         		printf(" -- 64k EGA memory\n");
-            printf(" -- no compatible video card was detected\n");
+            printf(" -- Present EGA card configuration is not compatible \n");
      	   	break;
      		case 0x01:
      			printf(" -- 128k EGA memory\n");
-            printf(" -- no compatible video card was detected\n");
+            printf(" -- Present EGA card configuration is not compatible \n");
         		break;
 	     	case 0x02:
         		printf(" -- 192k EGA memory\n");
-            printf(" -- no compatible video card was detected\n");
+            printf(" -- Present EGA card configuration is not compatible \n");
           	break;
 	     	case 0x03:
        		printf(" -- 256k EGA memory\n");
-            printf(" -- no compatible video card was detected\n");
             cardPresent = 1;
           	break;
 	     	default:
 	 			printf(" -- Unknown configuration %u \n", regs.h.bl);
+            printf(" -- Present EGA card configuration is not compatible \n");
+            break;
       }
    }
 

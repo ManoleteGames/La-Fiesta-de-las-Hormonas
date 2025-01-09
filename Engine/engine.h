@@ -128,6 +128,12 @@ typedef struct tagSPRITE{				// structure for a sprite
 #define word_out(port,register,value) \
   outport(port,(((word)value<<8) + register))
 
+// Programable interval timer Command/mode port
+#define PTI_MODE 0x43
+#define PTI_CH0  0x40
+#define PTI_CH1  0x41
+#define PTI_CH2  0x42
+
 #define P_STOP			0;
 #define P_UP			1;
 #define P_DOWN			2;
@@ -154,9 +160,11 @@ typedef struct tagSPRITE{				// structure for a sprite
 #define K_RIGHT			0x4D
 #define K_SPACE			0x39
 
-#define KEYB_IRQ        9
 
-#define SPEAKER_IRQ     8
+#define TIMER_IRQ       0x1C
+#define KEYB_IRQ        9
+#define SPEAKER_IRQ     0x1C
+
 #define ADLIB_PORT 	   0x388
 
 extern byte PlayerAnimation[];
@@ -188,16 +196,23 @@ extern PLAYER far player;
 extern byte speech_active;
 extern byte debug;
 extern byte video_mode;  //0-undef; 1-vga; 2-ega; 3-cga; 4-tandy
-extern byte music_mode;	//0-undef; 1-Speaker; 2-tandy; 3-FM Chip (Adlib & Sound blaster)
 extern byte music_volume; // 0..100
-extern byte sfx_mode;	//0-undef; 1-Speaker; 2-tandy; 3-adlib; 4-sound blaster
-extern byte sfx_volume; // 0..100
+extern byte audio_mode;	//0-undef; 1-Speaker; 2-tandy; 3-adlib; 4-sound blaster
+extern byte sound_volume; // 0..100
 extern byte language;	//1-spanish; 2-english
+extern byte soundPlaying;
+extern byte musicPlaying;
+extern byte musicNonStopPlaying;
+extern byte musicLoaded;
 
 void InitEngine(void);
+void SetLoadingInterrupt(void);
+void ResetLoadingInterrupt(void);
+void RestartProgram(void);
 void Delay(int count);
 void Error(char *error, char *file, char *filename);
 void Update(int sprite_follow);
+void SaveConfig(void);
 void ExitDOS(void);
 void MovePlayer(void);
 void ResetScroll(void);
@@ -210,14 +225,14 @@ void ResetItem(int pos, int spriteNum);
 extern void (*Fade_out)(void);
 extern void (*Fade_in)(void);
 extern void (*LoadImage)(char *file,char* dat_string, word page);
+extern void (*LoadTransImage)(char *file,char* dat_string);
 extern void (*SetPage)(int page);
 extern void (*RotatePalette)(int index1, int index2, int speed);
+extern void (*RotatePaletteAsync)(int index1, int index2);
 extern void (*LoadAnimation)(char *file, char *dat_string);
 extern void (*LoadFont)(char *file, char *dat_string);
 extern void (*LoadTiles)(char *file,char* dat_string);
 extern void (*Draw_EmptyBox)(word x, word y, byte w, byte h);
-extern void (*SetLoadingInterrupt)(void);
-extern void (*ResetLoadingInterrupt)(void);
 extern void (*PrintText)(word x, word y, word lineLength, unsigned char *string, byte color);
 extern void (*Draw_Sprites)(void);
 extern void (*Restore_Sprites)(void);
@@ -229,6 +244,16 @@ extern void (*ScrollMap)(void);
 extern void (*PanelRefresh)(void);
 extern void (*LoadPanelBackground)(char *file,char* dat_string);
 extern void (*DrawMapBack)(void);
+
+extern void (*LoadMusic)(byte song);
+extern void (*UnloadMusic)(void);
+extern void (*PlayMusic)(void);
+extern void (*PlayNonStopMusic)(void);
+extern void (*PauseMusic)(void);
+extern void (*StopMusic)(void);
+extern void (*InitSoundCard)(void);
+extern void (*DeInitSoundCard)(void);
+extern void (*PlaySound)(byte sound);
 
 // VIDEO/VGA.c prototypes
 extern word vga_page[];
@@ -263,6 +288,8 @@ void VGA_MoveWindow(void);
 void VGA_PanelRefresh(void);
 void VGA_PanelUpdate(void);
 void VGA_LoadPanelBackground(char *file,char* dat_string);
+void VGA_RotatePaletteAsync(int index1, int index2);
+void VGA_LoadTransImage(char *file,char* dat_string);
 
 // VIDEO/CGA.c prototypes
 byte CGA_Present(void);
@@ -275,29 +302,49 @@ void EGA_Vsync(void);
 // VIDEO/TANDY.c prototypes
 void Vsync_TANDY(void);
 
+// SOUND/SPEAKER.c prototypes
+void SPEAKER_Init(void);
+void SPEAKER_Deinit(void);
+void SPEAKER_PlaySound(byte sound);
+void SPEAKER_PlayMusic(void);
+void SPEAKER_PlayNonStopMusic(void);
+void SPEAKER_PauseMusic(void);
+void SPEAKER_StopMusic(void);
+void SPEAKER_LoadMusic(byte song);
+void SPEAKER_UnloadMusic(void);
+
 // SOUND/SBLASTER.c prototypes
+extern unsigned int sbBaseAddress;
+extern unsigned int sbVersion;     // DSP version
+extern unsigned char sbLoDMA; // DMA Channel
+extern unsigned char sbHiDMA; // DMA Channel
+extern unsigned char sbIrq;   // IRQ
 byte SB_Present(void);
-void SB_SetAddress(unsigned int addr);
-void SB_SetLoDMA(unsigned char dma);
-void SB_SetHiDMA(unsigned char dma);
-void SB_SetIRQ(unsigned char i);
-void SB_InitSoundCard(void);
+void SB_Init(void);
+void SB_DeInit(void);
+void SB_PlaySound(byte sound);
 
 // SOUND/ADLIB.c prototypes
 byte ADLIB_Present(void);
-void ADLIB_LoadMusic(void);
-void ADLIB_UnloadMusic(void);
+void ADLIB_Init(void);
+void ADLIB_DeInit(void);
+void ADLIB_PlaySound(byte sound);
 void ADLIB_PlayMusic(void);
+void ADLIB_PlayNonStopMusic(void);
 void ADLIB_StopMusic(void);
-void ADLIB_InitSoundCard(void);
+void ADLIB_LoadMusic(byte song);
+void ADLIB_UnloadMusic(void);
 
 // SOUND/TANDY_SND.c prototypes
 byte TANDY_Present(void);
-void TANDY_LoadMusic(void);
-void TANDY_UnloadMusic(void);
-void TANDY_PlayMusic(void);
-void TANDY_StopMusic(void);
 void TANDY_InitSoundCard(void);
+void TANDY_DeInitSoundCard(void);
+void TANDY_PlaySound(byte sound);
+void TANDY_PlayMusic(void);
+void TANDY_PlayNonStopMusic(void);
+void TANDY_StopMusic(void);
+void TANDY_LoadMusic(byte song);
+void TANDY_UnloadMusic(void);
 
 // SOUND/MUSIC.c prototypes
 typedef struct tagIMFsong{				// structure for adlib IMF song, or MOD pattern data
@@ -313,9 +360,6 @@ extern int fp_keys[256];
 void Set_key_handler(void);
 void Reset_key_handler(void);
 void Update_FP_Keys(void);
-
-// SOUND/SPEAKER.c prototypes
-void PlaySpeaker_SFX(byte *note_array);
 
 // MAP/MAP.c prototypes
 extern long maxMapSize;

@@ -31,16 +31,26 @@ int scrollCameraSpeed[72] = {
 	2,2,2,2,2,2,2,2,
 };
 
-byte videoCard_detected;  // 0: No card; 1: VGA; 2: EGA; 3:CGA                                              
-byte soundCard_detected;  // 0-undef; 1-Speaker; 2-tandy; 3-adlib; 4-sound blaster
+byte videoVGA_Present = 0;
+byte videoEGA_Present = 0;
+byte videoCGA_Present = 0;
 byte graphicsModeActive = 0;
-                                                                                                 
+
 byte video_mode = 0;	//0-undef; 1-vga; 2-ega; 3-cga; 4-tandy
-byte music_mode = 0;	//0-undef; 1-Speaker; 2-tandy; 3-FM Chip (Adlib & Sound blaster)
+byte audio_mode = 0;	//0-undef; 1-Speaker; 2-tandy; 3-adlib; 4-sound blaster
+byte sound_volume = 0; // 0..100
 byte music_volume = 0; // 0..100
-byte sfx_mode = 0;	//0-undef; 1-Speaker; 2-tandy; 3-adlib; 4-sound blaster
-byte sfx_volume = 0; // 0..100
 byte language = 0;	//1-spanish; 2-english
+
+byte pcspeakerPresent = 0;
+byte soundTandyPresent = 0;
+byte adlibPresent = 0;
+byte soundBlasterPresent = 0;
+
+byte soundPlaying = 0;
+byte musicPlaying = 0;
+byte musicNonStopPlaying = 0;
+byte musicLoaded = 0;
 
 byte *tempdata1; //Temp storage of non tiled data. and also sound samples (1/2)
 byte *tempdata2; //Temp storage of non tiled data. and also sound samples (2/2)
@@ -72,20 +82,42 @@ byte scrolling_enabled = 0; // Scrolling and panning enabled
 
 unsigned char far *data;
 
+byte speech_active = 0;
+
 // Old time handler
 void interrupt (*old_time_handler)(void);
+// Old handler
+void interrupt (*old_loading_handler)(void);
+//Loading transition interrupt
+void interrupt LoadingTransition_handler(void){
+	asm CLI
 
-byte speech_active = 0;
+   // Rotate palette colors 243-->249
+   RotatePaletteAsync(243, 249);
+
+   // Acknowledge interrupt
+	asm mov al,020h
+	//asm mov dx,020h
+	asm out 020h, al	//Send 0x20 to 0x20 port (end of interrupt)
+
+	asm STI
+}
+
+
 
 /////////////////////////////////////////////////////////
 // Music functions
 // - Pointers to the specific sound card functions
 /////////////////////////////////////////////////////////
-void (*LoadMusic)(void);
+void (*LoadMusic)(byte song);
 void (*UnloadMusic)(void);
 void (*PlayMusic)(void);
+void (*PlayNonStopMusic)(void);
+void (*PauseMusic)(void);
 void (*StopMusic)(void);
 void (*InitSoundCard)(void);
+void (*DeInitSoundCard)(void);
+void (*PlaySound)(byte sound);
 
 /////////////////////////////////////////////////////////
 // Video functions
@@ -98,13 +130,13 @@ void (*Fade_in)(void);
 void (*Fade_out)(void);
 void (*SetPage)(int page);
 void (*LoadImage)(char *file,char* dat_string, word page);
+void (*LoadTransImage)(char *file,char* dat_string);
 void (*HardwareScrolling)(void);
 void (*RotatePalette)(int index1, int index2, int speed);
+void (*RotatePaletteAsync)(int index1, int index2);
 void (*LoadFont)(char *file, char *dat_string);
 void (*LoadTiles)(char *file,char* dat_string);
 void (*Draw_EmptyBox)(word x, word y, byte w, byte h);
-void (*SetLoadingInterrupt)(void);
-void (*ResetLoadingInterrupt)(void);
 void (*PrintText)(word x, word y, word lineLength, unsigned char *string,byte color);
 void (*Draw_Sprites)(void);
 void (*Restore_Sprites)(void);
@@ -136,20 +168,14 @@ void ResetScroll(void){
 //0-undef; 1-Speaker; 2-tandy; 3-Adlib; 4-Sound blaster
 /////////////////////////////////////////////////////////
 void CheckSoundCard(void){
-
-	soundCard_detected = 0;
-
-   printf("***** Checking audio hardware... \n");
+	printf("***** Checking audio hardware... \n");
 
    // Check if any card is avaliable
-   if(soundCard_detected == 0){ if( SB_Present() ) { soundCard_detected = 4; }}
-   if(soundCard_detected == 0){ if( ADLIB_Present() ) { soundCard_detected = 3; }}
-   if(soundCard_detected == 0){ if( TANDY_Present() ) { soundCard_detected = 2; }}
-   if(soundCard_detected == 0){
-   	printf(" - No sound card detected \n");
-      printf(" -- only PC Speaker avaliable \n");
-   	soundCard_detected = 1;
-   }  // Only speaker avaliable
+   printf(" - PC Speaker is present. He will never let you out \n");
+   pcspeakerPresent = 1;
+   if( SB_Present() ){ soundBlasterPresent = 1; }
+   if( TANDY_Present() ){ soundTandyPresent = 1; }
+   if( ADLIB_Present() ){ adlibPresent = 1; }
 }
 
 /////////////////////////////////////////////////////////
@@ -157,32 +183,18 @@ void CheckSoundCard(void){
 // 0: No card; 1: VGA; 2: EGA; 3:CGA
 /////////////////////////////////////////////////////////
 void CheckGraphicsCard(void){
-
-   videoCard_detected = 0;
-
    printf("***** Checking video hardware... \n");
 
    // Check if any card is avaliable
-   if(videoCard_detected == 0){ if( VGA_Present() ) { videoCard_detected = 1; }}
-   if(videoCard_detected == 0){ if( EGA_Present() ) { videoCard_detected = 2; }}
-   if(videoCard_detected == 0){ if( CGA_Present() ) { videoCard_detected = 3; }}
+   if( VGA_Present() ) { videoVGA_Present = 1; }
+	if( EGA_Present() ) { videoEGA_Present = 1; }
+   if( CGA_Present() ) { videoCGA_Present = 1; }
 
-   videoCard_detected = 1;
-
-   // Set Vsync pointer for the detected video card
-   switch( videoCard_detected ){
-   	case 1:
-      	Vsync = VGA_Vsync;
-      	break;
-      case 2:
-      	Vsync = EGA_Vsync;
-      	break;
-      case 3:
-      	Vsync = CGA_Vsync;
-      	break;
-      default:
-      	Vsync = Dummy;
-      	break;
+   // No compatible video card detected
+   if((videoVGA_Present == 0) && (videoEGA_Present == 0) && (videoCGA_Present == 0)){
+   	Error("Unable to detect video card",0,0);
+      getch();
+      exit(1);
    }
 }
 
@@ -200,76 +212,74 @@ void InitKeyboard(void){
 }
 
 /////////////////////////////////////////////////////////
-// Link sound functions to specific device
+// Link audio functions to specific device
 // 0-undef; 1-Speaker; 2-tandy; 3-adlib; 4-sound blaster
 /////////////////////////////////////////////////////////
-void LinkSound(void){
+void LinkAudio(void){
 
 	printf("***** Inicializando sonido... \n");
 
-	switch(sfx_mode){
+	switch(audio_mode){
+   	case 0: // audio off. Link all functions to pc speaker but never activate buzzer
+         printf(" - Audio is off \n");
+         InitSoundCard = &SPEAKER_Init;
+         DeInitSoundCard = &SPEAKER_Deinit;
+			PlaySound = &SPEAKER_PlaySound;
+         LoadMusic = SPEAKER_LoadMusic;
+         UnloadMusic = SPEAKER_UnloadMusic;
+			PlayMusic = SPEAKER_PlayMusic;
+         PlayNonStopMusic = SPEAKER_PlayNonStopMusic;
+         PauseMusic = SPEAKER_PauseMusic;
+         StopMusic = SPEAKER_StopMusic;
    	case 1: // PC Speaker
       	printf(" - Activating PC Speaker sound mode\n");
-      	InitSoundCard = Dummy;
-         //DeInitSoundCard = &Dummy_VoidFunction;
-			//PlaySFX = &Speaker_PlaySFX;
+      	InitSoundCard = &SPEAKER_Init;
+         DeInitSoundCard = &SPEAKER_Deinit;
+			PlaySound = &SPEAKER_PlaySound;
+         LoadMusic = SPEAKER_LoadMusic;
+         UnloadMusic = SPEAKER_UnloadMusic;
+			PlayMusic = SPEAKER_PlayMusic;
+         PlayNonStopMusic = SPEAKER_PlayNonStopMusic;
+         StopMusic = SPEAKER_StopMusic;
       	break;
       case 2: // Tandy sound card
       	printf(" - Activating Tandy sound mode\n");
       	InitSoundCard = TANDY_InitSoundCard;
-         //DeInitSoundCard = &Dummy_VoidFunction;
+         DeInitSoundCard = TANDY_DeInitSoundCard;
+         PlaySound = TANDY_PlaySound;
+         LoadMusic = TANDY_LoadMusic;
+         UnloadMusic = TANDY_UnloadMusic;
+			PlayMusic = TANDY_PlayMusic;
+         PlayNonStopMusic = TANDY_PlayNonStopMusic;
+         StopMusic = TANDY_StopMusic;
       	break;
       case 3: // Adlib
       	printf(" - Activating Adlib sound mode\n");
-      	InitSoundCard = ADLIB_InitSoundCard;
-         //DeInitSoundCard = &Dummy_VoidFunction;
-			//PlaySFX = &FM_PlaySFX;
+      	InitSoundCard = ADLIB_Init;
+         DeInitSoundCard = ADLIB_DeInit;
+			PlaySound = ADLIB_PlaySound;
+         LoadMusic = ADLIB_LoadMusic;
+         UnloadMusic = ADLIB_UnloadMusic;
+			PlayMusic = ADLIB_PlayMusic;
+         PlayNonStopMusic = ADLIB_PlayNonStopMusic;
+         StopMusic = ADLIB_StopMusic;
       	break;
       case 4: // Sound blaster
       	printf(" - Activating Sound Blaster sound mode\n");
-        	InitSoundCard = SB_InitSoundCard;
-         //DeInitSoundCard = &SBlaster_DeInit;
-			//PlaySFX = &SBlaster_PlaySFX;
+        	InitSoundCard = SB_Init;
+         DeInitSoundCard = SB_DeInit;
+			PlaySound = SB_PlaySound;
+         LoadMusic = ADLIB_LoadMusic;
+         UnloadMusic = ADLIB_UnloadMusic;
+			PlayMusic = ADLIB_PlayMusic;
+         PlayNonStopMusic = ADLIB_PlayNonStopMusic;
+         StopMusic = ADLIB_StopMusic;
       	break;
       default:
       	printf("No sound mode defined\n");
       	break;
 	}
 }
-
-
-/////////////////////////////////////////////////////////
-// Link music functions to specific device
-// 0-undef; 1-Speaker; 2-tandy; 3-adlib
-/////////////////////////////////////////////////////////
-void LinkMusic(void){
-
-	printf("***** Inicializando musica... \n");
-
-	switch(music_mode){
-   	case 1: // PC Speaker
-      	printf(" - Activating PC speaker music mode\n");
-      	break;
-      case 2: // Tandy sound card
-      	printf(" - Activating Tandy music mode\n");
-      	LoadMusic = TANDY_LoadMusic;
-         UnloadMusic = TANDY_UnloadMusic;
-			PlayMusic = TANDY_PlayMusic;
-         StopMusic = TANDY_StopMusic;
-      	break;
-      case 3: // Adlib or sound blaster
-      	printf(" - Activating FM music mode\n");
-        	LoadMusic = ADLIB_LoadMusic;
-         UnloadMusic = ADLIB_UnloadMusic;
-			PlayMusic = ADLIB_PlayMusic;
-         StopMusic = ADLIB_StopMusic;
-      	break;
-      default:
-			printf(" - No music mode defined\n");
-      	exit(1);
-	}
-}
-
 
 /////////////////////////////////////////////////////////
 // Link video functions to specific device
@@ -291,16 +301,16 @@ void LinkVideo(void){
 			Fade_out = VGA_Fade_out;
 
       	LoadImage = VGA_LoadImage;
+         LoadTransImage = VGA_LoadTransImage;
          LoadTiles = VGA_LoadTiles;
          LoadFont = VGA_LoadFont;
 
          HardwareScrolling = VGA_HardwareScrolling;
          SetPage = VGA_SetPage;
          RotatePalette = VGA_RotatePalette;
+         RotatePaletteAsync = VGA_RotatePaletteAsync;
 
          Draw_EmptyBox = VGA_Draw_EmptyBox;
-         SetLoadingInterrupt = VGA_SetLoadingInterrupt;
-         ResetLoadingInterrupt = VGA_ResetLoadingInterrupt;
          PrintText = VGA_PrintText;
          Draw_Sprites = VGA_Draw_Sprites;
          Restore_Sprites = VGA_Restore_Sprites;
@@ -360,6 +370,17 @@ void Delay(int count){
 }
 
 /////////////////////////////////////////////////////////
+// Save configuration
+/////////////////////////////////////////////////////////
+void SaveConfig(void){
+   FILE *setupfile;
+   setupfile = fopen("setup.ini","w");
+   if (!setupfile) { Error("Cannot update configuration file SETUP.INI",0,0); }
+   fprintf(setupfile,"#SETUP\n------\n[1]VIDEO=%03u\n[2]AUDIO=%03u\n[3]MUSVL=%03u\n[4]SNDVL=%03u\n[5]BLASA=%03x\n[6]BLASI=%03x\n[7]BLSLD=%03x\n[8]BLSHD=%03x\n[9]LANG =%03x",video_mode,audio_mode,music_volume,sound_volume,sbBaseAddress,sbIrq,sbLoDMA,sbHiDMA,language);
+	fclose(setupfile);
+}
+
+/////////////////////////////////////////////////////////
 // Load configuration
 /////////////////////////////////////////////////////////
 void LoadConfig(void){
@@ -369,32 +390,138 @@ void LoadConfig(void){
 	printf("***** Cargando configuracion...\n");
    setupfile = fopen("setup.ini","rb+");
    if (!setupfile) {
-		printf(" - setup.ini no encontrado\n - Creando nuevo archivo con la configuracion detectada...\n");
+		printf(" - setup.ini no encontrado\n - Creando nuevo archivo con la configuracion básica...\n");
 		setupfile = fopen("setup.ini","w");
-		fprintf(setupfile,"#SETUP\n------\n[1]VIDEO=%03u\n[2]MUSIC=%03u\n[3]MUSVOL=050\n[4]SFX=%03u\n[5]SFXVOL=050\n[6]BLASA=%03x\n[7]BLASI=%03x\n[8]BLASLD=%03x\n[9]BLASHD=%03x\n[10]LANG=001",1,1,1,0,0,0,0);
-		fclose(setupfile);
-		sleep(2);
+      if (!setupfile) { Error("Cannot create configuration file SETUP.INI",0,0); }
+		fprintf(setupfile,"#SETUP\n------\n[1]VIDEO=%03u\n[2]AUDIO=%03u\n[3]MUSVL=050\n[4]SNDVL=050\n[5]BLASA=%03x\n[6]BLASI=%03x\n[7]BLSLD=%03x\n[8]BLSHD=%03x\n[9]LANG =001",1,1,0,0,0,0);
+   	//fclose(setupfile);
+		//sleep(2);
 	}
 
 	fread(buffer,1,256,setupfile);
 
-	video_mode = (buffer[25]-48)*100 + (buffer[26]-48)*10 + (buffer[27]-48);
-	music_mode = (buffer[39]-48)*100 + (buffer[40]-48)*10 + (buffer[41]-48);
-   music_volume = (buffer[54]-48)*100 + (buffer[55]-48)*10 + (buffer[56]-48);
-   sfx_mode = (buffer[66]-48)*100 + (buffer[67]-48)*10 + (buffer[68]-48);
-   sfx_volume = (buffer[81]-48)*100 + (buffer[82]-48)*10 + (buffer[83]-48);
-   SB_SetAddress((buffer[95]-48)*100 + (buffer[96]-48)*10 + (buffer[97]-48));
-   SB_SetIRQ((buffer[109]-48)*100 + (buffer[110]-48)*10 + (buffer[111]-48));
-   SB_SetLoDMA((buffer[124]-48)*100 + (buffer[125]-48)*10 + (buffer[126]-48));
-   SB_SetHiDMA((buffer[139]-48)*100 + (buffer[140]-48)*10 + (buffer[141]-48));
-   language = (buffer[153]-48)*100 + (buffer[154]-48)*10 + (buffer[155]-48);
+   // 0: No card; 1: VGA; 2: EGA; 3:CGA
+	video_mode 		= (buffer[25]-48)*100 + (buffer[26]-48)*10 + (buffer[27]-48);
+   // 0-undef; 1-Speaker; 2-tandy; 3-Adlib; 4-Sound blaster
+	audio_mode 		= (buffer[39]-48)*100 + (buffer[40]-48)*10 + (buffer[41]-48);
+   music_volume 	= (buffer[53]-48)*100 + (buffer[54]-48)*10 + (buffer[55]-48);
+   sound_volume 	= (buffer[67]-48)*100 + (buffer[68]-48)*10 + (buffer[69]-48);
+   sbBaseAddress  = (buffer[81]-48)*100 + (buffer[82]-48)*10 + (buffer[83]-48);
+   sbIrq				= (buffer[95]-48)*100 + (buffer[96]-48)*10 + (buffer[97]-48);
+   sbLoDMA			= (buffer[109]-48)*100 + (buffer[110]-48)*10 + (buffer[111]-48);
+   sbHiDMA			= (buffer[123]-48)*100 + (buffer[124]-48)*10 + (buffer[125]-48);
+   language 		= (buffer[137]-48)*100 + (buffer[138]-48)*10 + (buffer[139]-48);
 
-   video_mode = 1;
-   music_mode = 1;
-   sfx_mode = 1;
+   // Check selected video mode is compatible
+   // 0: No card; 1: VGA; 2: EGA; 3:CGA
+   switch(video_mode){
+   	case 1: // VGA
+      	printf(" - VGA is selected\n");
+      	if( videoVGA_Present == 0){
+         	printf(" - ... but not present \n");
+         	if( videoEGA_Present ){
+         		printf(" - Applying EGA graphics instead \n");
+            	video_mode = 2;
+            	printf("EGA video mode is not avaliable yet!\n");
+            	getch();
+      			exit(1);
+         	}
+        	 	else if( videoCGA_Present ){
+         		printf(" - Applying CGA graphics instead \n");
+            	video_mode = 3;
+            	printf("CGA video mode is not avaliable yet!\n");
+            	getch();
+      			exit(1);
+         	}
+            else{
+            	printf("No compatible video card found!\n");
+            	getch();
+            	exit(1);
+            }
+         }
+      	break;
+      case 2: // EGA
+      	printf(" - EGA is selected \n");
+         if( videoEGA_Present == 0){
+         	printf(" - ... but not present \n");
+         	if( videoVGA_Present ){
+         		printf(" - Applying VGA graphics instead \n");
+            	video_mode = 1;
+         	}
+         	else if( videoCGA_Present ){
+         		printf(" - Applying CGA graphics instead \n");
+            	video_mode = 3;
+            	printf("CGA video mode is not avaliable yet!\n");
+            	getch();
+      			exit(1);
+         	}
+            else{
+            	printf("No compatible video card found!\n");
+            	getch();
+            	exit(1);
+            }
+         }
+      	break;
+      case 3: // CGA
+      	printf(" - CGA is selected \n");
+         if( videoCGA_Present == 0){
+         	printf(" - ... but not present \n");
+         	if( videoVGA_Present ){
+         		printf(" - Applying VGA graphics instead \n");
+            	video_mode = 1;
+         	}
+         	else if( videoEGA_Present ){
+         		printf(" - Applying EGA graphics instead \n");
+            	video_mode = 2;
+            	printf("EGA video mode is not avaliable yet!\n");
+            	getch();
+      			exit(1);
+         	}
+            else{
+            	printf("No compatible video card found!\n");
+            	getch();
+            	exit(1);
+            }
+         }
+      	break;
+   }
+
+   // Check selected audio mode is compatible
+   // 0-undef; 1-Speaker; 2-tandy; 3-Adlib; 4-Sound blaster
+   switch(audio_mode){
+   	case 0: // OFF
+      	printf(" - Audio OFF is selected\n");
+         break;
+   	case 1: // Speaker
+         printf(" - PC Speaker is selected \n");
+      	break;
+      case 2: // Tandy
+      	printf(" - Tandy audio is selected \n");
+         if( soundTandyPresent == 0){
+         	printf(" - ... but not present \n");
+         	printf(" - Applying PC Speaker audio instead \n");
+         	audio_mode = 1;
+         }
+      	break;
+      case 3: // Adlib
+      	printf(" - Adlib audio is selected \n");
+         if( adlibPresent == 0){
+         	printf(" - ...but not present \n");
+         	printf(" - Applying PC Speaker audio instead \n");
+         	audio_mode = 1;
+         }
+      	break;
+      case 4: // Sound blaster
+      	printf(" - Sound blaster audio is selected \n");
+         if( soundBlasterPresent == 0){
+         	printf(" - ...but not present \n");
+         	printf(" - Applying PC Speaker audio instead \n");
+         	audio_mode = 1;
+         }
+      	break;
+   }
 
    printf(" - Configuracion cargada \n");
-
    fclose(setupfile);
 }
 
@@ -405,7 +532,7 @@ void ExitDOS(void){
 
 	if(graphicsModeActive){ TextMode(); } // Get back to text mode
 
-	//StopMusic();
+	StopMusic();
 
 	outportb(0x43, 0x36);
 	outportb(0x40, 0xFF);	//lo-byte
@@ -414,9 +541,9 @@ void ExitDOS(void){
    Reset_key_handler();
 
    // Unload and release music data
-	//UnloadMusic();
+	UnloadMusic();
 
-   //DeInitSoundCard();
+   DeInitSoundCard();
 	//UnloadTileset();
 	UnloadMap();
    UnloadSprites();
@@ -424,20 +551,58 @@ void ExitDOS(void){
    if(error1){ farfree(error1); }
    if(error2){ farfree(error2); }
    if(string){ farfree(string); }
-
+   if(tempdata1){ farfree(tempdata1); }
+   if(tempdata2){ farfree(tempdata2); }
    if(music.sdata){ farfree(music.sdata); }
-   //if(player){ farfree(player); }
-   if(sprite){ farfree(sprite); }
-
    if(map_data ){ farfree(map_data); }
    if(map_flip ){ farfree(map_flip); }
    if(map_collision ){ farfree(map_collision); }
    if(map_hotspot ){ farfree(map_hotspot); }
    if(map_event ){ farfree(map_event); }
    if(map_sprites ){ farfree(map_sprites); }
+   if(sprite ){ farfree(sprite); }
 
    printf("bye byte...");
 	exit(1);
+}
+
+/////////////////////////////////////////////////////////
+// Restart program
+/////////////////////////////////////////////////////////
+void RestartProgram(void){
+	if(graphicsModeActive){ TextMode(); } // Get back to text mode
+
+	StopMusic();
+
+	outportb(0x43, 0x36);
+	outportb(0x40, 0xFF);	//lo-byte
+	outportb(0x40, 0xFF);	//hi-byte
+
+   Reset_key_handler();
+
+   // Unload and release music data
+	UnloadMusic();
+
+   DeInitSoundCard();
+	//UnloadTileset();
+	UnloadMap();
+   UnloadSprites();
+
+   if(error1){ farfree(error1); }
+   if(error2){ farfree(error2); }
+   if(string){ farfree(string); }
+   if(tempdata1){ farfree(tempdata1); }
+   if(tempdata2){ farfree(tempdata2); }
+   if(music.sdata){ farfree(music.sdata); }
+   if(map_data ){ farfree(map_data); }
+   if(map_flip ){ farfree(map_flip); }
+   if(map_collision ){ farfree(map_collision); }
+   if(map_hotspot ){ farfree(map_hotspot); }
+   if(map_event ){ farfree(map_event); }
+   if(map_sprites ){ farfree(map_sprites); }
+   if(sprite ){ farfree(sprite); }
+
+   InitEngine();
 }
 
 /////////////////////////////////////////////////////////
@@ -476,9 +641,6 @@ void AllocateEngineMem(void){
 
 	printf("***** Allocating memory ...\n");
 
-   //Allocate first 32kb just to keep a space before allocating data
-   //if ((dummy = farcalloc(65535L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate 32 Kb of dummy data after exe","dummy",0);
-
    //Allocate error strings
    if ((error1 = farcalloc(30, sizeof(unsigned char))) == NULL) Error("Not enough RAM to allocate 30 bytes of error1 string","error1",0);
  	printf(" error1 allocated onto adddress: %p address \n", error1);
@@ -488,18 +650,14 @@ void AllocateEngineMem(void){
    printf(" string allocated onto adddress: %p address \n", string);
 
    //Allocate 32KB block for temp data
-   //if ((tempdata1 = farcalloc(32768L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate 32 Kb of temp. data","tempdata1",0);
    if ((tempdata1 = farcalloc(65535L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate 32 Kb of temp. data","tempdata1",0);
    printf(" tempdata1 allocated onto adddress: %p address \n", tempdata1);
    //Allocate 32 KB of temp data just after the first
-	//if ((tempdata2 = farcalloc(32768L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate 32 Kb of temp. data","tempdata2",0);
    if ((tempdata2 = farcalloc(65535L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate 32 Kb of temp. data","tempdata2",0);
    printf(" tempdata2 allocated onto adddress: %p address \n", tempdata2);
 
-	//if ((music.sdata = farcalloc(65535L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate 64 Kb of music data","music","sdata");
-   //printf(" music.sdata allocated onto adddress: %p address \n", music.sdata);
-	//if ((map_data = farcalloc(65535L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate map data","map","data");
-   //if ((map_data = farcalloc(32768L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate map data","map","data");
+	if ((music.sdata = farcalloc(65535L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate 64 Kb of music data","music","sdata");
+   printf(" music.sdata allocated onto adddress: %p address \n", music.sdata);
    if ((map_data = farcalloc(maxMapSize,sizeof(byte))) == NULL) Error("Not enough RAM to allocate map data","map","data");
    printf(" map_data allocated onto adddress: %p address \n", map_data);
 	if ((map_collision = farcalloc(maxMapSize,sizeof(byte))) == NULL) Error("Not enough RAM to allocate collision data","map","collision");
@@ -514,7 +672,7 @@ void AllocateEngineMem(void){
    printf(" sprite allocated onto adddress: %p address \n", sprite);
 
    printf(" - Memory allocated successfuly \n");
-   getchar();
+   //getchar();
 }
 
 /////////////////////////////////////////////////////////
@@ -529,8 +687,7 @@ void InitEngine(void){
 
    LoadConfig();
    LinkVideo();
-   LinkMusic();
-   LinkSound();
+   LinkAudio();
 
    AllocateEngineMem();
 
@@ -539,6 +696,95 @@ void InitEngine(void){
    InitSoundCard();
    InitVideoCard();
    graphicsModeActive = 1;
+
+}
+
+/////////////////////////////////////////////////////////
+// Set loading transition interrupt (public)
+// - sets an animation on the page 1, meanwhile images
+//   can be loaded on other pages.
+/////////////////////////////////////////////////////////
+void SetLoadingInterrupt(void){
+	Fade_out();
+
+   SPEAKER_PauseMusic();
+   UnloadSprites();
+   UnloadMap();
+
+   LoadTransImage("images.DAT","loading.pcx");
+   SetPage(1);
+   Fade_in();
+   scrolling_enabled = 0;
+
+	Vsync();  //Wait Vsync
+
+	asm CLI
+
+	//set timer on programable internal time interrupt
+   // -   Bits         Usage
+	//   6 and 7      Select channel :
+   //		             0 0 = Channel 0
+   //		             0 1 = Channel 1
+   //		             1 0 = Channel 2
+   //		             1 1 = Read-back command (8254 only)
+	//	  4 and 5      Access mode :
+   //		             0 0 = Latch count value command
+   //		             0 1 = Access mode: lobyte only
+   //		             1 0 = Access mode: hibyte only
+   //		             1 1 = Access mode: lobyte/hibyte
+	//		1 to 3       Operating mode :
+   //		             0 0 0 = Mode 0 (interrupt on terminal count)
+   //		             0 0 1 = Mode 1 (hardware re-triggerable one-shot)
+   //		             0 1 0 = Mode 2 (rate generator)
+   //		             0 1 1 = Mode 3 (square wave generator)
+   //		             1 0 0 = Mode 4 (software triggered strobe)
+   //		             1 0 1 = Mode 5 (hardware triggered strobe)
+   //		             1 1 0 = Mode 2 (rate generator, same as 010b)
+   //		             1 1 1 = Mode 3 (square wave generator, same as 011b)
+	//		0            BCD/Binary mode: 0 = 16-bit binary, 1 = four-digit BCD
+
+   asm mov al, 0B6h     // Initialize PIT (programable interval timer)
+   asm out 43h,al
+
+    //set timer
+   asm mov al,0x36  // 0b0011 0110 >> Channel 0, lobyte/hibyte, Mode 3 (square wave), 16bit binary
+   asm out PTI_MODE,al
+   //unsigned long spd = 1193182/60;= 19886;
+   asm mov al,255 //spd lo-byte
+   asm out PTI_CH0,al
+   asm mov al,255 //spd  hi-byte
+   asm out PTI_CH0,al
+
+   // Save old IRQ, usualy the sound interrupt function
+   old_loading_handler = getvect(TIMER_IRQ); // Save old IRQ
+
+	//set interrupt handler
+	setvect(TIMER_IRQ, LoadingTransition_handler);		//interrupt 1C not available on NEC 9800-series PCs.
+
+	asm STI
+}
+
+/////////////////////////////////////////////////////////
+// Reset loading transition interrupt (public)
+/////////////////////////////////////////////////////////
+void ResetLoadingInterrupt(void){
+
+	asm CLI
+
+	// do not reset timer
+   //outportb(PTI_MODE, 0x36);
+  	//outportb(PTI_CH2, 0xFF);	//lo-byte
+	//outportb(PTI_CH2, 0xFF);	//hi-byte
+
+    // Restore old handler, normaly the sound interrupt function
+	setvect(TIMER_IRQ, old_loading_handler);
+
+   // Continue playing music from the same point it was
+   SPEAKER_PlayNonStopMusic();
+
+	asm STI
+
+	Fade_out();
 }
 
 /////////////////////////////////////////////////////////

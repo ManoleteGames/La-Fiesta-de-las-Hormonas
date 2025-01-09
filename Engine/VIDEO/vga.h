@@ -52,16 +52,7 @@
 #define VGA_AC_MODE_CONTROL		0x10	  //Index of Mode COntrol register in AC
 #define VGA_AC_INDEX			0x03c0	  //Attribute controller index register
 
-
-
-
 /* Attribute controller registers */
 #define VGA_PEL_PANNING 0x13
-
-// Programable interval timer Command/mode port
-#define PTI_MODE 0x43
-#define PTI_CH0  0x40
-#define PTI_CH1  0x41
-#define PTI_CH2  0x42
 
 

@@ -4,50 +4,22 @@
 
 #include "source\engine\engine.h"
 
-unsigned int baseAddress; //Sound Blaster base address
-unsigned int version;     // DSP version
-unsigned char loDMA; // DMA Channel
-unsigned char hiDMA; // DMA Channel
-unsigned char irq;   // IRQ
+unsigned int sbBaseAddress; //Sound Blaster base address
+unsigned int sbVersion;     // DSP version
+unsigned char sbLoDMA; // DMA Channel
+unsigned char sbHiDMA; // DMA Channel
+unsigned char sbIrq;   // IRQ
 int playing;
-
-///////////////////////////////////////////
-// Set port address
-///////////////////////////////////////////
-void SB_SetAddress(unsigned int addr){
- 	baseAddress = addr;
-}
-
-///////////////////////////////////////////
-// Set low DMA (8bit)
-///////////////////////////////////////////
-void SB_SetLoDMA(unsigned char dma){
- 	loDMA = dma;
-}
-
-///////////////////////////////////////////
-// Set high DMA (16bit)
-///////////////////////////////////////////
-void SB_SetHiDMA(unsigned char dma){
- 	hiDMA = dma;
-}
-
-///////////////////////////////////////////
-// Set IRC
-///////////////////////////////////////////
-void SB_SetIRQ(unsigned char i){
- 	irq = i;
-}
 
 ///////////////////////////////////////////
 // Read a byte from the DSP (Digital Signal Processor) on the Sound Blaster
 ///////////////////////////////////////////
 unsigned char ReadDSP (void)
 {
-	while (!(inportb (baseAddress + 0xE) & 0x80)){
+	while (!(inportb (sbBaseAddress + 0xE) & 0x80)){
    	// do nothing, just wait
    }
-   return (inportb (baseAddress + 0xA));
+   return (inportb (sbBaseAddress + 0xA));
 }
 
 ///////////////////////////////////////////
@@ -56,11 +28,11 @@ unsigned char ReadDSP (void)
 void WriteDSP (unsigned char Value)
 {
   	//Wait for the DSP to be ready to accept data
-  	while ((inportb (baseAddress + 0xC) & 0x80) == 0x80){
+  	while ((inportb (sbBaseAddress + 0xC) & 0x80) == 0x80){
    	// do nothing, just wait
   	}
   	//Send byte
-  	outportb (baseAddress + 0xC, Value);
+  	outportb (sbBaseAddress + 0xC, Value);
 }
 
 ///////////////////////////////////////////
@@ -69,7 +41,7 @@ void WriteDSP (unsigned char Value)
 void DSPVersion (void)
 {
   WriteDSP (0xE1);
-  version = ReadDSP();
+  sbVersion = ReadDSP();
 }
 
 ///////////////////////////////////////////
@@ -86,7 +58,7 @@ char ResetDSP(unsigned int addr)
   //Check if reset was succesfull
   if (((inportb(addr + 0xE) & 0x80) == 0x80) && (inportb (addr + 0xA) == 0xAA)) {
     //DSP was found
-    //baseAddress = addr;
+    //sbBaseAddress = addr;
     return (1);
   } else
     //No DSP was found
@@ -103,13 +75,13 @@ byte SB_Present(void){
    char *blaster;
 
    // Find address port avaliable
-   if( ResetDSP (0x220) ) { baseAddress = 0x220; }
-   if( ResetDSP (0x230) ) { baseAddress = 0x230; }
-   if( ResetDSP (0x240) ) { baseAddress = 0x240; }
-   if( ResetDSP (0x250) ) { baseAddress = 0x250; }
-   if( ResetDSP (0x260) ) { baseAddress = 0x260; }
-   if( ResetDSP (0x280) ) { baseAddress = 0x280; }
-   if( baseAddress == 0) { return 0; }
+   if( ResetDSP (0x220) ) { sbBaseAddress = 0x220; }
+   if( ResetDSP (0x230) ) { sbBaseAddress = 0x230; }
+   if( ResetDSP (0x240) ) { sbBaseAddress = 0x240; }
+   if( ResetDSP (0x250) ) { sbBaseAddress = 0x250; }
+   if( ResetDSP (0x260) ) { sbBaseAddress = 0x260; }
+   if( ResetDSP (0x280) ) { sbBaseAddress = 0x280; }
+   if( sbBaseAddress == 0) { return 0; }
 
    // Check sound blaster type
    //There are several different type of Sound Blaster
@@ -120,32 +92,32 @@ byte SB_Present(void){
  	// 0x03 - Sound Blaster Pro 2 (8 bit)
   	// 0x04 - Sound Blaster 16/ASP/AWE 32/AWE 64 (16 bit)
    DSPVersion();
-   if( version == 0) { return 0; }
+   if( sbVersion == 0) { return 0; }
 
    blaster = getenv("BLASTER");
 
    // Get DMA channel
    for(i=0;i< strlen(blaster);i++){
-   	if(blaster[i] == 'D'){ loDMA = blaster[i + 1] - '0'; }
+   	if(blaster[i] == 'D'){ sbLoDMA = blaster[i + 1] - '0'; }
    }
-   if( loDMA == 0) { return 0; }
+   if( sbLoDMA == 0) { return 0; }
 
    // Get IRQ channel
    for(i=0;i< strlen(blaster);i++){
    	if(blaster[i] == 'I'){
    		if(blaster[i + 2] == ' '){
-         	irq = blaster[i + 1] - '0';
+         	sbIrq = blaster[i + 1] - '0';
          }
          else{
-         	irq = (blaster[i+1]-'0')*10 + blaster[i+2]-'0';
+         	sbIrq = (blaster[i+1]-'0')*10 + blaster[i+2]-'0';
          }
       }
    }
-   if( irq == 0) { return 0; }
+   if( sbIrq == 0) { return 0; }
 
    // This means all data has been found, so sound blaster is here
 	// Print data
-   switch(version)
+   switch(sbVersion)
    {
      	case 0x01:
 	   	printf(" - Sound Blaster 1.0 detected\n");
@@ -164,11 +136,11 @@ byte SB_Present(void){
          break;
    }
 
-   printf(" -- ADDR: %x\n", baseAddress);
-   printf(" -- IRQ: %d\n", irq);
-  	printf(" -- DMA Channel (8 bit): %d\n", loDMA);
-   if(version>=4){
-     	printf(" -- DMA Channel (16 bit): %d\n",hiDMA);
+   printf(" -- ADDR: %x\n", sbBaseAddress);
+   printf(" -- IRQ: %d\n", sbIrq);
+  	printf(" -- DMA Channel (8 bit): %d\n", sbLoDMA);
+   if(sbVersion>=4){
+     	printf(" -- DMA Channel (16 bit): %d\n",sbHiDMA);
    }
    return 1;
 }
@@ -176,6 +148,20 @@ byte SB_Present(void){
 /////////////////////////////////////////////////////////
 // Initialize sound card
 /////////////////////////////////////////////////////////
-void SB_InitSoundCard(void){
+void SB_Init(void){
+
+}
+
+/////////////////////////////////////////////////////////
+// Deinitialize sound card
+/////////////////////////////////////////////////////////
+void SB_DeInit(void){
+
+}
+
+/////////////////////////////////////////////////////////
+// Play sound
+/////////////////////////////////////////////////////////
+void SB_PlaySound(byte sound){
 
 }

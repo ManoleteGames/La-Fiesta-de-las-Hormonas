@@ -17,33 +17,48 @@ byte BirdAnimation[] = {0,1,2,3,4,3,4,3,2,1,0,0,0,0,0};
 byte DirectorAnimation[] = {0,1,0,1,0,0,2,2,3,3,4,0,0,0,1};
 byte CharacterAnimation2[] = {0,0,0,1,0,0,0};
 byte CharacterAnimation3[] = {0,0,0,1,2,0,0};
-byte speakerMenu[16] = {56,52,51,45,40,30,25,15,10,5,0,0,0,0,0,0};
-
 
 /////////////////////////////////////////////////////////
 // Logo function
 // - Little sequence with logos and stuff
 /////////////////////////////////////////////////////////
 void Logo(void){
+
 	// Dos contest logo
 	Fade_out();
    LoadImage("LOGO.DAT","LCONTEST.pcx",1);
    SetPage(1);
    Fade_in();
+   LoadMusic(2);
+   PlayMusic();
+   while(musicPlaying){
+   	// Wait until song is finished
+   }
+   UnloadMusic();
 
    // MS-DOS club logo
    LoadImage("LOGO.DAT","LDOSCLUB.pcx",2);
    Fade_out();
    SetPage(2);
    Fade_in();
+   LoadMusic(2);
+   PlayMusic();
    RotatePalette(48,83,98);
+   while(musicPlaying){
+   	// Wait until song is finished
+   }
+   UnloadMusic();
 
    LoadImage("LOGO.DAT","LMANOL.pcx",1);
    Fade_out();
    SetPage(1);
    Fade_in();
-
-   Delay(120);
+   LoadMusic(2);
+   PlayMusic();
+   while(musicPlaying){
+   	// Wait until song is finished
+   }
+   UnloadMusic();
 
    Fade_out();
 }
@@ -65,6 +80,7 @@ void Menu(void)
 
    // Load animation
 	SetLoadingInterrupt();   // Start loading animation
+
    // Load resources
    LoadImage("IMAGES.DAT","MENU.pcx",2); // Load menu background image to non visible page
    LoadFont("FONTS.DAT","FONT.bmp"); //Load font
@@ -72,7 +88,11 @@ void Menu(void)
    InitSprite(1,110,menu_pos[option] + vga_page[2]);
    SetSpriteAnimation(1,0,7,6,MenuCursorAnimation);
 
+   LoadMusic(2);
+
    ResetLoadingInterrupt();   // Stop loading animation
+
+   PlayNonStopMusic();
 
    SetPage(2);
 
@@ -96,14 +116,12 @@ void Menu(void)
 
    Fade_in();
 
+   // Menu loop
    while( keys[K_ENTER] != 1 )
    {
       sprite[1].pos_y = menu_pos[option] + vga_page[2];
 
       if( fp_keys[K_UP] == 1) {
-
-      	//PlaySpeaker_SFX(speakerMenu);
-
       	switch(option){
          	case 1: // Do nothing
             	break;
@@ -111,58 +129,59 @@ void Menu(void)
                LoadText("GLB_STR.DAT","global.txt","002",string,&length);
 				   PrintText(15,14,length,string,0);
 	            option--; // Change option
+              	PlaySound(1);
                LoadText("GLB_STR.DAT","global.txt","001",string,&length);
 				   PrintText(15,13,length,string,1);
 				  	break;
             case 3: // Rewrite old and new option
                LoadText("GLB_STR.DAT","global.txt","003",string,&length);
 				   PrintText(15,15,length,string,0);
-               if(existingSaveGame){
-                  option--; // Change option
-                  LoadText("GLB_STR.DAT","global.txt","002",string,&length);
-				   	PrintText(15,14,length,string,1);
-               }
-               else
-               {
+               PlaySound(1);
+               if(existingSaveGame == 0){
                	option--; // Change option
-                  option--; // Change option
+               	option--; // Change option
                   LoadText("GLB_STR.DAT","global.txt","001",string,&length);
 				   	PrintText(15,13,length,string,1);
+               }
+               else{
+               	option--; // Change option
+               	LoadText("GLB_STR.DAT","global.txt","002",string,&length);
+               	PrintText(15,14,length,string,1);
                }
 				  	break;
             case 4: // Rewrite old and new option
                LoadText("GLB_STR.DAT","global.txt","004",string,&length);
 				   PrintText(15,16,length,string,0);
                option--; // Change option
+               PlaySound(1);
                LoadText("GLB_STR.DAT","global.txt","003",string,&length);
 				   PrintText(15,15,length,string,1);
 				  	break;
          }
       }
       if( fp_keys[K_DOWN] == 1){
-
-      	//PlaySpeaker_SFX(speakerMenu);
-
       	switch(option){
          	case 1: // Rewrite old and new option
                LoadText("GLB_STR.DAT","global.txt","001",string,&length);
 				   PrintText(15,13,length,string,0);
-               if(existingSaveGame){
-                  option++;
-               	LoadText("GLB_STR.DAT","global.txt","002",string,&length);
-				   	PrintText(15,14,length,string,1);
-               }
-               else{
-               	option++; // Change option
+               PlaySound(1);
+               if(existingSaveGame == 0){
+               	option++;
                   option++;
                	LoadText("GLB_STR.DAT","global.txt","003",string,&length);
 				   	PrintText(15,15,length,string,1);
+               }
+               else{
+               	option++;
+               	LoadText("GLB_STR.DAT","global.txt","002",string,&length);
+               	PrintText(15,14,length,string,1);
                }
             	break;
             case 2: // Rewrite old and new option
                LoadText("GLB_STR.DAT","global.txt","002",string,&length);
 				   PrintText(15,14,length,string,0);
 	            option++; // Change option
+               PlaySound(1);
                LoadText("GLB_STR.DAT","global.txt","003",string,&length);
 				   PrintText(15,15,length,string,1);
 				  	break;
@@ -170,6 +189,7 @@ void Menu(void)
                LoadText("GLB_STR.DAT","global.txt","003",string,&length);
 				   PrintText(15,15,length,string,0);
                option++; // Change option
+               PlaySound(1);
                LoadText("GLB_STR.DAT","global.txt","004",string,&length);
 				   PrintText(15,16,length,string,1);
 				  	break;
@@ -184,7 +204,8 @@ void Menu(void)
       Update(0);
    }
 
-   //PlaySpeaker_SFX(speakerMenu);
+   // Selection sound
+   PlaySound(1);
 
    // wait until enter key is released
    while( keys[K_ENTER] == 1 )
@@ -217,32 +238,29 @@ void Menu(void)
 
       	if( fp_keys[K_UP] == 1) {
 
-         	//PlaySpeaker_SFX(speakerMenu);
-
       		switch(option){
          		case 1: // Do nothing
             		break;
             	case 2: // Rewrite old and new option
-	            	option--; // Change option
-               	LoadText("GLB_STR.DAT","global.txt","020",string,&length);
+                  LoadText("GLB_STR.DAT","global.txt","020",string,&length);
       				PrintText(16,14,length,string,1);
-      				LoadText("GLB_STR.DAT","global.txt","021",string,&length);
+	            	option--; // Change option
+                  PlaySound(1);
+               	LoadText("GLB_STR.DAT","global.txt","021",string,&length);
       				PrintText(16,15,length,string,0);
 				  		break;
             }
          }
          if( fp_keys[K_DOWN] == 1){
-
-         	//PlaySpeaker_SFX(speakerMenu);
-
       		switch(option){
          		case 1: // Rewrite old and new option
+                  LoadText("GLB_STR.DAT","global.txt","021",string,&length);
+      				PrintText(16,15,length,string,1);
+                  PlaySound(1);
                	option++; // Change option
                	LoadText("GLB_STR.DAT","global.txt","020",string,&length);
       				PrintText(16,14,length,string,0);
-      				LoadText("GLB_STR.DAT","global.txt","021",string,&length);
-      				PrintText(16,15,length,string,1);
-				  		break;
+      				break;
             	case 2: // Rewrite old and new option
                	break;
             }
@@ -254,7 +272,8 @@ void Menu(void)
       	Update(0);
    	}
 
-      //PlaySpeaker_SFX(speakerMenu);
+      // Selection sound
+   	PlaySound(1);
 
       if(option == 2){option = 0;}
    }
@@ -530,7 +549,12 @@ void NewGame(void) {
 
    D10_GoToFloor1(100, 185);
 
+   LoadMusic(1);
+   PlayNonStopMusic();
+
    MainLoop();
+
+   UnloadMusic();
 }
 
 /////////////////////////////////////////////////////////
@@ -734,14 +758,14 @@ void SaveGame(void){
 
    // ext 1 event mask
    aux1 = 0;
-   for(i = 7; i>0; i--){
+   for(i = 7; i>=0; i--){
    	aux1 = (aux1 << 1);
       aux1 = aux1 | player.ext1_event_mask[i];
    }
    fprintf(savefile,"[35]E1EM1=%03u\n",aux1);
 
    aux2 = 0;
-   for(i = 15; i>7; i--){
+   for(i = 15; i>=8; i--){
    	aux2 = (aux2 << 1);
       aux2 = aux2 | player.ext1_event_mask[i];
    }
@@ -749,14 +773,14 @@ void SaveGame(void){
 
    // ext 2 event mask
    aux1 = 0;
-   for(i = 7; i>0; i--){
+   for(i = 7; i>=0; i--){
    	aux1 = (aux1 << 1);
       aux1 = aux1 | player.ext2_event_mask[i];
    }
    fprintf(savefile,"[37]E2EM1=%03u\n",aux1);
 
    aux2 = 0;
-   for(i = 15; i>7; i--){
+   for(i = 15; i>=8; i--){
    	aux2 = (aux2 << 1);
       aux2 = aux2 | player.ext2_event_mask[i];
    }
@@ -764,14 +788,14 @@ void SaveGame(void){
 
    // floor 1 event mask
    aux1 = 0;
-   for(i = 7; i>0; i--){
+   for(i = 7; i>=0; i--){
    	aux1 = (aux1 << 1);
       aux1 = aux1 | player.floor1_event_mask[i];
    }
    fprintf(savefile,"[39]F1EM1=%03u\n",aux1);
 
    aux2 = 0;
-   for(i = 15; i>7; i--){
+   for(i = 15; i>=8; i--){
    	aux2 = (aux2 << 1);
       aux2 = aux2 | player.floor1_event_mask[i];
    }
@@ -779,14 +803,14 @@ void SaveGame(void){
 
    // floor 2 event mask
    aux1 = 0;
-   for(i = 7; i>0; i--){
+   for(i = 7; i>=0; i--){
    	aux1 = (aux1 << 1);
       aux1 = aux1 | player.floor2_event_mask[i];
    }
    fprintf(savefile,"[41]F2EM1=%03u\n",aux1);
 
    aux2 = 0;
-   for(i = 15; i>7; i--){
+   for(i = 15; i>=8; i--){
    	aux2 = (aux2 << 1);
       aux2 = aux2 | player.floor2_event_mask[i];
    }
@@ -794,14 +818,14 @@ void SaveGame(void){
 
    // gym event mask
    aux1 = 0;
-   for(i = 7; i>0; i--){
+   for(i = 7; i>=0; i--){
    	aux1 = (aux1 << 1);
       aux1 = aux1 | player.gym_event_mask[i];
    }
    fprintf(savefile,"[43]GYEM1=%03u\n",aux1);
 
    aux2 = 0;
-   for(i = 15; i>7; i--){
+   for(i = 15; i>=8; i--){
    	aux2 = (aux2 << 1);
       aux2 = aux2 | player.gym_event_mask[i];
    }
@@ -809,14 +833,14 @@ void SaveGame(void){
 
    // ext 1 hotspot mask
    aux1 = 0;
-   for(i = 7; i>0; i--){
+   for(i = 7; i>=0; i--){
    	aux1 = (aux1 << 1);
       aux1 = aux1 | player.ext1_hotspot_mask[i];
    }
    fprintf(savefile,"[45]E1HS1=%03u\n",aux1);
 
    aux2 = 0;
-   for(i = 15; i>7; i--){
+   for(i = 15; i>=8; i--){
    	aux2 = (aux2 << 1);
       aux2 = aux2 | player.ext1_hotspot_mask[i];
    }
@@ -824,14 +848,14 @@ void SaveGame(void){
 
    // ext 2 hotspot mask
    aux1 = 0;
-   for(i = 7; i>0; i--){
+   for(i = 7; i>=0; i--){
    	aux1 = (aux1 << 1);
       aux1 = aux1 | player.ext2_hotspot_mask[i];
    }
    fprintf(savefile,"[47]E2HS1=%03u\n",aux1);
 
    aux2 = 0;
-   for(i = 15; i>7; i--){
+   for(i = 15; i>=8; i--){
    	aux2 = (aux2 << 1);
       aux2 = aux2 | player.ext2_hotspot_mask[i];
    }
@@ -947,7 +971,6 @@ void ContinueGame(void) {
       	break;
    }
 
-
 	MainLoop();
 }
 
@@ -972,7 +995,6 @@ void Options(){
    // Video mode
    LoadText("GLB_STR.DAT","global.txt","025",string,&length);
    PrintText(12,10,length,string,1);
-
    switch(video_mode){
    	case 1: //VGA
          PrintText(23,10,10,"VGA       ",0);
@@ -983,18 +1005,15 @@ void Options(){
       case 3: //CGA
       	PrintText(23,10,10,"CGA       ",0);
          break;
-      case 4: //Tandy
-      	PrintText(23,10,10,"TANDY     ",0);
-         break;
       default:
       	break;
    }
 
-   // Sound mode
+   // Audio mode
    LoadText("GLB_STR.DAT","global.txt","030",string,&length);
    PrintText(12,12,length,string,0);
 
-   switch(sfx_mode){
+   switch(audio_mode){
    	case 0: // OFF
          PrintText(23,12,10,"OFF       ",0);
          break;
@@ -1019,57 +1038,35 @@ void Options(){
    LoadText("GLB_STR.DAT","global.txt","040",string,&length);
    PrintText(12,13,length,string,0);
 
-   sprintf(string, "%d", sfx_volume);
+   sprintf(string, "%d", sound_volume);
    PrintText(23,13,10,string,0);
-
-   // Music mode
-   LoadText("GLB_STR.DAT","global.txt","035",string,&length);
-   PrintText(12,15,length,string,0);
-
-   switch(music_mode){
-   	case 0: // OFF
-         PrintText(23,15,10,"OFF       ",0);
-         break;
-   	case 1: //PC speaker
-         PrintText(23,15,10,"PC SPEAKER",0);
-      	break;
-      case 2: //Tandy
-         PrintText(23,15,10,"TANDY     ",0);
-      	break;
-      case 3: //Adlib or SB
-      	PrintText(23,15,10,"ADLIB SB  ",0);
-         break;
-      default:
-      	PrintText(23,15,10,"??        ",0);
-      	break;
-   }
 
    // Music volume
    LoadText("GLB_STR.DAT","global.txt","041",string,&length);
-   PrintText(12,16,length,string,0);
+   PrintText(12,14,length,string,0);
 
    sprintf(string, "%d", music_volume);
-   PrintText(23,16,10,string,0);
+   PrintText(23,14,10,string,0);
 
    // Language
 	LoadText("GLB_STR.DAT","global.txt","045",string,&length);
-   PrintText(12,18,length,string,0);
+   PrintText(12,16,length,string,0);
 
    switch(language){
    	case 1: //spanish
-         PrintText(23,18,10,"ESPANOL   ",0);
+         PrintText(23,16,10,"ESPANOL   ",0);
       	break;
       case 2: //english
-         PrintText(23,18,10,"ENGLISH   ",0);
+         PrintText(23,16,10,"ENGLISH   ",0);
       	break;
       default:
-      	PrintText(23,18,10,"??",0);
+      	PrintText(23,16,10,"??",0);
       	break;
    }
 
    // Go back
    LoadText("GLB_STR.DAT","global.txt","050",string,&length);
-   PrintText(12,20,length,string,0);
+   PrintText(12,18,length,string,0);
 
    Fade_in();
 
@@ -1083,6 +1080,7 @@ void Options(){
          	case 1: // Do nothing
             	break;
             case 2: // Rewrite old and new option
+            	PlaySound(1);
                LoadText("GLB_STR.DAT","global.txt","030",string,&length);
    				PrintText(12,12,length,string,0);
 	            option--; // Change option
@@ -1090,6 +1088,7 @@ void Options(){
    				PrintText(12,10,length,string,1);
 				  	break;
             case 3: // Rewrite old and new option
+            	PlaySound(1);
                LoadText("GLB_STR.DAT","global.txt","040",string,&length);
                PrintText(12,13,length,string,0);
                option--; // Change option
@@ -1097,38 +1096,35 @@ void Options(){
    				PrintText(12,12,length,string,1);
 				  	break;
             case 4: // Rewrite old and new option
-               LoadText("GLB_STR.DAT","global.txt","035",string,&length);
-   				PrintText(12,15,length,string,0);
+            	PlaySound(1);
+               LoadText("GLB_STR.DAT","global.txt","041",string,&length);
+   				PrintText(12,14,length,string,0);
                option--; // Change option
                LoadText("GLB_STR.DAT","global.txt","040",string,&length);
                PrintText(12,13,length,string,1);
                break;
             case 5: // Rewrite old and new option
-               LoadText("GLB_STR.DAT","global.txt","041",string,&length);
+               PlaySound(1);
+               LoadText("GLB_STR.DAT","global.txt","045",string,&length);
    				PrintText(12,16,length,string,0);
                option--; // Change option
-               LoadText("GLB_STR.DAT","global.txt","035",string,&length);
-   				PrintText(12,15,length,string,1);
+               LoadText("GLB_STR.DAT","global.txt","041",string,&length);
+   				PrintText(12,14,length,string,1);
                break;
             case 6: // Rewrite old and new option
-               LoadText("GLB_STR.DAT","global.txt","045",string,&length);
+               PlaySound(1);
+               LoadText("GLB_STR.DAT","global.txt","050",string,&length);
    				PrintText(12,18,length,string,0);
                option--; // Change option
-               LoadText("GLB_STR.DAT","global.txt","041",string,&length);
-   				PrintText(12,16,length,string,1);
-               break;
-            case 7: // Rewrite old and new option
-               LoadText("GLB_STR.DAT","global.txt","050",string,&length);
-   				PrintText(12,20,length,string,0);
-               option--; // Change option
                LoadText("GLB_STR.DAT","global.txt","045",string,&length);
-   				PrintText(12,18,length,string,1);
+   				PrintText(12,16,length,string,1);
                break;
          }
       }
       if( fp_keys[K_DOWN] == 1){
       	switch(option){
          	case 1: // Rewrite old and new option
+               PlaySound(1);
                LoadText("GLB_STR.DAT","global.txt","025",string,&length);
    				PrintText(12,10,length,string,0);
                option++;
@@ -1136,6 +1132,7 @@ void Options(){
    				PrintText(12,12,length,string,1);
             	break;
             case 2: // Rewrite old and new option
+               PlaySound(1);
                LoadText("GLB_STR.DAT","global.txt","030",string,&length);
    				PrintText(12,12,length,string,0);
 	            option++; // Change option
@@ -1143,32 +1140,28 @@ void Options(){
    				PrintText(12,13,length,string,1);
 				  	break;
             case 3: // Rewrite old and new option
+               PlaySound(1);
                LoadText("GLB_STR.DAT","global.txt","040",string,&length);
    				PrintText(12,13,length,string,0);
                option++; // Change option
-               LoadText("GLB_STR.DAT","global.txt","035",string,&length);
-   				PrintText(12,15,length,string,1);
+               LoadText("GLB_STR.DAT","global.txt","041",string,&length);
+   				PrintText(12,14,length,string,1);
 				  	break;
             case 4: // Rewrite old and new option
-				  	LoadText("GLB_STR.DAT","global.txt","035",string,&length);
-   				PrintText(12,15,length,string,0);
-               option++; // Change option
-               LoadText("GLB_STR.DAT","global.txt","041",string,&length);
-   				PrintText(12,16,length,string,1);
-				  	break;
-            case 5: // Rewrite old and new option
+               PlaySound(1);
 				  	LoadText("GLB_STR.DAT","global.txt","041",string,&length);
-   				PrintText(12,16,length,string,0);
+   				PrintText(12,14,length,string,0);
                option++; // Change option
                LoadText("GLB_STR.DAT","global.txt","045",string,&length);
-   				PrintText(12,18,length,string,1);
+   				PrintText(12,16,length,string,1);
 				  	break;
-            case 6: // Do nothing
+            case 5: // Do nothing
+               PlaySound(1);
             	LoadText("GLB_STR.DAT","global.txt","045",string,&length);
-   				PrintText(12,18,length,string,0);
+   				PrintText(12,16,length,string,0);
                option++; // Change option
                LoadText("GLB_STR.DAT","global.txt","050",string,&length);
-   				PrintText(12,20,length,string,1);
+   				PrintText(12,18,length,string,1);
 				  	break;
             case 7:
             	break;
@@ -1176,113 +1169,94 @@ void Options(){
       }
 
      	if(option < 1){ option = 1;}
-      if(option > 7){ option = 7;}
+      if(option > 6){ option = 6;}
 
-   	if(fp_keys[K_ENTER]){
+      if(fp_keys[K_ENTER]){
+      	if( option == 6){
+         	PlaySound(1);
+            SaveConfig();
+            RestartProgram();
+            player.spriteNum = 1; // Player sprite is always sprite 1!
+   			existingSaveGame = CheckSavegame();
+         	end = 1;
+         }
+      }
+
+      if(fp_keys[K_RIGHT]){
       	switch(option){
             case 1: 	// video mode
             	switch(video_mode){
    					case 1: //VGA
+                  	PlaySound(1);
                   	video_mode = 2;
          				PrintText(23,10,10,"EGA       ",0);
       					break;
       				case 2: //EGA
+                  	PlaySound(1);
                   	video_mode = 3;
          				PrintText(23,10,10,"CGA       ",0);
       					break;
       				case 3: //CGA
-                  	video_mode = 4;
-      					PrintText(23,10,10,"TANDY     ",0);
-         				break;
-                  case 4: //Tandy
-                  	video_mode = 1;
-      					PrintText(23,10,10,"VGA       ",0);
+
          				break;
       				default:
       					break;
                }
                break;
             case 2: 	// audio mode
-            	switch(sfx_mode){
+            	switch(audio_mode){
    					case 0: // OFF
-                  	sfx_mode = 1;
+                     PlaySound(1);
+                  	audio_mode = 1;
          				PrintText(23,12,10,"PC SPEAKER",0);
          				break;
    					case 1: //PC speaker
-                  	sfx_mode = 2;
+                     PlaySound(1);
+                  	audio_mode = 2;
      					   PrintText(23,12,10,"TANDY     ",0);
       					break;
       				case 2: //Tandy
-                  	sfx_mode = 3;
+                     PlaySound(1);
+                  	audio_mode = 3;
          				PrintText(23,12,10,"ADLIB     ",0);
       					break;
       				case 3: //Adlib
-                  	sfx_mode = 4;
+                     PlaySound(1);
+                  	audio_mode = 4;
       					PrintText(23,12,10,"S.BLASTER ",0);
                      break;
       				case 4: //Sound blaster
-                  	sfx_mode = 0;
-      					PrintText(23,12,10,"OFF       ",0);
                      break;
       				default:
       					break;
    				}
                break;
-            case 4: 	// music mode
-            	switch(music_mode){
-   					case 0: // OFF
-							music_mode = 1;
-         				PrintText(23,15,10,"PC SPEAKER",0);
-         				break;
-   					case 1: //PC speaker
-                  	music_mode = 2;
-         				PrintText(23,15,10,"TANDY     ",0);
-      					break;
-      				case 2: //Tandy
-                  	music_mode = 3;
-         				PrintText(23,15,10,"ADLIB-SB  ",0);
-      					break;
-      				case 3: //Adlib or SB
-                  	music_mode = 0;
-      					PrintText(23,15,10,"OFF       ",0);
-                     break;
-      				default:
-      					break;
-   				}
-               break;
-            case 6: // language
-            	if(language == 1){
-               	language = 2;
-                  PrintText(23,18,10,"ENGLISH      ",0);
-               }
-               else{
-               	language = 1;
-                  PrintText(23,18,10,"ESPANOL      ",0);
-               }
-            	break;
-         	case 7:  // go back
-            	// SaveSettings();
-            	end = 1;
-            	break;
-            default:
-            	break;
-         }
-      }
 
-      if(fp_keys[K_RIGHT]){
-      	switch(option){
             case 3: 	// audio volume +
-            	if(sfx_volume < 100){sfx_volume ++;}
-               sprintf(string, "%d", sfx_volume);
+            	if(sound_volume < 100){
+               	sound_volume ++;
+               	PlaySound(1);
+               }
+               sprintf(string, "%d", sound_volume);
                PrintText(23,13,10,"          ",0);
    				PrintText(23,13,strlen(string),string,0);
                break;
-            case 5:
-            	if(music_volume < 100){music_volume ++;}
+            case 4:
+            	if(music_volume < 100){
+               	music_volume ++;
+                  PlaySound(1);
+               }
                sprintf(string, "%d", music_volume);
-               PrintText(23,16,10,"          ",0);
-				   PrintText(23,16,strlen(string),string,0);
+               PrintText(23,14,10,"          ",0);
+				   PrintText(23,14,strlen(string),string,0);
             	break; // music volume +
+            case 5: // language
+            	if(language == 1){
+               	PlaySound(1);
+               	language = 2;
+                  PrintText(23,16,10,"ENGLISH      ",0);
+               }
+            	break;
             default:
             	break;
          }
@@ -1290,18 +1264,77 @@ void Options(){
 
       if(fp_keys[K_LEFT]){
       	switch(option){
+         	case 1: 	// video mode
+            	switch(video_mode){
+   					case 1: //VGA
+      					break;
+      				case 2: //EGA
+                  	PlaySound(1);
+                  	video_mode = 1;
+         				PrintText(23,10,10,"VGA       ",0);
+      					break;
+      				case 3: //CGA
+                     PlaySound(1);
+                  	video_mode = 2;
+         				PrintText(23,10,10,"EGA       ",0);
+         				break;
+      				default:
+      					break;
+               }
+               break;
+            case 2: 	// audio mode
+            	switch(audio_mode){
+   					case 0: // OFF
+                  	break;
+   					case 1: //PC speaker
+                     PlaySound(1);
+                     audio_mode = 0;
+         				PrintText(23,12,10,"OFF       ",0);
+                  	break;
+      				case 2: //Tandy
+                  	PlaySound(1);
+                     audio_mode = 1;
+         				PrintText(23,12,10,"PC SPEAKER",0);
+      					break;
+      				case 3: //Adlib
+                     PlaySound(1);
+                  	audio_mode = 2;
+     					   PrintText(23,12,10,"TANDY     ",0);
+      					break;
+      				case 4: //Sound blaster
+                  	PlaySound(1);
+                  	audio_mode = 3;
+         				PrintText(23,12,10,"ADLIB     ",0);
+                     break;
+      				default:
+      					break;
+   				}
+               break;
             case 3: 	// audio volume -
-            	if(sfx_volume > 0){sfx_volume --; }
-               sprintf(string, "%d", sfx_volume);
+            	if(sound_volume > 0){
+               	PlaySound(1);
+               	sound_volume --;
+               }
+               sprintf(string, "%d", sound_volume);
                PrintText(23,13,10,"          ",0);
    				PrintText(23,13,strlen(string),string,0);
                break;
-            case 5:
-            	if(music_volume > 0){music_volume --;}
+            case 4:
+            	if(music_volume > 0){
+               	PlaySound(1);
+               	music_volume --;
+               }
                sprintf(string, "%d", music_volume);
-               PrintText(23,16,10,"          ",0);
-				   PrintText(23,16,strlen(string),string,0);
+               PrintText(23,14,10,"          ",0);
+				   PrintText(23,14,strlen(string),string,0);
             	break; // music volume -
+            case 5: // language
+            	if(language == 2){
+               	PlaySound(1);
+               	language = 1;
+                  PrintText(23,16,10,"ESPANOL     ",0);
+               }
+            	break;
             default:
             	break;
          }
@@ -1341,7 +1374,7 @@ void main(){
       switch(option)
       {
       	case 1: // New game
-         	//Intro();
+         	Intro();
             NewGame();
             SaveGame();
       		break;

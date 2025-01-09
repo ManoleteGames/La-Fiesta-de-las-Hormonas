@@ -6,7 +6,7 @@
 
 // Detects VSYNC
 /////////////////////////////////////////////////////////
-void Vsync_EGA(void){
+void EGA_Vsync(void){
 	// pending...
 }
 

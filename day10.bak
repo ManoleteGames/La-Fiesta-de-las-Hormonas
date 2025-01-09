@@ -17,10 +17,6 @@
 //    Jessy and her frieds are on the second floor speacking
 
 
-byte thugs = 0;
-byte girls = 0;
-
-
 void D10_GoToFloor1(int x, int y){
 	int mapx,mapy;
 
@@ -44,22 +40,19 @@ void D10_GoToFloor1(int x, int y){
    SetSpriteAnimation(2,0,15,12,DirectorAnimation);
    InitSprite(2,512,402);
 
-   // Load nerd sprites only during scene 0
-   if((player.scn_main == 0)||(player.scn_main == 3)){
-
-   	LoadSprite("SPRCHR1.DAT","david.pcx",3, 32); //Load sprites to one of the fixed structs
-   	LoadSprite("SPRCHR1.DAT","xavi.pcx",4, 32); //Load sprites to one of the fixed structs
-   	LoadSprite("SPRCHR1.DAT","alain.pcx",5, 32); //Load sprites to one of the fixed structs
-   	LoadSprite("SPRCHR1.DAT","antonio.pcx",6, 32); //Load sprites to one of the fixed structs
-   	SetSpriteAnimation(3,0,6,8,CharacterAnimation2);
-   	SetSpriteAnimation(4,0,6,30,CharacterAnimation3);
-   	SetSpriteAnimation(5,0,6,23,CharacterAnimation3);
-   	SetSpriteAnimation(6,0,6,19,CharacterAnimation2);
-      InitSprite(3,396,102);
-   	InitSprite(4,408,122);
-   	InitSprite(5,434,142);
-   	InitSprite(6,396,142);
-   }
+   // Load nerd sprites
+   LoadSprite("SPRCHR1.DAT","david.pcx",3, 32); //Load sprites to one of the fixed structs
+   LoadSprite("SPRCHR1.DAT","xavi.pcx",4, 32); //Load sprites to one of the fixed structs
+   LoadSprite("SPRCHR1.DAT","alain.pcx",5, 32); //Load sprites to one of the fixed structs
+   LoadSprite("SPRCHR1.DAT","antonio.pcx",6, 32); //Load sprites to one of the fixed structs
+   SetSpriteAnimation(3,0,6,8,CharacterAnimation2);
+   SetSpriteAnimation(4,0,6,30,CharacterAnimation3);
+   SetSpriteAnimation(5,0,6,23,CharacterAnimation3);
+   SetSpriteAnimation(6,0,6,19,CharacterAnimation2);
+   InitSprite(3,396,102);
+   InitSprite(4,408,122);
+   InitSprite(5,434,142);
+   InitSprite(6,396,142);
 
   	InitSprite(player.spriteNum,x,y);
    player.floor = 1;
@@ -215,26 +208,10 @@ void D10_GoToExt2(int x, int y){
    player.ext2_hotspot_mask[1] = 0;
    player.ext2_hotspot_mask[2] = 0;
 
-   // Load nerd and thugs sprites
+   // Load thugs sprites
    if( player.scn_main == 1){
 
-   	LoadSprite("SPRCHR1.DAT","david.pcx",3, 32); //Load sprites to one of the fixed structs
-   	LoadSprite("SPRCHR1.DAT","xavi.pcx",4, 32); //Load sprites to one of the fixed structs
-   	LoadSprite("SPRCHR1.DAT","alain.pcx",5, 32); //Load sprites to one of the fixed structs
-   	LoadSprite("SPRCHR1.DAT","antonio.pcx",6, 32); //Load sprites to one of the fixed structs
-
-      SetSpriteAnimation(3,0,6,8,CharacterAnimation2);
-   	SetSpriteAnimation(4,0,6,30,CharacterAnimation3);
-   	SetSpriteAnimation(5,0,6,23,CharacterAnimation3);
-   	SetSpriteAnimation(6,0,6,19,CharacterAnimation2);
-
-      InitSprite(3,286,302);
-   	InitSprite(4,328,302);
-   	InitSprite(5,354,322);
-   	InitSprite(6,256,322);
-
-
-      LoadSprite("SPRCHR1.DAT","toni.pcx",7, 32); //Load sprites to one of the fixed structs
+   	LoadSprite("SPRCHR1.DAT","toni.pcx",7, 32); //Load sprites to one of the fixed structs
    	LoadSprite("SPRCHR1.DAT","jon.pcx",8, 32); //Load sprites to one of the fixed structs
    	LoadSprite("SPRCHR1.DAT","erik.pcx",9, 32); //Load sprites to one of the fixed structs
 
@@ -246,8 +223,7 @@ void D10_GoToExt2(int x, int y){
    	InitSprite(8,844,362);
    	InitSprite(9,776,362);
 
-      // Enable hotspots
-      player.ext2_hotspot_mask[1] = 1;
+      // Enable hotspot
    	player.ext2_hotspot_mask[2] = 1;
 
    }
@@ -331,10 +307,40 @@ void D10_GoToGym(int x, int y){
 // Go to next day
 /////////////////////////////////////////////////////////
 void D10_GoToNextDay(int x, int y){
+	word length;
 
-   player.day --;
+   panelScrolling = 0;
+   showPanel = 0;
+   Update(0);
 
-	D10_GoToExt1(x, y);
+	SetLoadingInterrupt();   // Start loading animation
+
+   LoadImage("IMAGES2.DAT","endday.pcx",2); // Load menu background image to non visible page
+
+   ResetLoadingInterrupt();   // Stop loading animation
+
+   PlayNonStopMusic();
+
+   SetPage(2);
+   Update(0);
+
+   Draw_EmptyBox(13,12,14,4);
+   LoadText("D10_STR.DAT","D10GLB.txt","070",string,&length);
+   PrintText(15,13,length,string,1);
+
+   Fade_in();
+
+   // Wait enter key pressed
+   while( keys[K_ENTER] != 1 )
+   {
+   }
+   // Wait enter key released
+   while( keys[K_ENTER] == 1 )
+   {
+   }
+
+	player.day --;
+   D10_GoToExt1(x, y);
 }
 
 /////////////////////////////////////////////////////////
@@ -508,6 +514,35 @@ void D10_GoToGirls(void){
 }
 
 /////////////////////////////////////////////////////////
+// Go to exam (maths)
+/////////////////////////////////////////////////////////
+void D10_GoToExam(void){
+ 	byte option;
+
+   player.floor2_event_mask[3] = 0;
+
+   panelScrolling = 0;
+   showPanel = 0;
+   Update(0);
+
+	SetLoadingInterrupt();   // Start loading animation
+
+   LoadImage("IMAGES2.DAT","exam.pcx",2); // Load exam background image to non visible page
+   
+   ResetLoadingInterrupt();   // Stop loading animation
+
+   SetPage(2);
+   Update(0);
+
+   Fade_in();
+
+   Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10EXA.TXT","001","002",0,0);
+
+   D10_GoToFloor2(446,270);
+
+}
+
+/////////////////////////////////////////////////////////
 // Day 10. Events
 /////////////////////////////////////////////////////////
 void D10_Events(byte event){
@@ -543,6 +578,20 @@ void D10_Events(byte event){
       	if(player.floor2_event_mask[event] == 1){
 	         if(player.event == 1){ D10_GoToFloor1(50,175);}
          	if(player.event == 2){ D10_GoToFloor1(502,295);}
+            if(player.event == 3){ // Ir al examen
+            	if( player.mission_cheat < 99 ){
+                	Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","098","099",0,0);
+               }
+               else{
+                  Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","100","101",0,0);
+               }
+               option = SpeechSelection(2,"SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","102","103",0,0);
+               if(option == 1){
+                  D10_GoToExam();
+               } else {
+               	sprite[player.spriteNum].pos_y = sprite[player.spriteNum].pos_y + 16;
+               }
+            }
 		   }
       	break;
      	case 3: // Ext 1
@@ -757,7 +806,7 @@ void D10_Hotspots(byte hotspot){
 							Speech("SPRFACE2.DAT","directf.pcx","D10_STR.DAT","D10DIR.TXT","024","025","026","027");
                      Speech("SPRFACE2.DAT","directf.pcx","D10_STR.DAT","D10DIR.TXT","029","030","031","032");
                      Speech("SPRFACE2.DAT","directf.pcx","D10_STR.DAT","D10DIR.TXT","034","011","012","013");
-                     Speech("SPRFACE2.DAT","playerf.pcx","D10_STR.DAT","D10DIR.TXT","036","037",0,0);
+                     Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10DIR.TXT","036","037",0,0);
       					break;
                   case 4: // DAR TIZAS O EXAMENES ROBADOS
                   	if(player.scn_director == 2){  // tizas
@@ -940,7 +989,8 @@ void D10_Hotspots(byte hotspot){
             }
 
             if(player.hotspot == 7){ // boys bathroom
-               Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","078","079",0,0);
+               Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","073","074",0,0);
+               Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","075","076",0,0);
             }
 
             if(player.hotspot == 8){ // GIRLS BATHROOM
@@ -969,11 +1019,11 @@ void D10_Hotspots(byte hotspot){
                }
             }
             if(player.hotspot == 12){ // GIRLS
-               switch(girls){
+               switch(player.scn_girls){
                	case 0: //first time speak
                   	D10_GoToGirls();
    						D10_GoToFloor2(155, 200);
-                  	girls ++;
+                  	player.scn_girls ++;
                   	break;
                   case 1: // second time speak
                      Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GGIRL.TXT","054","055",0,0);
