@@ -300,7 +300,6 @@ void LoadFont_BMP(char* filename, char* dat_string){
 
    if (pixel_format !=4) Error("Wrong format for font image, must be 4 bit per pixel: ",filename,dat_string);
 
-//   pal_colors = 4; first_color = 252;//If reading font
    pal_colors = 5; first_color = 251;//If reading font
 
    //Load Palette
@@ -320,7 +319,7 @@ void LoadFont_BMP(char* filename, char* dat_string){
 
     //LOAD TO TEMP RAM
 	x = 0; //data offset
-	for (offset = 0; offset < 128*32/2; offset ++){
+	for (offset = 0; offset < 128*32/2; offset ++){     // width = 128 height = 32 px
 		unsigned char c = fgetc(fp); //it is a 4 bit BMP, every byte contains 2 pixels
 		tempdata1[x  ] = (((c & 0xF0)>>4)); //1111 0000
 		tempdata1[x+1] =  ((c & 0x0F)    ); //0000 1111
@@ -515,7 +514,7 @@ void LoadText(char* filename, char* dat_string, char* line,unsigned char* str, w
 
          currLine ++;
 
-      	if (currLine == 120) {
+      	if (currLine == 220) {
       		fclose(fp);
    			Error(" Text line not found on file ",dat_string,line);
       	}

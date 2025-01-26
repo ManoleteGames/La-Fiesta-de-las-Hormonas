@@ -1,0 +1,225 @@
+/***********************
+*  JANITOR CONVERSATIONS
+************************/
+
+#include "source\engine\engine.h"
+
+void far Janitor(void){
+	byte option = 1;
+	byte end_conversation = 0;
+
+	switch(player.day){
+   	case 10: /////////////////////// day 10 ///////////////////
+         switch(player.scn_janitor){
+         	case 0:  ////////////////  scene 0 ///////////////////
+            	Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","001","002",0,0);
+               Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10CNS.TXT","005","006",0,0);
+               while(end_conversation == 0){
+               	option = SpeechSelection(4,"SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10CNS.TXT","010","011","012","013");
+                  switch(option){
+                  	case 1: // FOTOCOPIAS
+                     	Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","018","019","020","021");
+                        break;
+                     case 2: // UNA RATA?
+                     	Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","025","026","027",0);
+                        Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10CNS.TXT","029","030","031",0);
+                        Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","033",0,0,0);
+                        break;
+                     case 3: // NECESITO TIZAS
+                     	Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","035","036","037",0);
+                        Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10CNS.TXT","039","040",0,0);
+                        Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","043","044","045",0);
+                        Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","047","048","049","050");
+                        player.mission_cheat = 1;
+                        player.scn_janitor = 1;
+                     	break;
+                     case 4: // SALUDAR
+                     	Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","055",0,0,0);
+                        end_conversation = 1;
+                        break;
+                  }
+               }
+               break;
+            case 1: //////////////// scene 1 accusation ///////////
+            	Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","059","060","061",0);
+               while(end_conversation == 0){
+               	option = SpeechSelection(4,"SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10CNS.TXT","066","067","068","069");
+                  switch(option){
+                  	case 1: // thugs
+                     	Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","075","076","077","078");
+                        break;
+                     case 2: // nerds
+                     	Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","080","081","082",0);
+                        Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","084","085","086","087");
+                        break;
+                     case 3: // director
+                     	if(player.mission_cheat == 3){  // if director has chalk
+                        	Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10CNS.TXT","121","122","123",0);
+                           Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","125","126","127","128");
+                           player.floor1_hotspot_mask[16] = 0;  // Disable janitor hotspot
+                           player.floor1_event_mask[5] = 1;
+                           sprite[7].hide = 1;   // Hide janitor sprite and move it to the directors place
+                           Update(0);
+                           sprite[7].pos_x = 446;
+                           sprite[7].pos_y = 412;
+                           Update(0);
+                           sprite[7].hide = 0;   // Show janitor
+                           player.mission_cheat = 4;  // Update mision cheat status
+                           player.scn_janitor = 2;  // Update janitor status
+                           end_conversation = 1;
+                        } else {  // if director has no chalk yet
+                        	Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","090","091","092","093");
+                           Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","095","096",0,0);
+                  		}
+                        break;
+                     case 4: // I do not know
+                     	Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","047","048","049","050");
+                        end_conversation = 1;
+                        break;
+                  }
+               }
+            	break;
+            default:
+         		break;
+         }
+      	break;
+      case 9: /////////////////////// day 9 /////////////////////
+         Speech("SPRFACE2.DAT","conserf.pcx","D9_STR.DAT","D9CNS.TXT","001","002",0,0);
+         while(end_conversation == 0){
+         	option = SpeechSelection(4,"SPRFACE1.DAT","playerf.pcx","D9_STR.DAT","D9CNS.TXT","010","011","012","013");
+            switch(option){
+            	case 1: // COPY
+               	Speech("SPRFACE2.DAT","conserf.pcx","D9_STR.DAT","D9CNS.TXT","018","019","020","021");
+                  break;
+               case 2: // A RAT?
+               	Speech("SPRFACE2.DAT","conserf.pcx","D9_STR.DAT","D9CNS.TXT","025","026","027",0);
+                  break;
+               case 3: // ABOUT DIRECTOR
+               	Speech("SPRFACE2.DAT","conserf.pcx","D9_STR.DAT","D9CNS.TXT","029","030","031",0);
+                  Speech("SPRFACE1.DAT","playerf.pcx","D9_STR.DAT","D9CNS.TXT","033","034",0,0);
+                  Speech("SPRFACE2.DAT","conserf.pcx","D9_STR.DAT","D9CNS.TXT","037","038","039","040");
+                  Speech("SPRFACE2.DAT","conserf.pcx","D9_STR.DAT","D9CNS.TXT","043","044","045",0);
+                  Speech("SPRFACE2.DAT","conserf.pcx","D9_STR.DAT","D9CNS.TXT","047","048","049",0);
+                  Speech("SPRFACE2.DAT","conserf.pcx","D9_STR.DAT","D9CNS.TXT","051",0,0,0);
+                  Speech("SPRFACE1.DAT","playerf.pcx","D9_STR.DAT","D9CNS.TXT","055","056",0,0);
+                  Speech("SPRFACE2.DAT","conserf.pcx","D9_STR.DAT","D9CNS.TXT","059",0,0,0);
+                  break;
+               case 4: // SALUDAR
+               	Speech("SPRFACE2.DAT","conserf.pcx","D9_STR.DAT","D9CNS.TXT","066",0,0,0);
+                  end_conversation = 1;
+                  break;
+            }
+         }
+      	break;
+      case 8: /////////////////////// day 8 /////////////////////
+         Speech("SPRFACE2.DAT","conserf.pcx","D8_STR.DAT","D8CNS.TXT","001","002",0,0);
+         while(end_conversation == 0){
+         	if(player.mission_bag == 0){ option = SpeechSelection(3,"SPRFACE1.DAT","playerf.pcx","D8_STR.DAT","D8CNS.TXT","010","011","012",0); }
+         	else{ option = SpeechSelection(4,"SPRFACE1.DAT","playerf.pcx","D8_STR.DAT","D8CNS.TXT","010","011","012","013"); }
+            switch(option){
+            	case 1: // live here?
+               	Speech("SPRFACE1.DAT","playerf.pcx","D8_STR.DAT","D8CNS.TXT","018","019","020",0);
+                  Speech("SPRFACE2.DAT","conserf.pcx","D8_STR.DAT","D8CNS.TXT","022","023",0,0);
+                  Speech("SPRFACE1.DAT","playerf.pcx","D8_STR.DAT","D8CNS.TXT","025",0,0,0);
+                  Speech("SPRFACE2.DAT","conserf.pcx","D8_STR.DAT","D8CNS.TXT","028","029","030","031");
+                  Speech("SPRFACE2.DAT","conserf.pcx","D8_STR.DAT","D8CNS.TXT","033","034","035","036");
+                  Speech("SPRFACE1.DAT","playerf.pcx","D8_STR.DAT","D8CNS.TXT","040",0,0,0);
+                  break;
+               case 2: // party?
+               	Speech("SPRFACE1.DAT","playerf.pcx","D8_STR.DAT","D8CNS.TXT","044","045",0,0);
+               	Speech("SPRFACE2.DAT","conserf.pcx","D8_STR.DAT","D8CNS.TXT","049","050",0,0);
+                  Speech("SPRFACE2.DAT","conserf.pcx","D8_STR.DAT","D8CNS.TXT","052","053","054","055");
+                  Speech("SPRFACE2.DAT","conserf.pcx","D8_STR.DAT","D8CNS.TXT","059","060","061",0);
+                  break;
+               case 3: // hi
+               	Speech("SPRFACE2.DAT","conserf.pcx","D8_STR.DAT","D8CNS.TXT","065",0,0,0);
+                  end_conversation = 1;
+                  break;
+               case 4: // bag?
+               	Speech("SPRFACE2.DAT","conserf.pcx","D8_STR.DAT","D8CNS.TXT","070",0,0,0);
+                  Speech("SPRFACE2.DAT","conserf.pcx","D8_STR.DAT","D8CNS.TXT","072","073","074","075");
+                  break;
+            }
+         }
+      	break;
+      case 7: /////////////////////// day 7 /////////////////////
+         Speech("SPRFACE2.DAT","conserf.pcx","D7_STR.DAT","D7CNS.TXT","001","002",0,0);
+         while(end_conversation == 0){
+         	option = SpeechSelection(2,"SPRFACE1.DAT","playerf.pcx","D7_STR.DAT","D7CNS.TXT","010","011",0,0); 
+            switch(option){
+            	case 1: // BORING?
+                  Speech("SPRFACE2.DAT","conserf.pcx","D7_STR.DAT","D7CNS.TXT","018","019","020",0);
+                  Speech("SPRFACE1.DAT","playerf.pcx","D7_STR.DAT","D7CNS.TXT","025","026","027","028");
+                  break;
+               case 2: // hi
+               	Speech("SPRFACE2.DAT","conserf.pcx","D7_STR.DAT","D7CNS.TXT","035",0,0,0);
+                  end_conversation = 1;
+                  break;
+            }
+         }
+      	break;
+      case 6: /////////////////////// day 6 /////////////////////
+         Speech("SPRFACE2.DAT","conserf.pcx","D6_STR.DAT","D6CNS.TXT","001","002",0,0);
+         while(end_conversation == 0){
+         	option = SpeechSelection(2,"SPRFACE1.DAT","playerf.pcx","D6_STR.DAT","D6CNS.TXT","010","011",0,0);
+            switch(option){
+            	case 1: // DIRECTOR GAMER?
+               	Speech("SPRFACE1.DAT","playerf.pcx","D6_STR.DAT","D6CNS.TXT","015","016","017",0);
+                  Speech("SPRFACE2.DAT","conserf.pcx","D6_STR.DAT","D6CNS.TXT","020","021","022",0);
+                  Speech("SPRFACE1.DAT","playerf.pcx","D6_STR.DAT","D6CNS.TXT","025",0,0,0);
+                  Speech("SPRFACE2.DAT","conserf.pcx","D6_STR.DAT","D6CNS.TXT","030","031","032","033");
+                  Speech("SPRFACE2.DAT","conserf.pcx","D6_STR.DAT","D6CNS.TXT","035","036",0,0);
+                  Speech("SPRFACE2.DAT","conserf.pcx","D6_STR.DAT","D6CNS.TXT","039","040","041",0);
+                  player.scn_janitor = 1;
+                  break;
+               case 2: // hi
+               	Speech("SPRFACE2.DAT","conserf.pcx","D6_STR.DAT","D6CNS.TXT","045",0,0,0);
+                  end_conversation = 1;
+                  break;
+            }
+         }
+      	break;
+      case 5: /////////////////////// day 5 /////////////////////
+         Speech("SPRFACE1.DAT","playerf.pcx","D5_STR.DAT","D5CNS.TXT","001","002",0,0);
+         Speech("SPRFACE2.DAT","conserf.pcx","D5_STR.DAT","D5CNS.TXT","005","006",0,0);
+      	break;
+      case 4: /////////////////////// day 4 /////////////////////
+         Speech("SPRFACE2.DAT","conserf.pcx","D4_STR.DAT","D4CNS.TXT","001",0,0,0);
+         Speech("SPRFACE1.DAT","playerf.pcx","D4_STR.DAT","D4CNS.TXT","005",0,0,0);
+         break;
+      case 3: /////////////////////// day 3 /////////////////////
+         Speech("SPRFACE2.DAT","conserf.pcx","D3_STR.DAT","D3CNS.TXT","001",0,0,0);
+         Speech("SPRFACE1.DAT","playerf.pcx","D3_STR.DAT","D3CNS.TXT","005",0,0,0);
+         break;
+      case 2: /////////////////////// day 2 /////////////////////
+         Speech("SPRFACE2.DAT","conserf.pcx","D2_STR.DAT","D2CNS.TXT","001",0,0,0);
+         Speech("SPRFACE1.DAT","playerf.pcx","D2_STR.DAT","D2CNS.TXT","005",0,0,0);
+         break;
+      case 1: /////////////////////// day 1 /////////////////////
+         Speech("SPRFACE2.DAT","conserf.pcx","D1_STR.DAT","D1CNS.TXT","001","002",0,0);
+         Speech("SPRFACE2.DAT","conserf.pcx","D1_STR.DAT","D1CNS.TXT","005","006",0,0);
+         Speech("SPRFACE1.DAT","playerf.pcx","D1_STR.DAT","D1CNS.TXT","010",0,0,0);
+         if(player.scn_janitor == 0){
+         	while(end_conversation == 0){
+         		option = SpeechSelection(2,"SPRFACE1.DAT","playerf.pcx","D1_STR.DAT","D1CNS.TXT","015","016",0,0);
+            	switch(option){
+            		case 1: // AND YOU?
+               		Speech("SPRFACE2.DAT","conserf.pcx","D1_STR.DAT","D1CNS.TXT","020","021","022","023");
+                  	Speech("SPRFACE2.DAT","conserf.pcx","D1_STR.DAT","D1CNS.TXT","025","026",0,0);
+                  	Speech("SPRFACE1.DAT","playerf.pcx","D1_STR.DAT","D1CNS.TXT","029",0,0,0);
+                     player.scn_janitor = 1;
+                  	break;
+               	case 2: // BYE
+               		Speech("SPRFACE2.DAT","conserf.pcx","D1_STR.DAT","D1CNS.TXT","033",0,0,0);
+                  	end_conversation = 1;
+                 	 	break;
+            	}
+         	}
+         }
+         if(player.scn_janitor == 1){
+         	Speech("SPRFACE2.DAT","conserf.pcx","D1_STR.DAT","D1CNS.TXT","040","041","042","043");
+            Speech("SPRFACE1.DAT","playerf.pcx","D1_STR.DAT","D1CNS.TXT","046","047",0,0);
+         }
+         break;
+   }
+}

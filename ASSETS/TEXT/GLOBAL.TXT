@@ -43,7 +43,7 @@
 #043 $
 #044 $
 #045 IDIOMA $
-#046 ESPANOL $
+#046 ESPA@OL $
 #047 INGLES $
 #048 $
 #049 $

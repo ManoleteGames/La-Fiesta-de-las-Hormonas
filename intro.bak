@@ -245,16 +245,13 @@ void Intro(void){
             LoadSprite("SPRMISC.DAT","enter.pcx",1,16); //Load sprites to one of the fixed structs
             LoadSprite("SPRCHR1.DAT","player.pcx",2, 32); //Load sprites to one of the fixed structs
             LoadSprite("SPRCHR1.DAT","jessy.pcx",3, 32); //Load sprites to one of the fixed structs
-            LoadMusic(1);
 
             InitSprite(2,100,185);
             SetSpriteAnimation(2,0,6,12,PlayerAnimation); // Set static
 
             ResetLoadingInterrupt(); // Stop loading animation
 
-            PlayNonStopMusic();
-
-			   // Allow scroll
+            // Allow scroll
 			   scrolling_enabled = 1;
             // Draw map
 			   SetMap(0,0);

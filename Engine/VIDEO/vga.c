@@ -298,14 +298,14 @@ void VGA_InitVideoCard(void){
    outportb(VGA_GC_DATA, 0x01); // 0b0000 0001
 
    // Set VRAM addresses for fonts
-   vram_Font = 0xB000; //0xB000; //0xAE00; //0xDCC0;
+   vram_Font = 0xB000;
    vram_FontS = 0xB440;
 
    // Set VRAM addresses for tiles
-   vram_Tiles = 0xB880; //0xB410; //0xE000; //0xE0C0; //0xDCC0; //0xE0C0;
+   vram_Tiles = 0xB880;
 
  	// Set sprites background vram address
-   vram_SpritesBack = 0xDE00; //0xE500; //0xE000; //0xB410;
+   vram_SpritesBack = 0xDE00;
 
    // Sets the scroll to page 1
    VGA_SetPage(1);
@@ -811,13 +811,7 @@ void VGA_LoadTiles(char *file,char* dat_string){
 	byte plane = 0;
 	dword offset = 0;
 
-   debug = 21;
-   Update(0);
-
    LoadTileset_PCX(file, dat_string);
-
-   debug = 22;
-   Update(0);
 
 	//COPY TO VGA VRAM
 	w = tilesetWidth>>4;
@@ -866,9 +860,6 @@ void VGA_LoadTiles(char *file,char* dat_string){
 		}
 		asm STI //Re enable interrupts so that loading animation is played again
 	}
-
-	debug = 29;
-   Update(0);
 }
 
 /////////////////////////////////////////////////////////
@@ -885,7 +876,7 @@ void VGA_PrintText(word x, word y, word lineLength, unsigned char *string, byte 
 	word charIndex = 0;
 	word lwidth = vram_LogicalWidth-2;
 	word lwidth2 = vram_LogicalWidth*7;
-	word line_jump = (vram_LogicalWidth*8) - (lineLength*2);    // mal
+	word line_jump = (vram_LogicalWidth*8) - (lineLength*2);
 	y = (y<<3);
    y += scroll_y;
 	screen_offset = (y<<6)+(y<<4)+(y<<3);
@@ -1124,7 +1115,7 @@ void VGA_Draw_EmptyBox(word x, word y, byte w, byte h){
 
    // Print frame
 	up[0] = '#'; up[w+1] = '$'; up[w+2] = 0;
-	mid[0] = '*'; mid[w+1] = '+'; mid[w+2] = 0;
+	mid[0] = '['; mid[w+1] = ']'; mid[w+2] = 0;
 	down[0] = '%'; down[w+1] = '&'; down[w+2] = 0;
 	for (i = 1; i<w+1; i++){
    	up[i] = '(';
@@ -1594,16 +1585,16 @@ void VGA_DrawSpriteDestructive(int sprNum){
 	int y = s->pos_y;
 
   	// Check animation enabled
-	if(s->animate == 1){
-  		s->frame = s->animation[s->anim_counter];
-     	if(s->anim_speed > s->speed){
-     		s->anim_speed = 0;
-        	s->anim_counter ++;
-         // Reset animation counter
-         if (s->anim_counter == s->aframes) s->anim_counter = 0;
-      }
-   	s->anim_speed++;
-   }
+	//if(s->animate == 1){
+  	//	s->frame = s->animation[s->anim_counter];
+   //  	if(s->anim_speed > s->speed){
+   //  		s->anim_speed = 0;
+   //      	s->anim_counter ++;
+   //      // Reset animation counter
+   //      if (s->anim_counter == s->aframes) s->anim_counter = 0;
+   //   }
+   //	s->anim_speed++;
+   //}
    VGA_RunCompiledSprite(x,y,s->frames[s->frame].compiled_code);
 }
 
@@ -2140,15 +2131,8 @@ void VGA_Set_Window(void){
 }
 
 void VGA_PanelRefresh(void){
-   int newPos;
+   int newPos = 355;
 	if(showPanel){
-   	if(debug == 1){
-      	newPos = 330;
-      }
-      else{
-         newPos = 353;
-      }
-
    	if(panelScrolling == 1){     // Move with scroll
    		if(scroll_wy > newPos){
       		scroll_wy --;
@@ -2174,43 +2158,14 @@ void VGA_PanelRefresh(void){
 	}
 
    // current day
-   VGA_PrintPanelText(1,1,8,"  ");
-   sprintf(string, "%d", player.day);
-   if(player.day >= 10){ VGA_PrintPanelText(1,1,strlen(string),string); }
-   else{	VGA_PrintPanelText(2,1,strlen(string),string); }
+   sprintf(string, "%02d", player.day);
+   VGA_PrintPanelText(1,1,strlen(string),string);
 
    // money
-   sprintf(string, "%d", player.money);
-   VGA_PrintPanelText(36,1,8,"   ");
+   sprintf(string, "%03d", player.money);
    VGA_PrintPanelText(36,1,strlen(string),string);
 
-   // debug 1
-   debug1 = player.hotspot;
-   sprintf(string, "%d", debug1);
-   VGA_PrintPanelText(1,3,8,"     ");
-   VGA_PrintPanelText(1,3,strlen(string),string);
-
-   // debug2
-   debug1 = player.floor;
-   sprintf(string, "%d", debug2);
-   VGA_PrintPanelText(7,3,8,"     ");
-   VGA_PrintPanelText(7,3,strlen(string),string);
-
-   // debug3
-   sprintf(string, "%d", debug3);
-   VGA_PrintPanelText(14,3,8,"     ");
-   VGA_PrintPanelText(14,3,strlen(string),string);
-
-   // debug4
-   debug4 = player.collision;
-   sprintf(string, "%d", debug4);
-   VGA_PrintPanelText(21,3,8,"     ");
-   VGA_PrintPanelText(21,3,strlen(string),string);
-
-   // debug5
-   sprintf(string, "%d", debug5);
-   VGA_PrintPanelText(28,3,8,"     ");
-   VGA_PrintPanelText(28,3,strlen(string),string);
+   VGA_PanelUpdate();
 }
 
 void VGA_PrintLine(int pos_x, int pos_y, int width_x, int width_y, byte color){
@@ -2269,6 +2224,9 @@ void VGA_PanelUpdate(void){
    VGA_PrintLine(190,9,10,6,0); // Print to black
    if(player.good < 10){ VGA_PrintLine(187-(10-player.good),9,(10-player.good),6,48); } // Print to red
    if(player.good > 10){ VGA_PrintLine(190,9,(player.good-10),6,48); } // Print to red
+
+   if(fp_keys[K_O]){player.good--;}
+   if(fp_keys[K_P]){player.good++;}
 }
 
 

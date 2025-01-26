@@ -4,238 +4,137 @@
 
 #include "source\engine\engine.h"
 
-/////////////////////////////////////////////////////////
-// Go to floor 2 from floor 1 left stairs
-/////////////////////////////////////////////////////////
-void GoToFloor2_Left(void){
-	SetLoadingInterrupt();   // Start loading animation
-   // Load floor 2 map
-	LoadMap("MAPS.DAT","floor2.tmx");
-	LoadTiles("TILESETS.DAT","floor2.pcx");
-  	LoadSprite("SPRCHR.DAT","player.pcx",1, 32); //Load sprites to one of the fixed structs
-   SetSpriteAnimation(1,0,6,12,PlayerAnimation);
-   InitSprite(1,48,185);
-  	player.floor = 2;
-   ResetLoadingInterrupt(); // Stop loading animation
-   scrolling_enabled = 1;
-	SetMap(0,3);
-	Update(0);
-	Fade_in();
-}
+void far Events(byte event){
+	byte option;
+	switch(player.floor){
+   	case 1: // Floor 1
+			if(player.floor1_event_mask[event] == 1){
+        		if(player.event == 1){ GoToFloor2(50,185);}
+	        	if(player.event == 2){ GoToFloor2(496,275);}
+	         if(player.event == 3){ GoToExt1(128,365);}
+            if(player.event == 4){ GoToExt2(484,384);}
+            if(player.event == 5){ /// Director's room entry
+            	if(player.day == 10){
+            		switch(player.scn_janitor){
+               		case 2:
+                  		Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","135","136",0,0);
+                     	Speech("SPRFACE2.DAT","directf.pcx","D10_STR.DAT","D10DIR.TXT","050","051","052",0);
+                     	player.scn_janitor = 3;
+                  		break;
+                  	case 3:
+                  		Speech("SPRFACE2.DAT","conserf.pcx","D10_STR.DAT","D10CNS.TXT","138","139","140",0);
+                     	Speech("SPRFACE2.DAT","directf.pcx","D10_STR.DAT","D10DIR.TXT","055",0,0,0);
+                     	player.scn_janitor = 4;
+                  		break;
+                  	default:
+                  		break;
+               	}
+               	Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10CNS.TXT","141","142","143",0);
+               	sprite[player.spriteNum].pos_y = sprite[player.spriteNum].pos_y - 16;
+            	}
+            }
+            if(player.event == 9){ // Going out of the bar
+               if(player.day == 10){
+						player.scn_director = 1; // Enable talk about bullying with the director
+               	player.floor1_event_mask[9] = 0; // Disable thugs assault event
+               	Thugs();
+               	GoToFloor1(232, 155);
+   					Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10THUG.TXT","052","053","054","055");
+            	}
+            }
+		   }
+      	break;
+      case 2: // Floor 2
+      	if(player.floor2_event_mask[event] == 1){
+	         if(player.event == 1){ GoToFloor1(50,175);}
+         	if(player.event == 2){ GoToFloor1(502,295);}
+            if(player.event == 3){ // Go to exam
+            	if( player.scn_main < 1 ){ // mission not done yet
+                	Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","098","099",0,0);
+               } else {
+                  Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","100","101",0,0);
+               }
+               option = SpeechSelection(2,"SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","102","103",0,0);
+               if(option == 1){
+               	GoToExam();
+                  player.scn_main = 2;
+               	switch(player.day){
+                  	case 10:
+                  		// Update scn_thugs
+   							player.scn_thugs = 2;
+   							player.ext1_hotspot_mask[8] = 1;  // Enable hotspot 8 of ext1. Thugs
+                  		player.ext2_hotspot_mask[8] = 0;  // Disble hotspot 8 of ext2. Thugs
 
-/////////////////////////////////////////////////////////
-// Go to floor 2 from floor 1 right stairs
-/////////////////////////////////////////////////////////
-void GoToFloor2_Right(void){
-	SetLoadingInterrupt();   // Start loading animation
-   // Load floor 2 map
-	LoadMap("MAPS.DAT","floor2.tmx");
-	LoadTiles("TILESETS.DAT","floor2.pcx");
-  	LoadSprite("SPRCHR.DAT","player.pcx",1, 32); //Load sprites to one of the fixed structs
-   SetSpriteAnimation(1,0,6,12,PlayerAnimation);
-   InitSprite(1,496,295);
-  	player.floor = 2;
-   ResetLoadingInterrupt(); // Stop loading animation
-   scrolling_enabled = 1;
-	SetMap(16,10);
-   Update(0);
-   Fade_in();
-}
+							   // Update scn_nerds
+   							player.scn_nerds = 6;
+   							player.floor1_hotspot_mask[9] = 1; // Enable arcade hotspot
+   							player.floor1_hotspot_mask[17] = 1;  // Enable nerds hotspot at the lobby
+   							player.floor1_hotspot_mask[14] = 0;  // Disable nerds hotspot at the arcade
+   							player.floor2_event_mask[3] = 0;     // Disable exam event
 
-/////////////////////////////////////////////////////////
-// Go to exterior 1 from floor 1 main door
-/////////////////////////////////////////////////////////
-void GoToExt1_Door(void){
-	SetLoadingInterrupt();   // Start loading animation
-   // Load ext 1 map
-	LoadMap("MAPS.DAT","ext1.tmx");
-	LoadTiles("TILESETS.DAT","ext1.pcx");
-  	LoadSprite("SPRCHR.DAT","player.pcx",1, 32); //Load sprites to one of the fixed structs
-   SetSpriteAnimation(1,0,6,12,PlayerAnimation);
-   InitSprite(1,128,365);
-   player.floor = 3;
-   ResetLoadingInterrupt(); // Stop loading animation
-   scrolling_enabled = 1;
-	SetMap(0,12);
-   Update(0);
-   Fade_in();
-}
+                        break;
+                     case 9:
+                     	break;
+                  	default:
+                     	break;
+                  }
+               } else {
+               	sprite[player.spriteNum].pos_y = sprite[player.spriteNum].pos_y + 16;
+               }
+            }
+		   }
+      	break;
+     	case 3: // Ext 1
+      	if(player.ext1_event_mask[event] == 1){
+         	if(player.event == 1){ // Go to next day
+            	if(player.scn_main < 2){ // exam not done yet
+               	Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","058","059",0,0);
+                  option = SpeechSelection(2,"SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","066","067",0,0);
+                  switch(option){
+                  	case 1: // PASS CLASSES
+                     	if(player.intell > 0){player.intell--;}
+                        if(player.good > 0){player.good--;}
+                        if(player.popular > 0){player.popular--;}
+                        if(player.day > 0){player.day --;}
+                        InitDay();
+                        break;
+                     default: // GO BACK
+                        break;
+                  }
+               } else {
+               	Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","062",0,0,0);
+                  option = SpeechSelection(2,"SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10GLB.TXT","065","067",0,0);
+                  switch(option){
+                  	case 1: // GO HOME
+                     	if(player.day > 0){player.day --;}
+                        InitDay();
+                        break;
+                     default: // GO BACK
+                        break;
+                  }
+               }
 
-/////////////////////////////////////////////////////////
-// Go to exterior 2 from floor 1 backdoor
-/////////////////////////////////////////////////////////
-void GoToExt2_BackDoor(void){
-	SetLoadingInterrupt();   // Start loading animation
-   // Load ext 2 map
-	LoadMap("MAPS.DAT","ext2.tmx");
-	LoadTiles("TILESETS.DAT","ext2.pcx");
-  	LoadSprite("SPRCHR.DAT","player.pcx",1, 32); //Load sprites to one of the fixed structs
-   SetSpriteAnimation(1,0,6,12,PlayerAnimation);
-   InitSprite(1,484,384);
-  	player.floor = 4;
-   ResetLoadingInterrupt(); // Stop loading animation
-   scrolling_enabled = 1;
-	SetMap(21,13);
-   Update(0);
-   Fade_in();
-}
+               if(player.day > 0){GoToExt1(32, 365);}
+               else { GoToEnd(); }
 
-/////////////////////////////////////////////////////////
-// Go to floor 1 from floor 2 left
-/////////////////////////////////////////////////////////
-void GoToFloor1_Left(void){
-	SetLoadingInterrupt();   // Start loading animation
-   // Load floor 1 map
-	LoadMap("MAPS.DAT","floor1.tmx");
-	LoadTiles("TILESETS.DAT","floor1.pcx");
-   LoadSprite("SPRCHR.DAT","player.pcx",1, 32); //Load sprites to one of the fixed structs
-   LoadPanelBackground("IMAGES.DAT","PANEL.pcx");
-   player.floor = 1;
-   SetSpriteAnimation(1,0,6,12,PlayerAnimation);
-   InitSprite(1,48,175);
-   ResetLoadingInterrupt(); // Stop loading animation
-   scrolling_enabled = 1;
-   SetMap(0,3);
-   Update(0);
-   Fade_in();
-}
-
-/////////////////////////////////////////////////////////
-// Go to floor 1 from floor 2 right
-/////////////////////////////////////////////////////////
-void GoToFloor1_Right(void){
-	SetLoadingInterrupt();   // Start loading animation
-   // Load floor 1 map
-	LoadMap("MAPS.DAT","floor1.tmx");
-	LoadTiles("TILESETS.DAT","floor1.pcx");
-   LoadSprite("SPRCHR.DAT","player.pcx",1, 32); //Load sprites to one of the fixed structs
-   LoadPanelBackground("IMAGES.DAT","PANEL.pcx");
- 	player.spriteNum = 1;
-   player.floor = 1;
-   SetSpriteAnimation(1,0,6,12,PlayerAnimation);
-   InitSprite(1,502,295);
-   ResetLoadingInterrupt(); // Stop loading animation
-   scrolling_enabled = 1;
-   SetMap(16,10);
-   Update(0);
-   Fade_in();
-}
-
-/////////////////////////////////////////////////////////
-// Go to next day
-/////////////////////////////////////////////////////////
-void GoToNextDay(void){
-	SetLoadingInterrupt();   // Start loading animation
-   // Load ext 1 map
-	LoadMap("MAPS.DAT","ext1.tmx");
-	LoadTiles("TILESETS.DAT","ext1.pcx");
-  	LoadSprite("SPRCHR.DAT","player.pcx",1, 32); //Load sprites to one of the fixed structs
-   SetSpriteAnimation(1,0,6,12,PlayerAnimation);
-   InitSprite(1,32,365);
-   player.floor = 3;
-   player.day --;
-   ResetLoadingInterrupt(); // Stop loading animation
-   scrolling_enabled = 1;
-   SetMap(0,18);
-   Update(0);
-   Fade_in();
-}
-
-/////////////////////////////////////////////////////////
-// Go to floor 1 from entry
-/////////////////////////////////////////////////////////
-void GoToFloor1_Entry(void){
-	SetLoadingInterrupt();   // Start loading animation
-   // Load floor 1 map
-	LoadMap("MAPS.DAT","floor1.tmx");
-	LoadTiles("TILESETS.DAT","floor1.pcx");
-   LoadSprite("SPRCHR.DAT","player.pcx",1, 32); //Load sprites to one of the fixed structs
-   LoadPanelBackground("IMAGES.DAT","PANEL.pcx");
-   player.floor = 1;
-   SetSpriteAnimation(1,0,6,12,PlayerAnimation);
-   InitSprite(1,32,395);
-   ResetLoadingInterrupt(); // Stop loading animation
-   scrolling_enabled = 1;
-   SetMap(0,18);
-   Update(0);
-   Fade_in();
-}
-
-/////////////////////////////////////////////////////////
-// Go to exterior 1 from exterior 2
-/////////////////////////////////////////////////////////
-void GoToExt1_Right(void){
-	SetLoadingInterrupt();   // Start loading animation
-   // Load ext 1 map
-	LoadMap("MAPS.DAT","ext1.tmx");
-	LoadTiles("TILESETS.DAT","ext1.pcx");
-  	LoadSprite("SPRCHR.DAT","player.pcx",1, 32); //Load sprites to one of the fixed structs
-   player.floor = 3;
-   SetSpriteAnimation(1,0,6,12,PlayerAnimation);
-   InitSprite(1,868,64);
-   ResetLoadingInterrupt(); // Stop loading animation
-   scrolling_enabled = 1;
-   SetMap(40,0);
-   Update(0);
-   Fade_in();
-}
-
-/////////////////////////////////////////////////////////
-// Go to floor 1 Back door
-/////////////////////////////////////////////////////////
-void GoToFloor1_BackDoor(void){
-	SetLoadingInterrupt();   // Start loading animation
-   // Load floor 1 map
-	LoadMap("MAPS.DAT","floor1.tmx");
-	LoadTiles("TILESETS.DAT","floor1.pcx");
-   LoadSprite("SPRCHR.DAT","player.pcx",1, 32); //Load sprites to one of the fixed structs
-   LoadPanelBackground("IMAGES.DAT","PANEL.pcx");
-   player.floor = 1;
-   SetSpriteAnimation(1,0,6,12,PlayerAnimation);
-   InitSprite(1,248,96);
- 	ResetLoadingInterrupt(); // Stop loading animation
-	scrolling_enabled = 1;
-	SetMap(7,0);
-   Update(0);
-	Fade_in();
+            }
+         	if(player.event == 2){ GoToFloor1(32,395);}
+           	if(player.event == 3){ GoToExt2(784,456);}
+		   }
+      	break;
+      case 4: // Ext 2
+      	if(player.ext2_event_mask[event] == 1){
+         	if(player.event == 1){ GoToExt1(868,64);}
+         	if(player.event == 2){ GoToGym(56,296);}
+         	if(player.event == 3){ GoToFloor1(248,96);}
+		   }
+      	break;
+      case 5: // Gym
+      	if(player.gym_event_mask[event] == 1){
+            if(player.event == 1){ GoToExt2(648,256); }
+		   }
+      	break;
+   }
 }
 
 
-/////////////////////////////////////////////////////////
-// Go to exterior 2 from gym
-/////////////////////////////////////////////////////////
-void GoToExt2_Gym(void){
-	SetLoadingInterrupt();   // Start loading animation
-   // Load ext 2 map
-	LoadMap("MAPS.DAT","ext2.tmx");
-	LoadTiles("TILESETS.DAT","ext2.pcx");
-   LoadSprite("SPRCHR.DAT","player.pcx",1, 32); //Load sprites to one of the fixed structs
-   LoadPanelBackground("IMAGES.DAT","PANEL.pcx");
-   player.floor = 4;
-   SetSpriteAnimation(1,0,6,12,PlayerAnimation);
-   InitSprite(1,200,95);
-   ResetLoadingInterrupt(); // Stop loading animation
-   scrolling_enabled = 1;
-   SetMap(15,10);
-   Update(0);
-   Fade_in();
-}
-
-/////////////////////////////////////////////////////////
-// Go to exterior 2 from ext1 right
-/////////////////////////////////////////////////////////
-void GoToExt2_Right(void){
-	SetLoadingInterrupt();   // Start loading animation
-   // Load ext 2 map
-	LoadMap("MAPS.DAT","ext2.tmx");
-	LoadTiles("TILESETS.DAT","ext2.pcx");
-  	LoadSprite("SPRCHR.DAT","player.pcx",1, 32); //Load sprites to one of the fixed structs
-   SetSpriteAnimation(1,0,6,12,PlayerAnimation);
-   InitSprite(1,784,456);
-  	player.floor = 4;
-   ResetLoadingInterrupt(); // Stop loading animation
-   scrolling_enabled = 1;
-	SetMap(40,12);
-   Update(0);
-   Fade_in();
-}

@@ -10,7 +10,33 @@
 /////////////////////////////////////////////////////////
 void EndGameExtinguisher(void){
 	Fade_out();
+	Error("End of game: Loser",0,0);
+}
 
-	Error("bye bye",0,0);
-
+void far GoToEnd(void){
+	Fade_out();
+	if((player.intell > 7)&(player.popular > 7)&(player.good > 7)){
+   	Error("End of game: Like a dream",0,0);
+   }
+   else if((player.intell > 7)&(player.popular > 7)&(player.good < 3)){
+   	Error("End of game: Arrogant genius",0,0);
+   }
+   else if((player.intell > 7)&(player.popular < 3)&(player.good > 7)){
+   	Error("End of game: Misunderstood romantic",0,0);
+   }
+   else if((player.intell > 7)&(player.popular < 3)&(player.good < 3)){
+   	Error("End of game: Brilliant solitaire",0,0);
+   }
+   else if((player.intell < 3)&(player.popular > 7)&(player.good > 7)){
+   	Error("End of game: Heart of group",0,0);
+   }
+   else if((player.intell < 3)&(player.popular > 7)&(player.good < 3)){
+   	Error("End of game: Superficial jocker",0,0);
+   }
+   else if((player.intell < 3)&(player.popular > 7)&(player.good < 3)){
+   	Error("End of game: Pagafantas",0,0);
+   }
+   else {
+   	Error("End of game: Loser",0,0);
+   }
 }

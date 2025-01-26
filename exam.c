@@ -1,0 +1,86 @@
+/***********************
+*  EXAMS
+************************/
+
+#include "source\engine\engine.h"
+
+/////////////////////////////////////////////////////////
+// Go to exam (maths)
+/////////////////////////////////////////////////////////
+void far GoToExam(void){
+ 	byte option;
+
+   panelScrolling = 0;
+   showPanel = 0;
+   Update(0);
+
+	SetLoadingInterrupt();   // Start loading animation
+
+   LoadImage("IMAGES2.DAT","exam.pcx",2); // Load exam background image to non visible page
+
+   ResetLoadingInterrupt();   // Stop loading animation
+
+   SetPage(2);
+   Update(0);
+
+   Fade_in();
+
+   switch(player.day){
+   	case 10:
+      	Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10EXA.TXT","001","002",0,0);
+         player.score[player.day] = Question("D10_STR.DAT","D10EXA.TXT",10);
+      	break;
+      case 9:
+      	Speech("SPRFACE1.DAT","playerf.pcx","D9_STR.DAT","D9EXA.TXT","001","002",0,0);
+         player.score[player.day] = Question("D9_STR.DAT","D9EXA.TXT",10);
+      	break;
+      case 8:
+      	Speech("SPRFACE1.DAT","playerf.pcx","D8_STR.DAT","D8EXA.TXT","001","002",0,0);
+         player.score[player.day] = Question("D8_STR.DAT","D8EXA.TXT",10);
+      	break;
+      case 7:
+      	Speech("SPRFACE1.DAT","playerf.pcx","D7_STR.DAT","D7EXA.TXT","001","002",0,0);
+         player.score[player.day] = Question("D7_STR.DAT","D7EXA.TXT",10);
+      	break;
+      case 6:
+      	Speech("SPRFACE1.DAT","playerf.pcx","D6_STR.DAT","D6EXA.TXT","001","002",0,0);
+         player.score[player.day] = Question("D6_STR.DAT","D6EXA.TXT",10);
+      	break;
+      case 5:
+      	Speech("SPRFACE1.DAT","playerf.pcx","D5_STR.DAT","D5EXA.TXT","001","002",0,0);
+         player.score[player.day] = Question("D5_STR.DAT","D5EXA.TXT",10);
+      	break;
+      case 4:
+      	Speech("SPRFACE1.DAT","playerf.pcx","D4_STR.DAT","D4EXA.TXT","001","002",0,0);
+         player.score[player.day] = Question("D4_STR.DAT","D4EXA.TXT",10);
+      	break;
+      case 3:
+      	Speech("SPRFACE1.DAT","playerf.pcx","D3_STR.DAT","D3EXA.TXT","001","002",0,0);
+         player.score[player.day] = Question("D3_STR.DAT","D3EXA.TXT",10);
+      	break;
+      case 2:
+      	Speech("SPRFACE1.DAT","playerf.pcx","D2_STR.DAT","D2EXA.TXT","001","002",0,0);
+         player.score[player.day] = Question("D2_STR.DAT","D2EXA.TXT",10);
+      	break;
+      case 1:
+      	Speech("SPRFACE1.DAT","playerf.pcx","D1_STR.DAT","D1EXA.TXT","001","002",0,0);
+         player.score[player.day] = Question("D1_STR.DAT","D1EXA.TXT",10);
+      	break;
+   }
+
+   GoToFloor2(446,270);
+
+   if(player.score[player.day]<50){
+   	Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10EXA.TXT","004","005",0,0);
+      player.intell--;
+   }
+   else if((player.score[player.day]>=50) && (player.score[player.day]<70)){
+      Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10EXA.TXT","006","007",0,0);
+   }
+   else{
+      Speech("SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10EXA.TXT","008","009",0,0);
+      player.intell++;
+   }
+}
+
+

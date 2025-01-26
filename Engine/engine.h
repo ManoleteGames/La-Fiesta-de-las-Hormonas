@@ -11,7 +11,7 @@
 #include <math.h>
 
 /////////////////////////////////////////////////////////
-// global things
+// global things                       
 /////////////////////////////////////////////////////////
 typedef unsigned char  byte;
 typedef unsigned short word;
@@ -31,23 +31,29 @@ typedef struct tagPLAYER{
    byte hotspot;
    byte collision;
 
-   byte ext1_event_mask[16];
-	byte ext2_event_mask[16];
-	byte floor1_event_mask[16];
-	byte floor2_event_mask[16];
-	byte gym_event_mask[16];
+   byte ext1_event_mask[33];
+	byte ext2_event_mask[33];
+	byte floor1_event_mask[33];
+	byte floor2_event_mask[33];
+	byte gym_event_mask[33];
 
-	byte ext1_hotspot_mask[16];
-	byte ext2_hotspot_mask[16];
-	byte floor1_hotspot_mask[16];
-	byte floor2_hotspot_mask[16];
-	byte gym_hotspot_mask[16];
+	byte ext1_hotspot_mask[33];
+	byte ext2_hotspot_mask[33];
+	byte floor1_hotspot_mask[33];
+	byte floor2_hotspot_mask[33];
+	byte gym_hotspot_mask[33];
 
    byte mission_cheat;
+   byte mission_party;
    byte mission_doll;
+   byte mission_arcade;
+   byte mission_bag;
 
+   byte item_exams;
    byte item_chalk;
    byte item_bag;
+   byte item_keys;
+   byte item_game;
 
    int rel_nerds;
    int rel_thugs;
@@ -73,6 +79,8 @@ typedef struct tagPLAYER{
    byte scn_thugs;
    byte scn_girls;
    byte scn_jessy;
+
+   byte score[11];
 
 } PLAYER;
 
@@ -167,17 +175,12 @@ typedef struct tagSPRITE{				// structure for a sprite
 
 #define ADLIB_PORT 	   0x388
 
-extern byte PlayerAnimation[];
+extern byte far PlayerAnimation[];
 
 // Engine.c prototypes
-extern unsigned char *error1;
-extern unsigned char *error2;
-extern int debug1;
-extern int debug2;
-extern int debug3;
-extern int debug4;
-extern int debug5;
-extern unsigned char *string;
+extern unsigned char far *error1;
+extern unsigned char far *error2;
+extern unsigned char far *string;
 extern word vram_LogicalWidth; // screen logical with on bytes in vram
 extern word vram_Font; // Font address in VRAM
 extern word vram_FontS; // Font address in VRAM
@@ -220,6 +223,7 @@ void Speech(char* facefile, char* face,char* filename, char* dat_string,char * l
 byte SpeechSelection(int optNum, char* facefile, char* face,char* filename, char* dat_string,char * line1, char * line2, char * line3, char * line4);
 void SetItem(int pos, int spriteNum, char* itemImg);
 void ResetItem(int pos, int spriteNum);
+int Question(char* filename, char* dat_string, int numQ);
 
 // External functions prototypes
 extern void (*Fade_out)(void);
@@ -244,6 +248,7 @@ extern void (*ScrollMap)(void);
 extern void (*PanelRefresh)(void);
 extern void (*LoadPanelBackground)(char *file,char* dat_string);
 extern void (*DrawMapBack)(void);
+extern void (*PanelUpdate)(void);
 
 extern void (*LoadMusic)(byte song);
 extern void (*UnloadMusic)(void);
@@ -335,17 +340,6 @@ void ADLIB_StopMusic(void);
 void ADLIB_LoadMusic(byte song);
 void ADLIB_UnloadMusic(void);
 
-// SOUND/TANDY_SND.c prototypes
-byte TANDY_Present(void);
-void TANDY_InitSoundCard(void);
-void TANDY_DeInitSoundCard(void);
-void TANDY_PlaySound(byte sound);
-void TANDY_PlayMusic(void);
-void TANDY_PlayNonStopMusic(void);
-void TANDY_StopMusic(void);
-void TANDY_LoadMusic(byte song);
-void TANDY_UnloadMusic(void);
-
 // SOUND/MUSIC.c prototypes
 typedef struct tagIMFsong{				// structure for adlib IMF song, or MOD pattern data
 	int size;
@@ -433,66 +427,16 @@ extern byte CharacterAnimation2[];
 extern byte CharacterAnimation3[];
 
 // All day events
-void GoToFloor2_Left(void);
-void GoToFloor2_Right(void);
-void GoToExt1_Door(void);
-void GoToExt2_BackDoor(void);
-void GoToFloor1_Left(void);
-void GoToFloor1_Right(void);
-void GoToNextDay(void);
-void GoToFloor1_Entry(void);
-void GoToExt1_Right(void);
-void GoToFloor1_BackDoor(void);
-void GoToGym(void);
-void GoToExt2_Gym(void);
-void GoToExt2_Right(void);
-
-// DAY10.c
-void D10_GoToFloor1(int x, int y);
-void D10_Events(byte event);
-void D10_Hotspots(byte hotspot);
-void GoToToniDoor(void);
-
-// DAY9.c
-void D9_Events(byte event);
-void D9_Hotspots(byte hotspot);
-
-// DAY8.c
-void D8_Events(byte event);
-void D8_Hotspots(byte hotspot);
-
-// DAY7.c
-void D7_Events(byte event);
-void D7_Hotspots(byte hotspot);
-
-// DAY6.c
-void D6_Events(byte event);
-void D6_Hotspots(byte hotspot);
-
-// DAY5.c
-void D5_Events(byte event);
-void D5_Hotspots(byte hotspot);
-
-// DAY4.c
-void D4_Events(byte event);
-void D4_Hotspots(byte hotspot);
-
-// DAY3.c
-void D3_Events(byte event);
-void D3_Hotspots(byte hotspot);
-
-// DAY2.c
-void D2_Events(byte event);
-void D2_Hotspots(byte hotspot);
-
-// DAY1.c
-void D1_Events(byte event);
-void D1_Hotspots(byte hotspot);
-
-// DAY0.c
-void D0_Events(byte event);
-void D0_Hotspots(byte hotspot);
-void GoToEnd(void);
+void far Events(byte event);
+void far Hotspots(byte hotspot);
+void far GoToFloor1(int x, int y);
+void far GoToFloor2(int x, int y);
+void far GoToExt1(int x, int y);
+void far GoToExt2(int x, int y);
+void far GoToGym(int x, int y);
+void far GoToEnd(void);
+void far GoToExam(void);
+void far InitDay(void);
 
 // Intro.c
 void Intro(void);
@@ -500,5 +444,18 @@ void Intro(void);
 // EndGame.c
 void EndGameExtinguisher(void);
 
+// Janitor.c
+void far Janitor(void);
 
+// Director.c
+void far Director(void);
+
+// Thugs.c
+void far Thugs(void);
+
+// Nerds.c
+void far Nerds(void);
+
+// Girls.c
+void far Girls(void);
 

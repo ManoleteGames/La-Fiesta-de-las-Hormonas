@@ -22,43 +22,27 @@ byte CharacterAnimation3[] = {0,0,0,1,2,0,0};
 // Logo function
 // - Little sequence with logos and stuff
 /////////////////////////////////////////////////////////
-void Logo(void){
+void near Logo(void){
 
 	// Dos contest logo
 	Fade_out();
    LoadImage("LOGO.DAT","LCONTEST.pcx",1);
    SetPage(1);
    Fade_in();
-   LoadMusic(2);
-   PlayMusic();
-   while(musicPlaying){
-   	// Wait until song is finished
-   }
-   UnloadMusic();
+   sleep(2);
 
    // MS-DOS club logo
    LoadImage("LOGO.DAT","LDOSCLUB.pcx",2);
    Fade_out();
    SetPage(2);
    Fade_in();
-   LoadMusic(2);
-   PlayMusic();
    RotatePalette(48,83,98);
-   while(musicPlaying){
-   	// Wait until song is finished
-   }
-   UnloadMusic();
 
    LoadImage("LOGO.DAT","LMANOL.pcx",1);
    Fade_out();
    SetPage(1);
    Fade_in();
-   LoadMusic(2);
-   PlayMusic();
-   while(musicPlaying){
-   	// Wait until song is finished
-   }
-   UnloadMusic();
+   sleep(2);
 
    Fade_out();
 }
@@ -71,7 +55,7 @@ void Logo(void){
 // -- Options
 // -- Quit game
 /////////////////////////////////////////////////////////
-void Menu(void)
+void near Menu(void)
 {
    word length;
    int menu_pos[5] = {92,100,108,116,124};
@@ -115,7 +99,7 @@ void Menu(void)
    else{PrintText(15,16,length,string,0);}
 
    Fade_in();
-
+   
    // Menu loop
    while( keys[K_ENTER] != 1 )
    {
@@ -285,66 +269,11 @@ void Menu(void)
 // Main loop
 // - Starts the party...
 /////////////////////////////////////////////////////////
-void MainLoop(void) {
+void near MainLoop(void) {
 	while( keys[K_ESC] != 1 )
    {
-   	switch(player.day){
-      	case 10: // 1st day
-         	D10_Events(player.event);
-            if(keys[K_ENTER] == 1){ D10_Hotspots(player.hotspot); }
-            break;
-         case 9: // 2nd day
-         	D9_Events(player.event);
-            if(keys[K_ENTER] == 1){ D9_Hotspots(player.hotspot); }
-            break;
-         case 8: // 3rd day
-         	D8_Events(player.event);
-            if(keys[K_ENTER] == 1){ D8_Hotspots(player.hotspot); }
-            break;
-      	case 7: // 4th day
-         	D7_Events(player.event);
-            if(keys[K_ENTER] == 1){ D7_Hotspots(player.hotspot); }
-            break;
-         case 6: // 5th day
-         	D6_Events(player.event);
-            if(keys[K_ENTER] == 1){ D6_Hotspots(player.hotspot); }
-            break;
-         case 5: // 6th day
-         	D5_Events(player.event);
-            if(keys[K_ENTER] == 1){ D5_Hotspots(player.hotspot); }
-            break;
-      	case 4: // 7th day
-         	D4_Events(player.event);
-            if(keys[K_ENTER] == 1){ D4_Hotspots(player.hotspot); }
-            break;
-         case 3: // 8th day
-         	D3_Events(player.event);
-            if(keys[K_ENTER] == 1){ D3_Hotspots(player.hotspot); }
-            break;
-         case 2: // 9th day
-         	D2_Events(player.event);
-            if(keys[K_ENTER] == 1){ D2_Hotspots(player.hotspot); }
-            break;
-      	case 1: // 10 day. Last one
-           	D1_Events(player.event);
-            if(keys[K_ENTER] == 1){ D1_Hotspots(player.hotspot); }
-            break;
-         case 0: // End game
-				D0_Events(player.event);
-            if(keys[K_ENTER] == 1){ D0_Hotspots(player.hotspot); }
-            break;
-			default:
-				Error("Undefined day number",0,0);
-				break;
-      }
-
-      //debug
-      if(fp_keys[K_D]){
-      	if(debug == 1){debug=0;}
-         else{debug=1;}
-      }
-
-
+   	Events(player.event);
+      if(keys[K_ENTER] == 1){ Hotspots(player.hotspot); }
       // Main loop
       MovePlayer();
       Update(1);
@@ -356,15 +285,17 @@ void MainLoop(void) {
    }
 }
 
-/////////////////////////////////////////////////////////
-// New game
-// - Initialize game and call main loop function
-/////////////////////////////////////////////////////////
-void NewGame(void) {
 
+/////////////////////////////////////////////////////////
+// Init game
+// - Initialize all variables for a new game
+/////////////////////////////////////////////////////////
+void near Init(void){
 	// Initialize player status
    player.floor = 1;
-   player.day = 10;
+   //player.day = 10;
+   player.day = 9;
+
 
    // Starting player status
    player.intell = 10;
@@ -372,172 +303,16 @@ void NewGame(void) {
    player.good = 10;
    player.money = 0;
 
-   // Initialize events masks
-   player.ext1_event_mask[1] = 1;
-   player.ext1_event_mask[2] = 1;
-	player.ext1_event_mask[3] = 1;
-	player.ext1_event_mask[4] = 0;
-   player.ext1_event_mask[5] = 0;
-   player.ext1_event_mask[6] = 0;
-   player.ext1_event_mask[7] = 0;
-   player.ext1_event_mask[8] = 0;
-   player.ext1_event_mask[9] = 0;
-   player.ext1_event_mask[10] = 0;
-   player.ext1_event_mask[11] = 0;
-   player.ext1_event_mask[12] = 0;
-   player.ext1_event_mask[13] = 0;
-   player.ext1_event_mask[14] = 0;
-   player.ext1_event_mask[15] = 0;
-
-   player.ext2_event_mask[1] = 1;
-   player.ext2_event_mask[2] = 1;
-	player.ext2_event_mask[3] = 1;
-	player.ext2_event_mask[4] = 0;
-   player.ext2_event_mask[5] = 0;
-   player.ext2_event_mask[6] = 0;
-   player.ext2_event_mask[7] = 0;
-   player.ext2_event_mask[8] = 0;
-   player.ext2_event_mask[9] = 0;
-   player.ext2_event_mask[10] = 0;
-   player.ext2_event_mask[11] = 0;
-   player.ext2_event_mask[12] = 0;
-   player.ext2_event_mask[13] = 0;
-   player.ext2_event_mask[14] = 0;
-   player.ext2_event_mask[15] = 0;
-
-   player.floor1_event_mask[1] = 1;
-   player.floor1_event_mask[2] = 1;
-	player.floor1_event_mask[3] = 1;
-	player.floor1_event_mask[4] = 1;
-   player.floor1_event_mask[5] = 0;
-   player.floor1_event_mask[6] = 0;
-   player.floor1_event_mask[7] = 0;
-   player.floor1_event_mask[8] = 0;
-   player.floor1_event_mask[9] = 0;
-   player.floor1_event_mask[10] = 0;
-   player.floor1_event_mask[11] = 0;
-   player.floor1_event_mask[12] = 0;
-   player.floor1_event_mask[13] = 0;
-   player.floor1_event_mask[14] = 0;
-   player.floor1_event_mask[15] = 0;
-
-   player.floor2_event_mask[1] = 1;
-   player.floor2_event_mask[2] = 1;
-	player.floor2_event_mask[3] = 0;
-	player.floor2_event_mask[4] = 0;
-   player.floor2_event_mask[5] = 0;
-   player.floor2_event_mask[6] = 0;
-   player.floor2_event_mask[7] = 0;
-   player.floor2_event_mask[8] = 0;
-   player.floor2_event_mask[9] = 0;
-   player.floor2_event_mask[10] = 0;
-   player.floor2_event_mask[11] = 0;
-   player.floor2_event_mask[12] = 0;
-   player.floor2_event_mask[13] = 0;
-   player.floor2_event_mask[14] = 0;
-   player.floor2_event_mask[15] = 0;
-
-   player.gym_event_mask[1] = 1;
-   player.gym_event_mask[2] = 0;
-	player.gym_event_mask[3] = 0;
-	player.gym_event_mask[4] = 0;
-   player.gym_event_mask[5] = 0;
-   player.gym_event_mask[6] = 0;
-   player.gym_event_mask[7] = 0;
-   player.gym_event_mask[8] = 0;
-   player.gym_event_mask[9] = 0;
-   player.gym_event_mask[10] = 0;
-   player.gym_event_mask[11] = 0;
-   player.gym_event_mask[12] = 0;
-   player.gym_event_mask[13] = 0;
-   player.gym_event_mask[14] = 0;
-   player.gym_event_mask[15] = 0;
-
-   // Initialize hotspot masks
-   player.ext1_hotspot_mask[1] = 0;
-   player.ext1_hotspot_mask[2] = 0;
-	player.ext1_hotspot_mask[3] = 0;
-	player.ext1_hotspot_mask[4] = 0;
-   player.ext1_hotspot_mask[5] = 0;
-   player.ext1_hotspot_mask[6] = 0;
-   player.ext1_hotspot_mask[7] = 0;
-   player.ext1_hotspot_mask[8] = 0;
-   player.ext1_hotspot_mask[9] = 0;
-   player.ext1_hotspot_mask[10] = 0;
-   player.ext1_hotspot_mask[11] = 0;
-   player.ext1_hotspot_mask[12] = 0;
-   player.ext1_hotspot_mask[13] = 0;
-   player.ext1_hotspot_mask[14] = 0;
-   player.ext1_hotspot_mask[15] = 0;
-
-   player.ext2_hotspot_mask[1] = 0;
-   player.ext2_hotspot_mask[2] = 0;
-	player.ext2_hotspot_mask[3] = 0;
-	player.ext2_hotspot_mask[4] = 0;
-   player.ext2_hotspot_mask[5] = 0;
-   player.ext2_hotspot_mask[6] = 0;
-   player.ext2_hotspot_mask[7] = 0;
-   player.ext2_hotspot_mask[8] = 0;
-   player.ext2_hotspot_mask[9] = 0;
-   player.ext2_hotspot_mask[10] = 0;
-   player.ext2_hotspot_mask[11] = 0;
-   player.ext2_hotspot_mask[12] = 0;
-   player.ext2_hotspot_mask[13] = 0;
-   player.ext2_hotspot_mask[14] = 0;
-   player.ext2_hotspot_mask[15] = 0;
-
-   player.floor1_hotspot_mask[1] = 1;
-   player.floor1_hotspot_mask[2] = 1;
-	player.floor1_hotspot_mask[3] = 1;
-	player.floor1_hotspot_mask[4] = 0;
-   player.floor1_hotspot_mask[5] = 1;
-   player.floor1_hotspot_mask[6] = 0;
-   player.floor1_hotspot_mask[7] = 1;
-   player.floor1_hotspot_mask[8] = 1;
-   player.floor1_hotspot_mask[9] = 0;
-   player.floor1_hotspot_mask[10] = 1;
-   player.floor1_hotspot_mask[11] = 1;
-   player.floor1_hotspot_mask[12] = 1;
-   player.floor1_hotspot_mask[13] = 1;
-   player.floor1_hotspot_mask[14] = 0;
-   player.floor1_hotspot_mask[15] = 0;
-
-   player.floor2_hotspot_mask[1] = 1;
-   player.floor2_hotspot_mask[2] = 0;
-	player.floor2_hotspot_mask[3] = 1;
-	player.floor2_hotspot_mask[4] = 0;
-   player.floor2_hotspot_mask[5] = 0;
-   player.floor2_hotspot_mask[6] = 1;
-   player.floor2_hotspot_mask[7] = 1;
-   player.floor2_hotspot_mask[8] = 1;
-   player.floor2_hotspot_mask[9] = 0;
-   player.floor2_hotspot_mask[10] = 1;
-   player.floor2_hotspot_mask[11] = 1;
-   player.floor2_hotspot_mask[12] = 1;
-   player.floor2_hotspot_mask[13] = 0;
-   player.floor2_hotspot_mask[14] = 0;
-   player.floor2_hotspot_mask[15] = 0;
-
-   player.gym_hotspot_mask[1] = 0;
-   player.gym_hotspot_mask[2] = 0;
-	player.gym_hotspot_mask[3] = 0;
-	player.gym_hotspot_mask[4] = 0;
-   player.gym_hotspot_mask[5] = 0;
-   player.gym_hotspot_mask[6] = 0;
-   player.gym_hotspot_mask[7] = 0;
-   player.gym_hotspot_mask[8] = 0;
-   player.gym_hotspot_mask[9] = 0;
-   player.gym_hotspot_mask[10] = 0;
-   player.gym_hotspot_mask[11] = 0;
-   player.gym_hotspot_mask[12] = 0;
-   player.gym_hotspot_mask[13] = 0;
-   player.gym_hotspot_mask[14] = 0;
-   player.gym_hotspot_mask[15] = 0;
-
-   player.mission_cheat = 0;
-   player.mission_doll = 0;
-
-   player.item_chalk = 0;
+   player.score[1] = 0;
+   player.score[2] = 0;
+	player.score[3] = 0;
+	player.score[4] = 0;
+	player.score[5] = 0;
+	player.score[6] = 0;
+	player.score[7] = 0;
+	player.score[8] = 0;
+	player.score[9] = 0;
+	player.score[10] = 0;
 
    player.rel_nerds = 0;
    player.rel_thugs = 0;
@@ -545,9 +320,18 @@ void NewGame(void) {
 
    LoadFont("FONTS.DAT","FONT.bmp"); //Load text font
    LoadPanelBackground("IMAGES.DAT","PANEL.pcx");
-   VGA_PanelUpdate();
+   PanelUpdate();
 
-   D10_GoToFloor1(100, 185);
+   InitDay();
+   GoToFloor1(100, 185);
+}
+
+/////////////////////////////////////////////////////////
+// New game
+// - Initialize game and call main loop function
+/////////////////////////////////////////////////////////
+void near NewGame(void) {
+	Init();
 
    LoadMusic(1);
    PlayNonStopMusic();
@@ -560,7 +344,7 @@ void NewGame(void) {
 /////////////////////////////////////////////////////////
 // Load game
 /////////////////////////////////////////////////////////
-void LoadGame(void){
+void near LoadGame(void){
 	FILE *savefile;
    byte buffer[900];
    int spare;
@@ -708,7 +492,7 @@ void LoadGame(void){
 /////////////////////////////////////////////////////////
 // Save game
 /////////////////////////////////////////////////////////
-void SaveGame(void){
+void near SaveGame(void){
 	FILE *savefile;
    int i;
    byte aux1 = 0;
@@ -935,41 +719,16 @@ byte CheckSavegame() {
 // Continue game
 // -Load last savegame and call main loop
 /////////////////////////////////////////////////////////
-void ContinueGame(void) {
+void near ContinueGame(void) {
 
    LoadFont("FONTS.DAT","FONT.bmp"); //Load text font
    LoadPanelBackground("IMAGES.DAT","PANEL.pcx");
    VGA_PanelUpdate();
-
-   switch(player.day){
-   	case 10:
-      	if(player.floor == 1){D10_GoToFloor1(sprite[player.spriteNum].pos_x, sprite[player.spriteNum].pos_y);}
-         if(player.floor == 2){D10_GoToFloor2(sprite[player.spriteNum].pos_x, sprite[player.spriteNum].pos_y);}
-         if(player.floor == 3){D10_GoToExt1(sprite[player.spriteNum].pos_x, sprite[player.spriteNum].pos_y);}
-         if(player.floor == 4){D10_GoToExt2(sprite[player.spriteNum].pos_x, sprite[player.spriteNum].pos_y);}
-         if(player.floor == 5){D10_GoToGym(sprite[player.spriteNum].pos_x, sprite[player.spriteNum].pos_y);}
-      	break;
-      case 9:
-      	break;
-   	case 8:
-      	break;
-      case 7:
-      	break;
-      case 6:
-      	break;
-      case 5:
-      	break;
-      case 4:
-      	break;
-   	case 3:
-      	break;
-      case 2:
-      	break;
-      case 1:
-      	break;
-      default:
-      	break;
-   }
+   if(player.floor == 1){GoToFloor1(sprite[player.spriteNum].pos_x, sprite[player.spriteNum].pos_y);}
+   if(player.floor == 2){GoToFloor2(sprite[player.spriteNum].pos_x, sprite[player.spriteNum].pos_y);}
+   if(player.floor == 3){GoToExt1(sprite[player.spriteNum].pos_x, sprite[player.spriteNum].pos_y);}
+   if(player.floor == 4){GoToExt2(sprite[player.spriteNum].pos_x, sprite[player.spriteNum].pos_y);}
+	if(player.floor == 5){GoToGym(sprite[player.spriteNum].pos_x, sprite[player.spriteNum].pos_y);}
 
 	MainLoop();
 }
@@ -978,7 +737,7 @@ void ContinueGame(void) {
 // Options
 // - ...
 /////////////////////////////////////////////////////////
-void Options(){
+void near Options(){
 
 	byte end;
 	word length;
@@ -1368,13 +1127,13 @@ void main(){
    player.spriteNum = 1; // Player sprite is always sprite 1!
    existingSaveGame = CheckSavegame();
 
-   while( keys[K_ESC] != 1 )
+   while( 1 )
    {
-		Menu(); // Show game main menu
+		//Menu(); // Show game main menu
       switch(option)
       {
       	case 1: // New game
-         	Intro();
+         	//Intro();
             NewGame();
             SaveGame();
       		break;
@@ -1394,6 +1153,5 @@ void main(){
          	break;
       }
    }
-   ExitDOS();
 }
 

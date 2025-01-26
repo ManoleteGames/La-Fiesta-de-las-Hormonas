@@ -4,11 +4,11 @@
 
 #include "source\engine\engine.h"
 
-unsigned char *error1;
-unsigned char *error2;
-unsigned char *string;
-byte debug;
-int debug1,debug2,debug3,debug4,debug5;
+unsigned char far *error1;
+unsigned char far *error2;
+unsigned char far *string;
+//byte debug;
+//int debug1,debug2,debug3,debug4,debug5;
 
 int scrollCameraFloat = 0;
 int scrollCameraArray[135] = {
@@ -52,15 +52,21 @@ byte musicPlaying = 0;
 byte musicNonStopPlaying = 0;
 byte musicLoaded = 0;
 
+byte time_countdown = 0;
+byte time_done = 0;
+byte time_minutes = 0;
+byte time_seconds = 0;
+int time_counter = 0;
+
 byte *tempdata1; //Temp storage of non tiled data. and also sound samples (1/2)
 byte *tempdata2; //Temp storage of non tiled data. and also sound samples (2/2)
 
 // 0..208 >> Image and tile color
 // 209..252 >> Sprite colors
 // 252..255 >> Font color
-byte palette[256*3];
+byte far palette[256*3];
 
-IMFsong music;	// One song in ram stored at "music"
+IMFsong far music;	// One song in ram stored at "music"
 PLAYER far player;
 
 // Video memory mapping
@@ -86,9 +92,33 @@ byte speech_active = 0;
 
 // Old time handler
 void interrupt (*old_time_handler)(void);
-// Old handler
-void interrupt (*old_loading_handler)(void);
+void interrupt Time_handler(void){
+	asm CLI
+
+   if(time_countdown){
+   	time_counter ++;
+   	if(time_counter>20){
+   		time_counter = 0;
+
+      	if((time_seconds == 0) && (time_minutes > 0)){
+            time_minutes--;
+            time_seconds = 59;
+         }
+         else if(time_seconds > 0){
+          	time_seconds--;
+         }
+   	}
+   }
+
+   // Acknowledge interrupt
+	asm mov al,020h
+	//asm mov dx,020h
+	asm out 020h, al	//Send 0x20 to 0x20 port (end of interrupt)
+
+	asm STI
+}
 //Loading transition interrupt
+void interrupt (*old_loading_handler)(void);
 void interrupt LoadingTransition_handler(void){
 	asm CLI
 
@@ -148,6 +178,7 @@ void (*ScrollMap)(void);
 void (*PanelRefresh)(void);
 void (*LoadPanelBackground)(char *file,char* dat_string);
 void (*DrawMapBack)(void);
+void (*PanelUpdate)(void);
 
 /////////////////////////////////////////////////////////
 // Dummy function
@@ -174,7 +205,7 @@ void CheckSoundCard(void){
    printf(" - PC Speaker is present. He will never let you out \n");
    pcspeakerPresent = 1;
    if( SB_Present() ){ soundBlasterPresent = 1; }
-   if( TANDY_Present() ){ soundTandyPresent = 1; }
+   //if( false ){ soundTandyPresent = 1; }
    if( ADLIB_Present() ){ adlibPresent = 1; }
 }
 
@@ -187,8 +218,8 @@ void CheckGraphicsCard(void){
 
    // Check if any card is avaliable
    if( VGA_Present() ) { videoVGA_Present = 1; }
-	if( EGA_Present() ) { videoEGA_Present = 1; }
-   if( CGA_Present() ) { videoCGA_Present = 1; }
+	//if( EGA_Present() ) { videoEGA_Present = 1; }
+   //if( CGA_Present() ) { videoCGA_Present = 1; }
 
    // No compatible video card detected
    if((videoVGA_Present == 0) && (videoEGA_Present == 0) && (videoCGA_Present == 0)){
@@ -244,14 +275,6 @@ void LinkAudio(void){
       	break;
       case 2: // Tandy sound card
       	printf(" - Activating Tandy sound mode\n");
-      	InitSoundCard = TANDY_InitSoundCard;
-         DeInitSoundCard = TANDY_DeInitSoundCard;
-         PlaySound = TANDY_PlaySound;
-         LoadMusic = TANDY_LoadMusic;
-         UnloadMusic = TANDY_UnloadMusic;
-			PlayMusic = TANDY_PlayMusic;
-         PlayNonStopMusic = TANDY_PlayNonStopMusic;
-         StopMusic = TANDY_StopMusic;
       	break;
       case 3: // Adlib
       	printf(" - Activating Adlib sound mode\n");
@@ -323,12 +346,13 @@ void LinkVideo(void){
          LoadPanelBackground = VGA_LoadPanelBackground;
 
          DrawMapBack = VGA_Draw_MapBack;
+         PanelUpdate = VGA_PanelUpdate;
 
       	break;
       case 2:
       	printf(" - Activating EGA mode\n");
 			// Link global functions to EGA custom functions
-         Vsync = EGA_Vsync;
+         //Vsync = EGA_Vsync;
       	printf("EGA mode not implemented yet!\n");
          getch();
       	exit(1);
@@ -336,7 +360,7 @@ void LinkVideo(void){
       case 3:
       	printf(" - Activating CGA mode\n");
 			// Link global functions to CGA custom functions
-         Vsync = CGA_Vsync;
+         //Vsync = CGA_Vsync;
         	printf("CGA mode not implemented yet!\n");
          getch();
       	exit(1);
@@ -344,7 +368,7 @@ void LinkVideo(void){
       case 4:
       	printf(" - Activating TANDY mode\n");
 			// Link global functions to TANDY custom functions
-         Vsync = Vsync_TANDY;
+         //Vsync = Vsync_TANDY;
         	printf("Tandy mode not implemented yet!\n");
          getch();
       	exit(1);
@@ -646,7 +670,7 @@ void AllocateEngineMem(void){
  	printf(" error1 allocated onto adddress: %p address \n", error1);
    if ((error2 = farcalloc(30, sizeof(unsigned char))) == NULL) Error("Not enough RAM to allocate 30 bytes of error2 string","error2",0);
    printf(" error2 allocated onto adddress: %p address \n", error2);
-   if ((string = farcalloc(40, sizeof(unsigned char))) == NULL) Error("Not enough RAM to allocate 30 bytes of global string","string",0);
+   if ((string = farcalloc(40, sizeof(unsigned char))) == NULL) Error("Not enough RAM to allocate 50 bytes of global string","string",0);
    printf(" string allocated onto adddress: %p address \n", string);
 
    //Allocate 32KB block for temp data
@@ -698,6 +722,46 @@ void InitEngine(void){
    graphicsModeActive = 1;
 
 }
+
+void SetTimeInterrupt(void){
+
+	asm mov al, 0B6h     // Initialize PIT (programable interval timer)
+   asm out 43h,al
+
+    //set timer
+   asm mov al,0x36  // 0b0011 0110 >> Channel 0, lobyte/hibyte, Mode 3 (square wave), 16bit binary
+   asm out PTI_MODE,al
+   //unsigned long spd = 1193182/60;= 19886;
+   asm mov al,255 //spd lo-byte
+   asm out PTI_CH0,al
+   asm mov al,255 //spd  hi-byte
+   asm out PTI_CH0,al
+
+   // Save old IRQ, usualy the sound interrupt function
+   old_time_handler = getvect(TIMER_IRQ); // Save old IRQ
+
+	//set interrupt handler
+	setvect(TIMER_IRQ, Time_handler);		//interrupt 1C not available on NEC 9800-series PCs.
+}
+
+/////////////////////////////////////////////////////////
+// Reset loading transition interrupt (public)
+/////////////////////////////////////////////////////////
+void ResetTimeInterrupt(void){
+
+	asm CLI
+
+	// do not reset timer
+   //outportb(PTI_MODE, 0x36);
+  	//outportb(PTI_CH2, 0xFF);	//lo-byte
+	//outportb(PTI_CH2, 0xFF);	//hi-byte
+
+    // Restore old handler, normaly the sound interrupt function
+	setvect(TIMER_IRQ, old_time_handler);
+
+	asm STI
+}
+
 
 /////////////////////////////////////////////////////////
 // Set loading transition interrupt (public)
@@ -1049,6 +1113,266 @@ void MovePlayer(void){
    player.oldMove =  player.move;
 }
 
+/////////////////////////////////////////////////////////
+// Question
+// - Exam question function
+/////////////////////////////////////////////////////////
+int Question(char* filename, char* dat_string, int numQ){
+   word length;
+   unsigned char line[3];
+   byte currentQ = 0;
+   byte question[40] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+   byte index = 0;
+   byte end = 0;
+   byte next = 0;
+   byte found = 0;
+   byte q1,q2,q3,q4;
+   byte r1,r2,r3,r4;
+   byte r_ok = 0;
+   byte good_option = 0;
+   byte option;
+   byte second_chance = 0;
+   int good_count = 0;
+
+   player.mission_cheat = 100;
+   if(player.mission_party == 0){time_minutes = 1;}
+   else{time_minutes = 2;}
+   time_seconds = 0;
+   time_countdown = 1;
+
+   SetTimeInterrupt();
+
+   while((currentQ < numQ)&&((time_minutes > 0)||(time_seconds > 0))){
+
+      option = 1;
+
+      srand(time(NULL));
+
+   	while(!found){
+   		index = rand() % 20;
+      	if( question[index] == 0 ){
+         	found = 1;
+            question[index] = 1;
+            index = index*10 + 20;  // apply offset
+      		q1 = index;
+      		q2 = index + 1;
+      		q3 = index + 2;
+      		q4 = index + 3;
+      		r1 = index + 4;
+      		r2 = index + 5;
+         	r3 = index + 6;
+      		r4 = index + 7;
+      		r_ok = index + 8;
+         }
+   	}
+
+      Draw_EmptyBox(0,0,38,8);
+
+      // Question line 1
+      sprintf(line, "%03d", q1);
+      LoadText(filename,dat_string,&line,string,&length);
+   	PrintText(1,1,length,string,0);
+
+      // Question line 2
+      sprintf(line, "%03d", q2);
+      LoadText(filename,dat_string,&line,string,&length);
+   	PrintText(1,2,length,string,0);
+
+      // Question line 3
+      sprintf(line, "%03d", q3);
+      LoadText(filename,dat_string,&line,string,&length);
+   	PrintText(1,3,length,string,0);
+
+      // Question line 4
+      sprintf(line, "%03d", q4);
+      LoadText(filename,dat_string,&line,string,&length);
+   	PrintText(1,4,length,string,0);
+
+      // Response a
+      sprintf(line, "%03d", r1);
+      LoadText(filename,dat_string,&line,string,&length);
+   	PrintText(1,5,length,string,1);
+
+      // Response b
+      sprintf(line, "%03d", r2);
+      LoadText(filename,dat_string,&line,string,&length);
+   	PrintText(1,6,length,string,0);
+
+      // Response c
+      sprintf(line, "%03d", r3);
+      LoadText(filename,dat_string,&line,string,&length);
+   	PrintText(1,7,length,string,0);
+
+      // Response d
+      sprintf(line, "%03d", r4);
+      LoadText(filename,dat_string,&line,string,&length);
+   	PrintText(1,8,length,string,0);
+
+      // Response OK
+      sprintf(line, "%03d", r_ok);
+      LoadText(filename,dat_string,&line,string,&length);
+      good_option = string[1]-48; // convert to value
+
+      while(( keys[K_ENTER] != 1)&&((time_minutes > 0)||(time_seconds > 0))) {
+			//select response
+      	if(fp_keys[K_UP]){
+   			switch(option){
+         		case 1: // Do nothing
+            		break;
+            	case 2: // Rewrite old and new option
+               	sprintf(line, "%03d", r2);
+               	LoadText(filename,dat_string,line,string,&length);
+   					PrintText(1,6,length,string,0);
+	            	option--; // Change option
+                  sprintf(line, "%03d", r1);
+               	LoadText(filename,dat_string,line,string,&length);
+   					PrintText(1,5,length,string,1);
+				  		break;
+            	case 3: // Rewrite old and new option
+               	sprintf(line, "%03d", r3);
+               	LoadText(filename,dat_string,line,string,&length);
+   					PrintText(1,7,length,string,0);
+	            	option--; // Change option
+                  sprintf(line, "%03d", r2);
+               	LoadText(filename,dat_string,line,string,&length);
+   					PrintText(1,6,length,string,1);
+				  		break;
+            	case 4: // Rewrite old and new option
+               	sprintf(line, "%03d", r4);
+               	LoadText(filename,dat_string,line,string,&length);
+   					PrintText(1,8,length,string,0);
+	            	option--; // Change option
+                  sprintf(line, "%03d", r3);
+               	LoadText(filename,dat_string,line,string,&length);
+   					PrintText(1,7,length,string,1);
+				  		break;
+         	}
+      	}
+
+      	if(fp_keys[K_DOWN]){
+      		switch(option){
+         		case 1: // Rewrite old and new option
+            		sprintf(line, "%03d", r1);
+            		LoadText(filename,dat_string,line,string,&length);
+   					PrintText(1,5,length,string,0);
+      	      	option++;
+               	sprintf(line, "%03d", r2);
+         	   	LoadText(filename,dat_string,line,string,&length);
+   					PrintText(1,6,length,string,1);
+               	break;
+            	case 2: // Rewrite old and new option
+            		sprintf(line, "%03d", r2);
+	            	LoadText(filename,dat_string,line,string,&length);
+            		PrintText(1,6,length,string,0);
+               	option++;
+               	sprintf(line, "%03d", r3);
+               	LoadText(filename,dat_string,line,string,&length);
+               	PrintText(1,7,length,string,1);
+               	break;
+            	case 3: // Rewrite old and new option
+                  sprintf(line, "%03d", r3);
+               	LoadText(filename,dat_string,line,string,&length);
+               	PrintText(1,7,length,string,0);
+               	option++;
+               	sprintf(line, "%03d", r4);
+               	LoadText(filename,dat_string,line,string,&length);
+               	PrintText(1,8,length,string,1);
+                  break;
+            	case 4: // Do nothing
+				  		break;
+         	}
+      	}
+      	if(option < 1){option = 1;}
+         if(option > 4){option = 4;}
+
+         // Print remaining time
+         sprintf(string, "%02d", time_minutes);
+         PrintText(34,22,2,string,1);
+         PrintText(36,22,1,":",1);
+         sprintf(string, "%02d", time_seconds);
+         PrintText(37,22,2,string,1);
+
+      	Update(0);
+   	}
+
+      if((time_minutes > 0)||(time_seconds > 0)) {
+      	if(option == good_option){
+        		currentQ++;
+         	good_count++;
+     			found = 0;
+        		second_chance = 0;
+      	} else {
+      		// if cheater
+      		if(player.mission_cheat > 99) {
+      			if((option != good_option) && (second_chance == 0)) {
+
+            		second_chance = 1;
+
+         			// Clear screen
+         			Draw_EmptyBox(0,0,38,8);
+
+            		sprintf(line, "%03d", 10);
+           			LoadText(filename,dat_string,&line,string,&length);
+   					PrintText(1,1,length,string,0);
+
+            		sprintf(line, "%03d", 11);
+            		LoadText(filename,dat_string,&line,string,&length);
+   					PrintText(1,3,length,string,0);
+
+               	sprintf(line, "%03d", 12);
+            		LoadText(filename,dat_string,&line,string,&length);
+   					PrintText(1,4,length,string,0);
+
+            		sprintf(line, "%03d", 13);
+            		LoadText(filename,dat_string,&line,string,&length);
+   					PrintText(1,5,length,string,0);
+
+               	sprintf(line, "%03d", 14);
+            		LoadText(filename,dat_string,&line,string,&length);
+   					PrintText(1,6,length,string,0);
+
+                  while( keys[K_ENTER] != 1) {
+							// Print remaining time
+         				sprintf(string, "%02d", time_minutes);
+         				PrintText(34,22,2,string,1);
+         				PrintText(36,22,1,":",1);
+         				sprintf(string, "%02d", time_seconds);
+         				PrintText(37,22,2,string,1);
+
+      					Update(0);
+   					}
+            		while( keys[K_ENTER] == 1) {
+							//wait
+   					}
+
+            		// Clear screen
+         			Draw_EmptyBox(0,0,38,8);
+
+         		}
+        	 		else{
+         			currentQ++;
+     					found = 0;
+        				second_chance = 0;
+         		}
+      		}
+      		else
+      		{
+       			currentQ++;
+         		found = 0;
+      		}
+      	}
+      }
+
+   	while( keys[K_ENTER] == 1) {
+			//wait
+
+   	}
+   }
+
+   ResetTimeInterrupt();
+
+   return good_count;
+}
 
 /////////////////////////////////////////////////////////
 // Speech
@@ -1124,8 +1448,6 @@ void Speech(char* facefile, char* face,char* filename, char* dat_string,char * l
       HideSprite(18);
    }
 
-   vram_SpritesBack -= (sprite[18].width*sprite[18].width)>>1;
-   vram_SpritesBack -= (sprite[19].width*sprite[19].width)>>1;
    UnloadSprite(18);
    UnloadSprite(19);
 

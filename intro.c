@@ -9,7 +9,7 @@
 // - Sets a little intro at the very begining of the game
 // - Can be skipped by pushing ESC
 /////////////////////////////////////////////////////////
-void Intro(void){
+void far Intro(void){
 	byte endIntro = 0; // End intro flag
    byte step = 0; // Current intro step
 

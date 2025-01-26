@@ -1,0 +1,104 @@
+  /***********************
+*  gym
+************************/
+
+#include "source\engine\engine.h"
+
+
+
+/////////////////////////////////////////////////////////
+// Go to gym
+/////////////////////////////////////////////////////////
+void far GoToGym(int x, int y){
+
+	int mapx,mapy;
+
+   panelScrolling = 0;
+   showPanel = 0;
+   Update(0);
+
+	SetLoadingInterrupt();   // Start loading animation
+
+   // Load gym map
+   switch(player.day){
+   	case 10:
+			LoadMap("MAPS.DAT","gym.tmx");
+      	break;
+      case 9:
+			LoadMap("MAPS2.DAT","gym2.tmx");
+      	break;
+      case 8:
+			LoadMap("MAPS2.DAT","gym3.tmx");
+      	break;
+      case 7:
+			LoadMap("MAPS2.DAT","gym4.tmx");
+      	break;
+      case 6:
+			LoadMap("MAPS2.DAT","gym5.tmx");
+      	break;
+      case 5:
+			LoadMap("MAPS2.DAT","gym6.tmx");
+      	break;
+      case 4:
+			LoadMap("MAPS2.DAT","gym7.tmx");
+      	break;
+      case 3:
+			LoadMap("MAPS2.DAT","gym8.tmx");
+      	break;
+      case 2:
+			LoadMap("MAPS2.DAT","gym9.tmx");
+      	break;
+      case 1:
+			LoadMap("MAPS2.DAT","gym10.tmx");
+      	break;
+   }
+   
+	LoadTiles("TILESETS.DAT","gym.pcx");
+   
+   LoadSprite("SPRCHR2.DAT","sensei.pcx",2, 32); //Load sprites to one of the fixed structs
+   SetSpriteAnimation(2,0,6,30,CharacterAnimation3);
+   InitSprite(2,208,162);
+
+   switch(player.day){
+   	case 9:
+         LoadSprite("SPRCHR1.DAT","jessy.pcx",3, 32); //Load sprites to one of the fixed structs
+   		LoadSprite("SPRCHR1.DAT","vane.pcx",4, 32); //Load sprites to one of the fixed structs
+   		LoadSprite("SPRCHR1.DAT","fany.pcx",5, 32); //Load sprites to one of the fixed structs
+   		SetSpriteAnimation(3,0,6,8,CharacterAnimation2);
+   		SetSpriteAnimation(4,0,6,30,CharacterAnimation3);
+   		SetSpriteAnimation(5,0,6,23,CharacterAnimation3);
+   		InitSprite(3,128,190);
+   		InitSprite(4,102,202);
+   		InitSprite(5,158,202);
+      	break;
+      default:
+      	break;
+   }
+
+   LoadSprite("SPRCHR1.DAT","player.pcx",player.spriteNum, 32); //Load sprites to one of the fixed structs
+	SetSpriteAnimation(player.spriteNum,0,6,12,PlayerAnimation);
+   InitSprite(player.spriteNum,x,y);
+
+   player.floor = 5;
+
+   ResetLoadingInterrupt(); // Stop loading animation
+
+   // Allow scroll
+   scrolling_enabled = 1;
+
+   // Draw map
+   // - calculate map position
+   mapx = (x>>4)-10;
+   if(mapx < 0){ mapx = 0;}
+   if((mapx + 21) > map_width){ mapx = map_width - 21;}
+   mapy = (y>>4)-6;
+   if(mapy < 0){ mapy = 0;}
+   SetMap(mapx,mapy);
+
+   Update(0);
+	Fade_in();
+
+   panelScrolling = 1;
+   showPanel = 1;
+}
+

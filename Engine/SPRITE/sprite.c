@@ -180,9 +180,23 @@ void ResetSpriteStack(void){
 void UnloadSprite(int sprite_number){
 	SPRITE *s = &sprite[sprite_number];
 	int i;
+   byte found = 0;
    if(s->loaded==1){
 		s->init = 0;
       s->loaded = 0;
+
+      for(i=0;i<=spriteStack;i++){
+      	if(spriteStackTable[i] == sprite_number){
+         	found = 1;
+         }
+
+         if(found){
+         	spriteStackTable[i] = spriteStackTable[i+1];
+         	spriteStackTable[i+1] = 0;
+         }
+      }
+      vram_SpritesBack -= (sprite[sprite_number].width*sprite[sprite_number].width)>>1;
+
 		for (i=0;i<s->nframes;i++){
 			farfree(s->frames[i].compiled_code);
 			s->frames[i].compiled_code = NULL;
@@ -242,7 +256,12 @@ void LoadSprite(char *file, char *dat_string, int sprite_number, byte size){
 
    // Check sprite pointer
    sprintf(error1, "%d", sprite_number);
-   if(s == NULL){ Error("Error loading sprite ",error1,dat_string);}
+   if(s == NULL){ Error("Sprite memory not pre-allocated ",error1,dat_string);}
+
+   // Check sprite already loaded
+    sprintf(error1, "%d", sprite_number);
+   if(s->loaded == 1){ Error("Sprite already loaded ",error1,dat_string);}
+
 
 	// Load file data
    // - palette will be stored on tilesetPalette[208..256]
@@ -327,7 +346,6 @@ void LoadSprite(char *file, char *dat_string, int sprite_number, byte size){
 
    // Recalculate next sprite background address
    vram_SpritesBack += (size*size)>>1;
-
 }
 
 /////////////////////////////////////////////////////////

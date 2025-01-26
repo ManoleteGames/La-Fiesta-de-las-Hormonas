@@ -1,0 +1,68 @@
+/***********************
+*  FLOOR 2
+************************/
+
+#include "source\engine\engine.h"
+
+
+/////////////////////////////////////////////////////////
+// Go to floor 2
+/////////////////////////////////////////////////////////
+void far GoToFloor2(int x, int y){
+
+	int mapx,mapy;
+
+   panelScrolling = 0;
+   showPanel = 0;
+   Update(0);
+
+	SetLoadingInterrupt();   // Start loading animation
+
+	LoadMap("MAPS.DAT","floor2.tmx");
+	LoadTiles("TILESETS.DAT","floor2.pcx");
+
+   LoadSprite("SPRCHR1.DAT","player.pcx",player.spriteNum, 32); //Load sprites to one of the fixed structs
+   SetSpriteAnimation(player.spriteNum,0,6,12,PlayerAnimation);
+
+   switch(player.day){
+   	case 10:
+         LoadSprite("SPRCHR1.DAT","jessy.pcx",3, 32); //Load sprites to one of the fixed structs
+   		LoadSprite("SPRCHR1.DAT","vane.pcx",4, 32); //Load sprites to one of the fixed structs
+   		LoadSprite("SPRCHR1.DAT","fany.pcx",5, 32); //Load sprites to one of the fixed structs
+   		SetSpriteAnimation(3,0,6,8,CharacterAnimation2);
+   		SetSpriteAnimation(4,0,6,30,CharacterAnimation3);
+   		SetSpriteAnimation(5,0,6,23,CharacterAnimation3);
+   		InitSprite(3,158,170);
+   		InitSprite(4,132,182);
+   		InitSprite(5,188,182);
+      	break;
+      default:
+      	break;
+   }
+
+
+   InitSprite(player.spriteNum,x,y);
+
+   player.floor = 2;
+
+   ResetLoadingInterrupt(); // Stop loading animation
+
+   // Allow scroll
+   scrolling_enabled = 1;
+   // Draw map
+   // - calculate map position
+   mapx = (x>>4)-10;
+   if(mapx < 0){ mapx = 0;}
+   if((mapx + 21) > map_width){ mapx = map_width - 21;}
+   mapy = (y>>4)-6;
+   if(mapy < 0){ mapy = 0;}
+   SetMap(mapx,mapy);
+
+   Update(0);
+
+	Fade_in();
+
+   panelScrolling = 1;
+   showPanel = 1;
+}
+

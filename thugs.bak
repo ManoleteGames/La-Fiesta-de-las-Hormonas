@@ -1,0 +1,247 @@
+/***********************
+*  THUGS
+************************/
+
+#include "source\engine\engine.h"
+
+/////////////////////////////////////////////////////////
+// Go to encounter with toni at lobby
+/////////////////////////////////////////////////////////
+void near GoToThugs(void){
+ 	byte option;
+
+   panelScrolling = 0;
+   showPanel = 0;
+   Update(0);
+
+   SetSpriteAnimation(1,0,6,12,PlayerAnimation);
+
+   LoadSprite("SPRCHR1.DAT","jon.pcx",10, 32); //Load sprites to one of the fixed structs
+   LoadSprite("SPRCHR1.DAT","toni.pcx",11, 32); //Load sprites to one of the fixed structs
+   LoadSprite("SPRCHR1.DAT","erik.pcx",12, 32); //Load sprites to one of the fixed structs
+
+   SetSpriteAnimation(10,0,6,30,CharacterAnimation2);
+   SetSpriteAnimation(11,0,6,23,CharacterAnimation3);
+   SetSpriteAnimation(12,0,6,19,CharacterAnimation3);
+
+   sprite[10].pos_x = sprite[player.spriteNum].pos_x;
+   sprite[10].pos_y = sprite[player.spriteNum].pos_y - 32;
+   sprite[11].pos_x = sprite[player.spriteNum].pos_x;
+   sprite[11].pos_y = sprite[player.spriteNum].pos_y + 32;
+   sprite[12].pos_x = sprite[player.spriteNum].pos_x - 32;
+   sprite[12].pos_y = sprite[player.spriteNum].pos_y;
+
+	DrawSpriteDestructive(10);
+   Delay(40);
+   DrawSpriteDestructive(11);
+   Delay(40);
+	DrawSpriteDestructive(12);
+   Delay(40);
+
+	SetLoadingInterrupt();   // Start loading animation
+
+   LoadImage("IMAGES.DAT","macarras.pcx",2); // Load menu background image to non visible page
+
+   player.scn_thugs = 1;
+   // Enable hotspot 2
+ 	player.ext2_hotspot_mask[2] = 1; // Enable hotspot of thugs on ext2
+
+   ResetLoadingInterrupt();   // Stop loading animation
+
+   SetPage(2);
+   Update(0);
+
+   Fade_in();
+
+   Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","001","002","003",0);
+   Speech("SPRFACE1.DAT","jonf.pcx","D10_STR.DAT","D10THUG.TXT","005",0,0,0);
+   Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","009",0,0,0);
+   Speech("SPRFACE1.DAT","erikf.pcx","D10_STR.DAT","D10THUG.TXT","013",0,0,0);
+   Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","017","018","019","020");
+   option = SpeechSelection(4,"SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10THUG.TXT","023","024","025","026");
+   switch(option){
+   	case 1: //A FUMARME UN PITI AL RECRE
+         Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","029","030","031",0);
+         break;
+      case 2: //SOLO PASABA POR AQUI
+        	Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","035","036","037",0);
+         Speech("SPRFACE1.DAT","jonf.pcx","D10_STR.DAT","D10THUG.TXT","039",0,0,0);
+         Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","040",0,0,0);
+         Speech("SPRFACE1.DAT","erikf.pcx","D10_STR.DAT","D10THUG.TXT","041",0,0,0);
+         break;
+      case 3: //A CLASE, COMO ES DEBIDO
+         Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","047","048","049","050");
+         Speech("SPRFACE1.DAT","jonf.pcx","D10_STR.DAT","D10THUG.TXT","051",0,0,0);
+         Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","040",0,0,0);
+         Speech("SPRFACE1.DAT","erikf.pcx","D10_STR.DAT","D10THUG.TXT","041",0,0,0);
+         break;
+      case 4: //APARTATE MATON, O ME CHIVO
+         player.rel_thugs --;
+         Speech("SPRFACE1.DAT","jonf.pcx","D10_STR.DAT","D10THUG.TXT","043","044",0,0);
+         Speech("SPRFACE1.DAT","erikf.pcx","D10_STR.DAT","D10THUG.TXT","045",0,0,0);
+         Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","046",0,0,0);
+         Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","035","036","037",0);
+         Speech("SPRFACE1.DAT","jonf.pcx","D10_STR.DAT","D10THUG.TXT","039",0,0,0);
+         Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","040",0,0,0);
+         Speech("SPRFACE1.DAT","erikf.pcx","D10_STR.DAT","D10THUG.TXT","041",0,0,0);
+         break;
+   }
+}
+
+
+/////////////////////////////////////////////////////////
+// Thugs
+/////////////////////////////////////////////////////////
+void far Thugs(void){
+	byte option = 1;
+   byte end_conversation = 0;
+	switch(player.day){
+   	case 10:
+      	if(player.floor == 1){GoToThugs();}
+         else{
+            Speech("SPRFACE1.DAT","erikf.pcx","D10_STR.DAT","D10THUG.TXT","058","059","060",0);
+               		option = SpeechSelection(3,"SPRFACE1.DAT","playerf.pcx","D10_STR.DAT","D10THUG.TXT","062","063","064",0);
+               		switch(option){
+               			case 1: // just walking
+                  			Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","066","067",0,0);
+                     		Speech("SPRFACE1.DAT","erikf.pcx","D10_STR.DAT","D10THUG.TXT","068",0,0,0);
+                     		Speech("SPRFACE1.DAT","jonf.pcx","D10_STR.DAT","D10THUG.TXT","069","070",0,0);
+                     		Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","071",0,0,0);
+                     		Speech("SPRFACE1.DAT","erikf.pcx","D10_STR.DAT","D10THUG.TXT","072",0,0,0);
+                     		break;
+                  		case 2: // To smoke
+                  			Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","074","075","076","077");
+                     		break;
+                  		case 3: // accusation
+                  			Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","079","080","081",0);
+                     		Speech("SPRFACE1.DAT","erikf.pcx","D10_STR.DAT","D10THUG.TXT","082","083",0,0);
+                     		Speech("SPRFACE1.DAT","jonf.pcx","D10_STR.DAT","D10THUG.TXT","086",0,0,0);
+                     		Speech("SPRFACE1.DAT","erikf.pcx","D10_STR.DAT","D10THUG.TXT","089","090",0,0);
+                     		Speech("SPRFACE1.DAT","tonif.pcx","D10_STR.DAT","D10THUG.TXT","091","092",0,0);
+                     		break;
+                 			default:
+                  			break;
+                     }
+         }
+      	break;
+      case 9:
+      	switch(player.scn_thugs){
+         	case 0: //first time speak
+            	Speech("SPRFACE1.DAT","playerf.pcx","D9_STR.DAT","D9THUG.TXT","001",0,0,0);
+               Speech("SPRFACE1.DAT","tonif.pcx","D9_STR.DAT","D9THUG.TXT","005","006",0,0);
+               Speech("SPRFACE1.DAT","jonf.pcx","D9_STR.DAT","D9THUG.TXT","007",0,0,0);
+               Speech("SPRFACE1.DAT","tonif.pcx","D9_STR.DAT","D9THUG.TXT","009",0,0,0);
+               while(end_conversation == 0){
+               	if((player.mission_doll == 0)&&(player.item_keys == 0)){option = SpeechSelection(3,"SPRFACE1.DAT","playerf.pcx","D9_STR.DAT","D9THUG.TXT","012","013","014",0); }
+               	if((player.mission_doll == 0)&&(player.item_keys == 1)){option = SpeechSelection(4,"SPRFACE1.DAT","playerf.pcx","D9_STR.DAT","D9THUG.TXT","012","013","014","015"); }
+               	if(player.mission_doll == 1){option = SpeechSelection(4,"SPRFACE1.DAT","playerf.pcx","D9_STR.DAT","D9THUG.TXT","012","013","014","016"); }
+               	if(player.mission_doll == 2){option = SpeechSelection(3,"SPRFACE1.DAT","playerf.pcx","D9_STR.DAT","D9THUG.TXT","012","013","014",0); }
+               	switch(option){
+               		case 1: // what are you doing?
+                  		Speech("SPRFACE1.DAT","erikf.pcx","D9_STR.DAT","D9THUG.TXT","017","018","019",0);
+                     	Speech("SPRFACE1.DAT","tonif.pcx","D9_STR.DAT","D9THUG.TXT","021","022",0,0);
+                     	option = SpeechSelection(2,"SPRFACE1.DAT","playerf.pcx","D9_STR.DAT","D9THUG.TXT","025","026",0,0);
+                     	switch(option){
+                     	case 1: // no, even if i have
+                        	Speech("SPRFACE1.DAT","erikf.pcx","D9_STR.DAT","D9THUG.TXT","028",0,0,0);
+                           Speech("SPRFACE1.DAT","tonif.pcx","D9_STR.DAT","D9THUG.TXT","029",0,0,0);
+                           break;
+                        case 2: // no money
+                        	Speech("SPRFACE1.DAT","tonif.pcx","D9_STR.DAT","D9THUG.TXT","031","032",0,0);
+                           Speech("SPRFACE1.DAT","jonf.pcx","D9_STR.DAT","D9THUG.TXT","033","034",0,0);
+                           Speech("SPRFACE1.DAT","playerf.pcx","D9_STR.DAT","D9THUG.TXT","036","037",0,0);
+                           break;
+                     }
+                     break;
+                  case 2: // what are you hiddin?
+               		Speech("SPRFACE1.DAT","jonf.pcx","D9_STR.DAT","D9THUG.TXT","040","041","042","043");
+                     Speech("SPRFACE1.DAT","erikf.pcx","D9_STR.DAT","D9THUG.TXT","045",0,0,0);
+                     Speech("SPRFACE1.DAT","tonif.pcx","D9_STR.DAT","D9THUG.TXT","047","048","049",0);
+                     option = SpeechSelection(2,"SPRFACE1.DAT","playerf.pcx","D9_STR.DAT","D9THUG.TXT","051","052",0,0);
+                     switch(option){
+                     	case 1: // LET ME TRY
+                        	Speech("SPRFACE1.DAT","playerf.pcx","D9_STR.DAT","D9THUG.TXT","055",0,0,0);
+                           Speech("SPRFACE1.DAT","erikf.pcx","D9_STR.DAT","D9THUG.TXT","056",0,0,0);
+                           Speech("SPRFACE1.DAT","tonif.pcx","D9_STR.DAT","D9THUG.TXT","057","058","059",0);
+                           Speech("SPRFACE1.DAT","playerf.pcx","D9_STR.DAT","D9THUG.TXT","060","061",0,0);
+                           Speech("SPRFACE1.DAT","tonif.pcx","D9_STR.DAT","D9THUG.TXT","064","065",0,0);
+                           Speech("SPRFACE1.DAT","playerf.pcx","D9_STR.DAT","D9THUG.TXT","067","068","069","070");
+                        	end_conversation = 1;
+                           player.scn_thugs = 1;
+                           break;
+                        case 2: // GONNA TELL
+                        	Speech("SPRFACE1.DAT","tonif.pcx","D9_STR.DAT","D9THUG.TXT","075","076","077",0);
+                           Speech("SPRFACE1.DAT","jonf.pcx","D9_STR.DAT","D9THUG.TXT","080",0,0,0);
+                           Speech("SPRFACE1.DAT","tonif.pcx","D9_STR.DAT","D9THUG.TXT","083","084",0,0);
+                           end_conversation = 1;
+                           player.scn_thugs = 2;
+                           break;
+                     }
+                     break;
+                  case 3: // just walking
+                  	Speech("SPRFACE1.DAT","tonif.pcx","D9_STR.DAT","D9THUG.TXT","086",0,0,0);
+                     Speech("SPRFACE1.DAT","playerf.pcx","D9_STR.DAT","D9THUG.TXT","087","088",0,0);
+                     end_conversation = 1;
+                     break;
+                  case 4:
+                  	Speech("SPRFACE1.DAT","jonf.pcx","D9_STR.DAT","D9THUG.TXT","110","111",0,0);
+                     Speech("SPRFACE1.DAT","erikf.pcx","D9_STR.DAT","D9THUG.TXT","113","114",0,0);
+                     Speech("SPRFACE1.DAT","tonif.pcx","D9_STR.DAT","D9THUG.TXT","116",0,0,0);
+                     Speech("SPRFACE1.DAT","playerf.pcx","D9_STR.DAT","D9THUG.TXT","118",0,0,0);
+                     ResetItem(2,16);
+                     player.item_keys = 0;
+                     player.scn_main = 1;
+                     // ask about keys
+                     if(player.mission_doll == 1){ player.mission_doll = 2; }
+                     break;
+               }
+            }
+         	break;
+         case 1: // second time speak if help thugs
+         	if((player.mission_doll == 0)&&(player.item_keys == 1)){
+            	Speech("SPRFACE1.DAT","playerf.pcx","D9_STR.DAT","D9THUG.TXT","015",0,0,0);
+               Speech("SPRFACE1.DAT","jonf.pcx","D9_STR.DAT","D9THUG.TXT","110","111",0,0);
+               ResetItem(2,16);
+               player.item_keys = 0;
+               player.scn_main = 1;
+            }
+         	if(player.mission_doll == 1){
+            	Speech("SPRFACE1.DAT","playerf.pcx","D9_STR.DAT","D9THUG.TXT","016",0,0,0);
+               Speech("SPRFACE1.DAT","jonf.pcx","D9_STR.DAT","D9THUG.TXT","110","111",0,0);
+               ResetItem(2,16);
+               player.item_keys = 0;
+               player.mission_doll = 2;
+               player.scn_main = 1;
+            }
+            Speech("SPRFACE1.DAT","erikf.pcx","D9_STR.DAT","D9THUG.TXT","095",0,0,0);
+            Speech("SPRFACE1.DAT","jonf.pcx","D9_STR.DAT","D9THUG.TXT","096",0,0,0);
+            Speech("SPRFACE1.DAT","tonif.pcx","D9_STR.DAT","D9THUG.TXT","097","098","099",0);
+            Speech("SPRFACE1.DAT","playerf.pcx","D9_STR.DAT","D9THUG.TXT","067","068","069","070");
+
+            break;
+         case 2: // second time speak if do not help thugs
+         	if((player.mission_doll == 0)&&(player.item_keys == 1)){
+            	Speech("SPRFACE1.DAT","playerf.pcx","D9_STR.DAT","D9THUG.TXT","015",0,0,0);
+            	Speech("SPRFACE1.DAT","jonf.pcx","D9_STR.DAT","D9THUG.TXT","110","111",0,0);
+               ResetItem(2,16);
+               player.item_keys = 0;
+               player.scn_main = 1;
+            }
+            if(player.mission_doll == 1){
+            	Speech("SPRFACE1.DAT","playerf.pcx","D9_STR.DAT","D9THUG.TXT","016",0,0,0);
+               Speech("SPRFACE1.DAT","jonf.pcx","D9_STR.DAT","D9THUG.TXT","110","111",0,0);
+               ResetItem(2,16);
+               player.item_keys = 0;
+               player.mission_doll = 2;
+               player.scn_main = 1;
+            }
+            Speech("SPRFACE1.DAT","erikf.pcx","D9_STR.DAT","D9THUG.TXT","105","106",0,0);
+            Speech("SPRFACE1.DAT","tonif.pcx","D9_STR.DAT","D9THUG.TXT","108",0,0,0);
+            break;
+         default:
+         	break;
+      }
+      break;
+   }
+}
+
