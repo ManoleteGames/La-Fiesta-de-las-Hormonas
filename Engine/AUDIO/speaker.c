@@ -4,16 +4,17 @@
 
 #include "source\engine\engine.h"
 
-FILE *fsong;
+byte musicBufferIndex = 0;
 byte noteTime = 0;
+byte duration = 0;
 int speakerSoundOffset = 2;
 int speakerMusicOffset = 2;
 
 byte *speakerSFX;
 
-byte *speakerMusicNote;
-byte *speakerMusicOctave;
-byte *speakerMusicDuration;
+//byte *speakerMusicNote;
+//byte *speakerMusicOctave;
+//byte *speakerMusicDuration;
 
 int speakerSoundSize = 16;
 int speakerMusicSize = 16;
@@ -32,23 +33,6 @@ byte speakerOctave3[16] = {36,37,38,39,40,41,42,43,44,45,46,47,0,0,0,0};
 byte speakerOctave4[16] = {48,49,50,51,52,53,54,55,56,57,58,59,0,0,0,0};
 byte speakerOctave5[16] = {60,61,62,63,64,65,66,67,68,69,70,71,0,0,0,0};
 byte speakerOctave6[16] = {72,73,74,75,76,77,78,79,80,81,82,83,0,0,0,0};
-
-byte speakerSong1[3][88] =   {{2 ,2,2,2,2,2,2,2,2 ,2,2,2,2,2,2,2,1,1 ,2,2,2,2,2,2,2,1,1 ,2,2,2,2,2,2,2,1,1, 2,2,2,2,2,2,2,1,1 ,2,2,2,2,2,2,2,1,1 ,2,2,2,2,2,2,2,1,1 ,2,2,2,2,2,2,2,1,1, 2,2,2,2,2,2,2,1,1 ,2,2,2,2,2,2,2}, // duration
-										{10,0,1,0,5,0,1,0,10,0,1,0,5,0,1,0,8,10,0,1,0,5,0,1,0,6,10,0,1,0,5,0,1,0,5,10,0,1,0,5,0,1,0,3,10,0,1,0,5,0,1,0,8,10,0,1,0,5,0,1,0,6,10,0,1,0,5,0,1,0,5,10,0,1,0,5,0,1,0,3,10,0,1,0,5,0,1,0}, // note 1=C;2=C#;3=D;4=D#5=E;6=F;7=F#;8=G;9=G#;10=A;11=A#;12=B
-										{2 ,0,3,0,3,0,3,0,2 ,0,3,0,3,0,3,0,4,2 ,0,3,0,3,0,3,0,4,2 ,0,3,0,3,0,3,0,4,2, 0,3,0,3,0,3,0,4,2 ,0,3,0,3,0,3,0,4,2 ,0,3,0,3,0,3,0,4,2 ,0,3,0,3,0,3,0,4,2, 0,3,0,3,0,3,0,4,2 ,0,3,0,3,0,3,0}};// octave
-
-byte speakerSong2[3][32] =   {{2,3,2,5,1,2,1,2,1,2,1,6,1,3,1 ,3,1,3,1,3,1,3,1,4,1,4,1,4,1,4,0,0}, // duration
-										{5,0,5,0,3,0,5,0,3,0,1,0,6,0,10,0,1,0,3,0,3,0,1,0,3,0,1,0,11,0,0,0}, // note 1=C;2=C#;3=D;4=D#5=E;6=F;7=F#;8=G;9=G#;10=A;11=A#;12=B
-										{4,0,4,0,4,0,4,0,4,0,4,0,3,0,3 ,0,4,0,4,0,4,0,4,0,4,0,4,0,3,0,0,0}};// octave
-
-byte speakerSong3[3][32] =   {{2,3,1,1,1,1,1,5,3,2,1,1,1,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, // duration
-										{0,5,0,6,0,8,0,1,0,3,0,5,0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, // note 1=C;2=C#;3=D;4=D#5=E;6=F;7=F#;8=G;9=G#;10=A;11=A#;12=B
-										{0,2,0,2,0,2,0,3,0,2,0,2,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};// octave
-
-byte speakerSong4[3][32] =   {{2,3,1,1,1,1,1,5,3,2,1,1,1,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, // duration
-										{0,5,0,6,0,8,0,1,0,3,0,5,0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, // note 1=C;2=C#;3=D;4=D#5=E;6=F;7=F#;8=G;9=G#;10=A;11=A#;12=B
-										{0,2,0,2,0,2,0,3,0,2,0,2,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}};// octave
-
 
 /*
 	NOTE VALUES
@@ -90,7 +74,6 @@ int speakerNote[96] = {
 void interrupt (*old_speaker_handler)(void);
 void interrupt Speaker_handler(void){
 	byte index;
-   byte duration;
    byte note2;
    byte sust;
    byte octave;
@@ -98,6 +81,8 @@ void interrupt Speaker_handler(void){
 
 	int note;
 	asm cli
+
+   /////////////////// sound player ///////////////////////////
    if (soundPlaying == 1){
    	if (speakerSoundOffset != speakerSoundSize){
 			index = speakerSFX[speakerSoundOffset];
@@ -134,88 +119,91 @@ void interrupt Speaker_handler(void){
 		}
    }
 
-	if((musicPlaying == 1)|| (musicNonStopPlaying == 1)){
-   	fread(&duration, sizeof(byte), 1, fsong);
-      fread(&note2, sizeof(byte), 1, fsong);
-      fread(&sust, sizeof(byte), 1, fsong);
-      fread(&octave, sizeof(byte), 1, fsong);
-      fread(&dummy, sizeof(byte), 1, fsong);
+   /////////////////// music player ///////////////////////
+	if((musicPlaying == 1)||(musicNonStopPlaying == 1)){
 
-      if(duration != 70){ // ASCII CHAR 'F'
+   	if(noteTime < duration){ // current note being played
+      	noteTime++;
+      }else{ // load new note
+      	noteTime = 0;
 
-      	switch(note2){
-         	case 67: //C
-            	if(sust == 35){ note2 = 2; }// #
-               else{ note2 = 1; }
-            	break;
-            case 68: //D
-            	if(sust == 35){ note2 = 4; }// #
-               else{ note2 = 3; }
-               break;
-            case 69: //E
-            	note2 = 5;
-               break;
-            case 70: //F
-               if(sust == 35){ note2 = 7; }// #
-               else{ note2 = 6; }
-               break;
-            case 71: //G
-            	if(sust == 35){ note2 = 9; }// #
-               else{ note2 = 8; }
-               break;
-            case 65: //A
-            	if(sust == 35){ note2 = 11; }// #
-               else{ note2 = 10; }
-               break;
-            case 66: //B
-            	note2 = 12;
-               break;
-            default:
-            	note2 = 0;
-               break;
-         }
-         duration = duration - 48;
-         octave = octave - 48;
+         duration = music.sdata[music.offset];
+         note2 = music.sdata[music.offset+1];
+         sust = music.sdata[music.offset+2];
+         octave = music.sdata[music.offset+3];
+         dummy = music.sdata[music.offset+4];
+         music.offset = music.offset + 5;
 
-      	index 	= (note2 - 1 )+(octave*12);
-
-         if(soundPlaying == 0){
-         	if(note2 == 0){
-
-            	// mute speaker
-            	asm in al, 61h        //Disable speaker
-					asm and al, 252
-					asm out 61h, al
-
-               noteTime++;
-               if(noteTime >= duration){
-               	noteTime = 0;
-               }
+         // not end of song yet
+      	if(duration != 70){ // ASCII CHAR 'F'
+      		switch(note2){
+         		case 67: //C
+            		if(sust == 35){ note2 = 2; }// #
+               	else{ note2 = 1; }
+            		break;
+            	case 68: //D
+            		if(sust == 35){ note2 = 4; }// #
+               	else{ note2 = 3; }
+               	break;
+            	case 69: //E
+            		note2 = 5;
+               	break;
+            	case 70: //F
+               	if(sust == 35){ note2 = 7; }// #
+               	else{ note2 = 6; }
+               	break;
+            	case 71: //G
+            		if(sust == 35){ note2 = 9; }// #
+               	else{ note2 = 8; }
+               	break;
+            	case 65: //A
+            		if(sust == 35){ note2 = 11; }// #
+               	else{ note2 = 10; }
+               	break;
+            	case 66: //B
+            		note2 = 12;
+               	break;
+            	default:
+            		note2 = 0;
+               	break;
          	}
-         	else{
-               // When audio is off, all functions are linked to speaker but buzzer will be not activated
-   				if(audio_mode == 1){
-            		// Unmute speaker
-         			asm in al, 61h			//Enable speaker
-						asm or al, 3
-						asm out 61h, al      // 61h >> Speaker output port (bit0: connects pit with speaker)
-               }
+         	duration = duration - 48;
+         	octave = octave - 48;
 
-					note = speakerNote[index]; //speakerMusic[index]; // calculated frequency (1193180/Value)
-            	asm mov ax, note
-					asm out PTI_CH2,al
-					asm mov al,ah
-					asm out PTI_CH2,al
-               noteTime++;
-               if(noteTime >= duration){
-               	noteTime = 0;
-               }
+      		index = (note2 - 1 )+(octave*12);
+
+            // no sound being player
+         	if(soundPlaying == 0){
+         		if(note2 == 0){
+            		// mute speaker
+            		asm in al, 61h        //Disable speaker
+						asm and al, 252
+						asm out 61h, al
+         		}
+         		else{
+               	// When audio is off, all functions are linked to speaker but buzzer will be not activated
+   					if(audio_mode == 1){
+            			// Unmute speaker
+         				asm in al, 61h			//Enable speaker
+							asm or al, 3
+							asm out 61h, al      // 61h >> Speaker output port (bit0: connects pit with speaker)
+               	}
+
+						note = speakerNote[index]; //speakerMusic[index]; // calculated frequency (1193180/Value)
+            		asm mov ax, note
+						asm out PTI_CH2,al
+						asm mov al,ah
+						asm out PTI_CH2,al
+         		}
          	}
-         }
-		} else {
-      	if(musicNonStopPlaying == 1){ fseek(fsong,0,SEEK_SET); }
-         if(musicPlaying == 1){ SPEAKER_StopMusic(); }
-		}
+            noteTime++;
+			} else {
+         	noteTime = 0;
+            duration = 0;
+      		if(musicNonStopPlaying == 1){ music.offset = 0; }
+         	if(musicPlaying == 1){ SPEAKER_StopMusic(); }
+			}
+      }
 	}
 
 	asm mov al, 020h
@@ -244,17 +232,39 @@ void Reset_speaker_handler(void){
 // Initialize pc speaker
 /////////////////////////////////////////////////////////
 void SPEAKER_Init(void){
+
+	// The clock we're dealing with here runs at 1.193182mhz, so we
+   // just divide 1.193182 by the number of triggers we want per
+   // second to get our divisor.
+   int c = 1193181 / (int)1000;
+
 	asm mov al, 0B6h     // Initialize PIT (programable interval timer)
    asm out 43h,al
 
    //set timer
    asm mov al,0x36  // 0b0011 0110 >> Channel 0, lobyte/hibyte, Mode 3 (square wave), 16bit binary
+   // 00  = Select counter 0 (counter divisor)
+   // 11  = Command to read/write counter bits (low byte, then high
+   //       byte, in sequence).
+   // 011 = Mode 3 - square wave.
+   // 0   = Binary counter 16 bits (instead of BCD counter).
    asm out PTI_MODE,al
+
    //unsigned long spd = 1193182/60;= 19886;
-   asm mov al,255 //spd lo-byte
-   asm out PTI_CH0,al
-   asm mov al,255 //spd  hi-byte
-   asm out PTI_CH0,al
+   // The clock we're dealing with here runs at 1.193182mhz, so we
+   // just divide 1.193182 by the number of triggers we want per
+   // second to get our divisor.
+
+   //asm mov al,255 //spd lo-byte
+   //asm out PTI_CH0,al
+   //asm mov al,255 //spd  hi-byte
+   //asm out PTI_CH0,al
+   // Set divisor low byte.
+    outp(0x40, (byte)(c & 0xff));
+
+    // Set divisor high byte.
+    outp(0x40, (byte)((c >> 8) & 0xff));
+
 
    //set interrupt
    Set_speaker_handler();
@@ -276,6 +286,10 @@ void SPEAKER_Deinit(void){
 	//reset timer
 	asm mov al,0x36
 	asm out PTI_MODE,al
+
+   // The clock we're dealing with here runs at 1.193182mhz, so we
+    // just divide 1.193182 by the number of triggers we want per
+    // second to get our divisor.
 	asm mov al,0xFF
 	asm out PTI_CH2,al
    asm mov al,0xFF
@@ -372,39 +386,72 @@ void SPEAKER_PlayNonStopMusic(void){//77.556
 // Load music
 /////////////////////////////////////////////////////////
 void SPEAKER_LoadMusic(byte song){
+	FILE *fsong;
+   int count;
+   byte data;
+
+	// Check if there was a song already loaded
+   if(musicLoaded){ Error("Music already loaded ",0,0); } //SPEAKER_UnloadMusic(); }
+
  	switch(song){
    	case 1:
          // Open file
-   		fsong = fopen("spksong1.txt","rb");
-         if(!fsong) Error("Can't find ","spksong1.txt",0);
-
+   		fsong = fopen("SONG1.DAT","rb");
+         if(!fsong) Error("Can't find ","SONG1.DAT",0);
          break;
       case 2:
-         fsong = fopen("spksong2.txt","rb");
-         if(!fsong) Error("Can't find ","spksong2.txt",0);
+         fsong = fopen("SONG2.DAT","rb");
+         if(!fsong) Error("Can't find ","SONG2.DAT",0);
       	break;
       case 3:
-         fsong = fopen("spksong3.txt","rb");
-         if(!fsong) Error("Can't find ","spksong3.txt",0);
+         fsong = fopen("SONG3.DAT","rb");
+         if(!fsong) Error("Can't find ","SONG3.DAT",0);
       	break;
    	case 4:
-      	fsong = fopen("spksong4.txt","rb");
-         if(!fsong) Error("Can't find ","spksong4.txt",0);
+      	fsong = fopen("SONG4.DAT","rb");
+         if(!fsong) Error("Can't find ","SONG4.DAT",0);
+         break;
+      case 5:
+      	fsong = fopen("SONG5.DAT","rb");
+         if(!fsong) Error("Can't find ","SONG5.DAT",0);
          break;
       default:
-      	fsong = fopen("spksong1.txt","rb");
-         if(!fsong) Error("Can't find ","spksong1.txt",0);
+      	fsong = fopen("SONG1.DAT","rb");
+         if(!fsong) Error("Can't find ","SONG1.DAT",0);
          break;
    }
+
+   // transfer song to buffer
+   count = 0;
+   while(count < 32000 ){
+   	// get data
+      if(fread(&data, sizeof(byte), 1, fsong)){
+      	music.sdata[count] = data;
+      	count++;
+      } else { // end of file
+      	//sprintf(error1, "%d", count);
+		   //sprintf(error2, "%d", music.sdata[count]);
+ 			//Error("music eof found",error1, error2);
+      	break;
+      }
+   }
+   music.size = count-1;
+   music.offset = 0;
+   musicBufferIndex = 0;
    musicLoaded = 1;
+   fclose(fsong);
+
+   //sprintf(error1, "%d", count);
+   //sprintf(error2, "%d", music.sdata[100]);
+   //Error("music size",error1, error2);
+
 }
 
 /////////////////////////////////////////////////////////
 // Unload music
 /////////////////////////////////////////////////////////
 void SPEAKER_UnloadMusic(void){
+   SPEAKER_StopMusic();
 	musicLoaded = 0;
-	SPEAKER_StopMusic();
-   if(fsong){ fclose( fsong); }
 }
 

@@ -260,7 +260,7 @@ void LoadSprite(char *file, char *dat_string, int sprite_number, byte size){
 
    // Check sprite already loaded
     sprintf(error1, "%d", sprite_number);
-   if(s->loaded){ Error("Sprite already loaded ",error1,dat_string);}
+   if(s->loaded == 1){ Error("Sprite already loaded ",error1,dat_string);}
 
 
 	// Load file data

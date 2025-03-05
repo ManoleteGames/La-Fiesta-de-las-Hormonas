@@ -25,7 +25,7 @@ void far GoToFloor2(int x, int y){
    SetSpriteAnimation(player.spriteNum,0,6,12,PlayerAnimation);
 
    switch(player.day){
-   	case 10:
+   	case 4:  /////////////////////// day 4 //////////////////////////////
          LoadSprite("SPRCHR1.DAT","jessy.pcx",3, 32); //Load sprites to one of the fixed structs
    		SetSpriteAnimation(3,0,6,8,CharacterAnimation2);
          InitSprite(3,158,170);
@@ -39,7 +39,23 @@ void far GoToFloor2(int x, int y){
    		InitSprite(5,188,182);
 
       	break;
-      default:
+      case 3:  /////////////////////// day 3 //////////////////////////////
+      	break;
+      case 2:  /////////////////////// day 2 //////////////////////////////
+      	// Load nerd sprites
+         LoadSprite("SPRCHR1.DAT","david.pcx",4, 32); //Load sprites to one of the fixed structs
+         LoadSprite("SPRCHR1.DAT","xavi.pcx",5, 32); //Load sprites to one of the fixed structs
+         LoadSprite("SPRCHR1.DAT","alain.pcx",6, 32); //Load sprites to one of the fixed structs
+         LoadSprite("SPRCHR1.DAT","antonio.pcx",7, 32); //Load sprites to one of the fixed structs
+         SetSpriteAnimation(4,0,6,8,CharacterAnimation2);
+         SetSpriteAnimation(5,0,6,30,CharacterAnimation3);
+         SetSpriteAnimation(6,0,6,23,CharacterAnimation3);
+         SetSpriteAnimation(7,0,6,19,CharacterAnimation2);
+         InitSprite(4,128,182);
+         InitSprite(5,154,182);
+         InitSprite(6,178,182);
+         InitSprite(7,200,182);
+      case 1: /////////////////////// day 1 //////////////////////////////
       	break;
    }
 

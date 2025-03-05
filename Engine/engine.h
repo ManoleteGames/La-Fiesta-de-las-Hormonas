@@ -48,16 +48,15 @@ typedef struct tagPLAYER{
    byte mission_doll;
    byte mission_arcade;
    byte mission_bag;
+   byte mission_fight;
+   byte mission_keys;
+   byte mission_band;
+   byte mission_chair;
 
    byte item_exams;
    byte item_chalk;
    byte item_bag;
    byte item_keys;
-   byte item_game;
-
-   int rel_nerds;
-   int rel_thugs;
-   int rel_jessy;
 
    byte spriteColl;
    byte move;
@@ -79,8 +78,9 @@ typedef struct tagPLAYER{
    byte scn_thugs;
    byte scn_girls;
    byte scn_jessy;
+	byte scn_sensei;
 
-   byte score[11];
+   byte score[5];
 
 } PLAYER;
 
@@ -131,6 +131,15 @@ typedef struct tagSPRITE{				// structure for a sprite
 	SPRITEFRAME *frames;
 } SPRITE;
 
+// SOUND/MUSIC.c prototypes
+typedef struct tagIMFsong{				// structure for adlib IMF song, or MOD pattern data
+	int size;
+	word offset;
+	byte filetype; //0 1 - imf0 imf1
+	byte *sdata;
+} IMFsong;
+
+
 
 /* macro to write a word to a port */
 #define word_out(port,register,value) \
@@ -173,8 +182,6 @@ typedef struct tagSPRITE{				// structure for a sprite
 #define KEYB_IRQ        9
 #define SPEAKER_IRQ     0x1C
 
-#define ADLIB_PORT 	   0x388
-
 extern byte far PlayerAnimation[];
 
 // Engine.c prototypes
@@ -192,6 +199,8 @@ extern byte *tempdata2; //Temp storage of non tiled data. and also sound samples
 extern int scroll_x;   // Scroll X
 extern int scroll_y;   // Scroll Y
 extern int scroll_wy;   // Scroll window Y
+extern int scroll_x_adjust;
+extern int scroll_y_adjust;
 extern byte showPanel;
 extern byte panelScrolling;
 extern byte scrolling_enabled;
@@ -204,9 +213,13 @@ extern byte audio_mode;	//0-undef; 1-Speaker; 2-tandy; 3-adlib; 4-sound blaster
 extern byte sound_volume; // 0..100
 extern byte language;	//1-spanish; 2-english
 extern byte soundPlaying;
+extern IMFsong far music;	// One song in ram stored at "music"
 extern byte musicPlaying;
 extern byte musicNonStopPlaying;
 extern byte musicLoaded;
+extern byte time_countdown;
+extern byte time_minutes;
+extern byte time_seconds;
 
 void InitEngine(void);
 void SetLoadingInterrupt(void);
@@ -221,9 +234,6 @@ void MovePlayer(void);
 void ResetScroll(void);
 void Speech(char* facefile, char* face,char* filename, char* dat_string,char * line1, char * line2, char * line3, char * line4);
 byte SpeechSelection(int optNum, char* facefile, char* face,char* filename, char* dat_string,char * line1, char * line2, char * line3, char * line4);
-void SetItem(int pos, int spriteNum, char* itemImg);
-void ResetItem(int pos, int spriteNum);
-int Question(char* filename, char* dat_string, int numQ);
 
 // External functions prototypes
 extern void (*Fade_out)(void);
@@ -296,17 +306,6 @@ void VGA_LoadPanelBackground(char *file,char* dat_string);
 void VGA_RotatePaletteAsync(int index1, int index2);
 void VGA_LoadTransImage(char *file,char* dat_string);
 
-// VIDEO/CGA.c prototypes
-byte CGA_Present(void);
-void CGA_Vsync(void);
-
-// VIDEO/EGA.c prototypes
-byte EGA_Present(void);
-void EGA_Vsync(void);
-
-// VIDEO/TANDY.c prototypes
-void Vsync_TANDY(void);
-
 // SOUND/SPEAKER.c prototypes
 void SPEAKER_Init(void);
 void SPEAKER_Deinit(void);
@@ -317,36 +316,6 @@ void SPEAKER_PauseMusic(void);
 void SPEAKER_StopMusic(void);
 void SPEAKER_LoadMusic(byte song);
 void SPEAKER_UnloadMusic(void);
-
-// SOUND/SBLASTER.c prototypes
-extern unsigned int sbBaseAddress;
-extern unsigned int sbVersion;     // DSP version
-extern unsigned char sbLoDMA; // DMA Channel
-extern unsigned char sbHiDMA; // DMA Channel
-extern unsigned char sbIrq;   // IRQ
-byte SB_Present(void);
-void SB_Init(void);
-void SB_DeInit(void);
-void SB_PlaySound(byte sound);
-
-// SOUND/ADLIB.c prototypes
-byte ADLIB_Present(void);
-void ADLIB_Init(void);
-void ADLIB_DeInit(void);
-void ADLIB_PlaySound(byte sound);
-void ADLIB_PlayMusic(void);
-void ADLIB_PlayNonStopMusic(void);
-void ADLIB_StopMusic(void);
-void ADLIB_LoadMusic(byte song);
-void ADLIB_UnloadMusic(void);
-
-// SOUND/MUSIC.c prototypes
-typedef struct tagIMFsong{				// structure for adlib IMF song, or MOD pattern data
-	int size;
-	word offset;
-	byte filetype; //0 1 - imf0 imf1
-	byte *sdata;
-} IMFsong;
 
 // KEYB/KEYB.c prototypes
 extern int keys[256];
@@ -420,11 +389,12 @@ extern byte *tilesetData;
 extern byte PlayerAnimation[];
 extern byte PlayerFaceAnimation[];
 extern byte JessyAnimation[];
-extern byte EnterAnimation[];
 extern byte BirdAnimation[];
 extern byte DirectorAnimation[];
 extern byte CharacterAnimation2[];
 extern byte CharacterAnimation3[];
+extern byte EnterAnimation[];
+extern byte end_game;
 
 // All day events
 void far Events(byte event);
@@ -458,4 +428,10 @@ void far Nerds(void);
 
 // Girls.c
 void far Girls(void);
+
+// Sensei.c
+void far Sensei(void);
+
+void SetItem(int pos, int spriteNum, char* itemImg);
+void ResetItem(int pos, int spriteNum);
 

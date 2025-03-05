@@ -21,14 +21,17 @@ void far GoToExt2(int x, int y){
 	LoadMap("MAPS.DAT","ext2.tmx");
 	LoadTiles("TILESETS.DAT","ext2.pcx");
 
+   LoadSprite("SPRCHR1.DAT","player.pcx",player.spriteNum, 32); //Load sprites to one of the fixed structs
+   SetSpriteAnimation(player.spriteNum,0,6,12,PlayerAnimation);
+
    // Disable hotspots by default
    player.ext2_hotspot_mask[1] = 0;
    player.ext2_hotspot_mask[2] = 0;
 
    switch(player.day){
-   	case 10:
+   	case 4: ///////////////////// day 4 ///////////////////////
          // Load thugs sprites
-   		if( player.scn_thugs == 1){
+   		if( player.scn_thugs > 0){
    			LoadSprite("SPRCHR1.DAT","toni.pcx",7, 32); //Load sprites to one of the fixed structs
    			LoadSprite("SPRCHR1.DAT","jon.pcx",8, 32); //Load sprites to one of the fixed structs
    			LoadSprite("SPRCHR1.DAT","erik.pcx",9, 32); //Load sprites to one of the fixed structs
@@ -40,10 +43,9 @@ void far GoToExt2(int x, int y){
       		InitSprite(7,808,362);
    			InitSprite(8,844,362);
    			InitSprite(9,776,362);
-
    		}
       	break;
-      case 9:
+      case 3:  ///////////////////// day 3 ///////////////////////
          // Load nerd sprites
          LoadSprite("SPRCHR1.DAT","david.pcx",3, 32); //Load sprites to one of the fixed structs
          LoadSprite("SPRCHR1.DAT","xavi.pcx",4, 32); //Load sprites to one of the fixed structs
@@ -58,12 +60,76 @@ void far GoToExt2(int x, int y){
          InitSprite(5,354,322);
          InitSprite(6,276,322);
       	break;
-      default:
+      case 2:   ///////////////////// day 2 ///////////////////////
+         LoadSprite("SPRCHR1.DAT","toni.pcx",7, 32); //Load sprites to one of the fixed structs
+         LoadSprite("SPRCHR1.DAT","jon.pcx",8, 32); //Load sprites to one of the fixed structs
+         LoadSprite("SPRCHR1.DAT","erik.pcx",9, 32); //Load sprites to one of the fixed structs
+
+         SetSpriteAnimation(7,0,6,30,CharacterAnimation3);
+         SetSpriteAnimation(8,0,6,23,CharacterAnimation2);
+         SetSpriteAnimation(9,0,6,19,CharacterAnimation2);
+
+         InitSprite(7,808,362);
+         InitSprite(8,844,362);
+         InitSprite(9,776,362);
       	break;
+      case 1: ///////////////////// day 1 ///////////////////////
+         if((player.mission_fight == 1)&&(player.scn_main != 2)){
+
+      		LoadSprite("SPRCHR2.DAT","conser.pcx",2, 32); //Load sprites to one of the fixed structs
+         	SetSpriteAnimation(2,0,6,12,CharacterAnimation2);
+         	InitSprite(2,234,338);
+
+         	LoadSprite("SPRCHR1.DAT","david.pcx",3, 32); //Load sprites to one of the fixed structs
+         	LoadSprite("SPRCHR1.DAT","xavi.pcx",4, 32); //Load sprites to one of the fixed structs
+         	LoadSprite("SPRCHR1.DAT","alain.pcx",5, 32); //Load sprites to one of the fixed structs
+         	SetSpriteAnimation(3,0,6,8,CharacterAnimation2);
+         	SetSpriteAnimation(4,0,6,30,CharacterAnimation3);
+         	SetSpriteAnimation(5,0,6,23,CharacterAnimation3);
+         	InitSprite(3,254,242);
+         	InitSprite(4,228,262);
+         	InitSprite(5,254,282);
+
+      		LoadSprite("SPRCHR1.DAT","toni.pcx",7, 32); //Load sprites to one of the fixed structs
+         	LoadSprite("SPRCHR1.DAT","erik.pcx",9, 32); //Load sprites to one of the fixed structs
+
+         	SetSpriteAnimation(7,0,6,30,CharacterAnimation3);
+         	SetSpriteAnimation(9,0,6,19,CharacterAnimation2);
+
+         	InitSprite(7,178,252);
+         	InitSprite(9,176,272);
+         } else {
+
+         	LoadSprite("SPRCHR1.DAT","david.pcx",3, 32); //Load sprites to one of the fixed structs
+            LoadSprite("SPRCHR1.DAT","alain.pcx",5, 32); //Load sprites to one of the fixed structs
+            LoadSprite("SPRCHR1.DAT","antonio.pcx",6, 32); //Load sprites to one of the fixed structs
+            SetSpriteAnimation(3,0,6,8,CharacterAnimation2);
+            SetSpriteAnimation(5,0,6,23,CharacterAnimation3);
+            SetSpriteAnimation(6,0,6,19,CharacterAnimation2);
+            InitSprite(3,296,302);
+            InitSprite(5,354,322);
+            InitSprite(6,276,322);
+            if(player.scn_nerds == 99){
+            	LoadSprite("SPRCHR1.DAT","xavi.pcx",4, 32); //Load sprites to one of the fixed structs
+               SetSpriteAnimation(4,0,6,30,CharacterAnimation3);
+               InitSprite(4,328,302);
+            }
+
+            LoadSprite("SPRCHR1.DAT","jon.pcx",8, 32); //Load sprites to one of the fixed structs
+            LoadSprite("SPRCHR1.DAT","erik.pcx",9, 32); //Load sprites to one of the fixed structs
+            SetSpriteAnimation(8,0,6,23,CharacterAnimation2);
+            SetSpriteAnimation(9,0,6,19,CharacterAnimation2);
+            InitSprite(8,844,362);
+            InitSprite(9,776,362);
+            if(player.scn_thugs == 99){
+            	LoadSprite("SPRCHR1.DAT","toni.pcx",7, 32); //Load sprites to one of the fixed structs
+               SetSpriteAnimation(7,0,6,30,CharacterAnimation3);
+            	InitSprite(7,808,362);
+            }
+         }
+         break;
    }
 
-   LoadSprite("SPRCHR1.DAT","player.pcx",player.spriteNum, 32); //Load sprites to one of the fixed structs
-   SetSpriteAnimation(player.spriteNum,0,6,12,PlayerAnimation);
    InitSprite(player.spriteNum,x,y);
 
    player.floor = 4;

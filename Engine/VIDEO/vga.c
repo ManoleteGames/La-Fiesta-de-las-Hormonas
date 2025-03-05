@@ -118,7 +118,7 @@ byte VGA_Present(void){
 
 	if (regs.h.al == 0x1A) // 0x1A - means a valid request in AH
    {
-		printf(" - VGA or compatible card present \n");
+		//printf(" - VGA or compatible card present \n");
 
       switch( regs.h.bl)
       {
@@ -151,7 +151,7 @@ byte VGA_Present(void){
             printf(" -- Present VGA card configuration is not compatible \n");
             break;
          case 0x08:
-         	printf(" -- VGA with analog color display \n");
+         	//printf(" -- VGA with analog color display \n");
             cardPresent = 1;
             break;
          case 0x0A:
@@ -911,9 +911,22 @@ void VGA_PrintText(word x, word y, word lineLength, unsigned char *string, byte 
 	printloop3:
 	asm push bx
 	datastring = string[i]; // Get current char
-   // Filter chars > 96
-	if (datastring > 96) datastring -=32;
 	asm{
+      cmp   datastring,0xA1 // char '¡' in ASCII
+      jne   ch1
+      mov   datastring,0x5F // char '¡' equivalent char in table
+      ch1:
+
+      cmp   datastring,0xBF // char '¿' in ASCII
+      jne   ch2
+      mov   datastring,0x5C // char '¿' equivalent char in table
+      ch2:
+
+      cmp   datastring,0xD1 // char 'Ñ' in ASCII
+      jne   ch3
+      mov   datastring,0x40 // char 'Ñ' equivalent char in table
+      ch3:
+
 		mov	dx,word ptr datastring
 		sub	dx,32
 	}
@@ -1256,7 +1269,7 @@ void VGA_Restore_Sprites(void){
    int lx;
    int ly;
    word next_scanline;
-   word bkgAddress;
+ //  word bkgAddress;
 	word screenPrevAddress;
    word rows;
    word cols;
@@ -1275,8 +1288,10 @@ void VGA_Restore_Sprites(void){
       next_scanline = s->next_scanline;
 
       // 1st. Restore the background if sprite has been initialized
-      if( s->init == 1)
+      if(( s->init == 1 )&& (s->hidden == 0))
       {
+      	if(s->hide==1){s->hidden=1;} // set sprite as hidden
+         
          rows = s->rows; //s->size;
          cols = s->cols;
          spriteBkgAddress = s->bkg_data;
@@ -1345,7 +1360,7 @@ void VGA_Restore_Sprites(void){
 // Draw sprites
 /////////////////////////////////////////////////////////
 void VGA_Draw_Sprites(void){
-	int i;
+ //	int i;
    int x;
    int y;
    int lx;
@@ -1353,7 +1368,7 @@ void VGA_Draw_Sprites(void){
    word next_scanline;
    word bkgAddress;
    word spriteBkgData;
-	word screenPrevAddress;
+  	word screenPrevAddress;
    word screenNewAddress;
    word rows;
    word cols;
@@ -1368,7 +1383,7 @@ void VGA_Draw_Sprites(void){
    for (spriteStackIndex = 0; spriteStackIndex < spriteStack; spriteStackIndex++)
    {
    	SPRITE *s = &sprite[spriteStackTable[spriteStackIndex]];
-		lx = s->last_x;
+      lx = s->last_x;
 		ly = s->last_y;
       x = s->pos_x;
 		y = s->pos_y;
@@ -1572,7 +1587,7 @@ void VGA_Draw_Sprites(void){
             }
          }
       }
-   }
+   } 
 }
 
 /////////////////////////////////////////////////////////
@@ -1798,7 +1813,14 @@ void VGA_DrawMapRow(word x_px, word y_px, word offset_x, word offset_y, word nti
 void VGA_SetMap(int x, int y){
   	int j = 0;
    int i = 0;
+ //	int auxX = 0;
+ //  int auxY = 0;
+
   	byte rows = 15; //19; // rows to print
+
+   player.move = 0;
+   scroll_y_adjust = 70;
+   scroll_x_adjust = 160;
 
    // Recalculate y if it is out of limits
    // - Hardware limits
@@ -1809,16 +1831,24 @@ void VGA_SetMap(int x, int y){
 	//if((x+9) > map_width) { x = map_width-9; }
    if((x+16) > map_width) { x = map_width-16; }
 
-
    // Map starts always on page 1
-   scroll_y = (y<<4) + vga_page[1];
- 	scroll_x = x<<4;
-
 	map_width_px = map_width<<4;
 	map_height_px = map_height<<4;
 
 	map_offset_x = x;
 	map_offset_y = y;
+
+   scroll_y = (y<<4) + vga_page[1];
+ 	scroll_x = x<<4;
+
+   //scroll_x = x - scroll_x_adjust;
+   //scroll_y = y - scroll_y_adjust;
+
+   /// Lock scroll on map limits
+	if (scroll_x < 0) scroll_x = 0;
+	if ((scroll_x + 320) > map_width_px) scroll_x = map_width_px - 320;
+	if (scroll_y < 64) scroll_y = 64;
+	if ((scroll_y + 210 - vga_page[1]) > (map_height_px)) scroll_y = map_height_px - 210 + vga_page[1] ;  // it was 201 before
 
  	VGA_Enable4Planes();
 
@@ -2161,9 +2191,13 @@ void VGA_PanelRefresh(void){
    sprintf(string, "%02d", player.day);
    VGA_PrintPanelText(1,1,strlen(string),string);
 
-   // money
-   sprintf(string, "%03d", player.money);
+   // time
+   sprintf(string, "%03d", time_seconds);
    VGA_PrintPanelText(36,1,strlen(string),string);
+
+   // debug
+   //sprintf(string, "%p",sprite[1].frames[0]);
+   //VGA_PrintPanelText(1,1,strlen(string),string);
 
    VGA_PanelUpdate();
 }

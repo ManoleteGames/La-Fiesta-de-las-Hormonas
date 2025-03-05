@@ -1,4 +1,4 @@
-makedat.exe director.pcx conser.pcx sensei.pcx
+makedat.exe director.pcx conser.pcx sensei.pcx dsleep.pcx
 RENAME DATA.DAT SPRCHR2.DAT
 COPY SPRCHR2.DAT Z:\HORMONA\FINAL
 DEL SPRCHR2.DAT

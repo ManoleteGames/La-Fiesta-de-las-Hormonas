@@ -504,7 +504,7 @@ void LoadText(char* filename, char* dat_string, char* line,unsigned char* str, w
 
          currLine ++;
 
-      	if (currLine == 220) {
+      	if (currLine == 230) {
       		fclose(fp);
    			Error(" Text line not found on file ",dat_string,line);
       	}

@@ -372,20 +372,10 @@ void LoadTileset_PCX(char* filename, char* dat_string)
    int cnt;
    byte chr;
 
-   debug = 211;
-   Update(0);
-
    fp = fopen(filename,"rb");
 	if(!fp)Error("Can't find ",filename,dat_string);
-   
-   debug = 212;
-   Update(0);
 
 	if (dat_string) DAT_Seek(fp,dat_string);
-
-   debug = 218;
-   Update(0);
-
 
    //Read header
    fread(&ident, sizeof(byte), 1, fp);

@@ -21,62 +21,71 @@ void far GoToGym(int x, int y){
 
    // Load gym map
    switch(player.day){
-   	case 10:
-			LoadMap("MAPS.DAT","gym.tmx");
+   	case 4:   //////////////////////////// day 4 ///////////////////////////
+			LoadMap("MAPS.DAT","gym_4.tmx");
       	break;
-      case 9:
-			LoadMap("MAPS2.DAT","gym2.tmx");
+      case 3:   //////////////////////////// day 3 ///////////////////////////
+			LoadMap("MAPS.DAT","gym_3.tmx");
       	break;
-      case 8:
-			LoadMap("MAPS2.DAT","gym3.tmx");
+      case 2:   //////////////////////////// day 2 ///////////////////////////
+         if(player.mission_chair){ LoadMap("MAPS.DAT","gym_1.tmx"); }
+			else{ LoadMap("MAPS.DAT","gym_2.tmx"); }
       	break;
-      case 7:
-			LoadMap("MAPS2.DAT","gym4.tmx");
-      	break;
-      case 6:
-			LoadMap("MAPS2.DAT","gym5.tmx");
-      	break;
-      case 5:
-			LoadMap("MAPS2.DAT","gym6.tmx");
-      	break;
-      case 4:
-			LoadMap("MAPS2.DAT","gym7.tmx");
-      	break;
-      case 3:
-			LoadMap("MAPS2.DAT","gym8.tmx");
-      	break;
-      case 2:
-			LoadMap("MAPS2.DAT","gym9.tmx");
-      	break;
-      case 1:
-			LoadMap("MAPS2.DAT","gym10.tmx");
+      case 1:   //////////////////////////// day 1 ///////////////////////////
+			LoadMap("MAPS.DAT","gym_1.tmx");
       	break;
    }
-   
+
 	LoadTiles("TILESETS.DAT","gym.pcx");
-   
+
+   LoadSprite("SPRCHR1.DAT","player.pcx",player.spriteNum, 32); //Load sprites to one of the fixed structs
+	SetSpriteAnimation(player.spriteNum,0,6,12,PlayerAnimation);
+
    LoadSprite("SPRCHR2.DAT","sensei.pcx",2, 32); //Load sprites to one of the fixed structs
    SetSpriteAnimation(2,0,6,30,CharacterAnimation3);
    InitSprite(2,208,162);
 
    switch(player.day){
-   	case 9:
+   	case 4:
+      	break;
+   	case 3: //////////////////////////// day 3 ///////////////////////////
          LoadSprite("SPRCHR1.DAT","jessy.pcx",3, 32); //Load sprites to one of the fixed structs
    		LoadSprite("SPRCHR1.DAT","vane.pcx",4, 32); //Load sprites to one of the fixed structs
    		LoadSprite("SPRCHR1.DAT","fany.pcx",5, 32); //Load sprites to one of the fixed structs
    		SetSpriteAnimation(3,0,6,8,CharacterAnimation2);
    		SetSpriteAnimation(4,0,6,30,CharacterAnimation3);
    		SetSpriteAnimation(5,0,6,23,CharacterAnimation3);
-   		InitSprite(3,128,190);
-   		InitSprite(4,102,202);
-   		InitSprite(5,158,202);
+   		InitSprite(3,138,190);
+   		InitSprite(4,112,202);
+   		InitSprite(5,168,202);
       	break;
-      default:
+      case 2: //////////////////////////// day 2 ///////////////////////////
+      	if(player.mission_bag > 3){
+         	LoadSprite("SPRCHR1.DAT","jessy.pcx",3, 32); //Load sprites to one of the fixed structs
+            SetSpriteAnimation(3,0,6,8,CharacterAnimation2);
+            InitSprite(3,138,190);
+         }
+
+         LoadSprite("SPRCHR1.DAT","vane.pcx",4, 32); //Load sprites to one of the fixed structs
+   		LoadSprite("SPRCHR1.DAT","fany.pcx",5, 32); //Load sprites to one of the fixed structs
+   		SetSpriteAnimation(4,0,6,30,CharacterAnimation3);
+   		SetSpriteAnimation(5,0,6,23,CharacterAnimation3);
+   		InitSprite(4,112,202);
+   		InitSprite(5,168,202);
+      	break;
+      case 1: //////////////////////////// day 1 ///////////////////////////
+      	LoadSprite("SPRCHR1.DAT","jessy.pcx",3, 32); //Load sprites to one of the fixed structs
+   		LoadSprite("SPRCHR1.DAT","vane.pcx",4, 32); //Load sprites to one of the fixed structs
+   		LoadSprite("SPRCHR1.DAT","fany.pcx",5, 32); //Load sprites to one of the fixed structs
+   		SetSpriteAnimation(3,0,6,8,CharacterAnimation2);
+   		SetSpriteAnimation(4,0,6,30,CharacterAnimation3);
+   		SetSpriteAnimation(5,0,6,23,CharacterAnimation3);
+   		InitSprite(3,138,190);
+   		InitSprite(4,112,202);
+   		InitSprite(5,168,202);
       	break;
    }
 
-   LoadSprite("SPRCHR1.DAT","player.pcx",player.spriteNum, 32); //Load sprites to one of the fixed structs
-	SetSpriteAnimation(player.spriteNum,0,6,12,PlayerAnimation);
    InitSprite(player.spriteNum,x,y);
 
    player.floor = 5;

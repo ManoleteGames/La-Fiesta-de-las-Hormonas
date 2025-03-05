@@ -20,39 +20,32 @@ void far GoToExt1(int x, int y){
 
 	LoadMap("MAPS.DAT","ext1.tmx");
 	LoadTiles("TILESETS.DAT","ext1.pcx");
+
    LoadSprite("SPRCHR1.DAT","player.pcx",player.spriteNum, 32); //Load sprites to one of the fixed structs
    SetSpriteAnimation(player.spriteNum,0,6,12,PlayerAnimation);
-   InitSprite(player.spriteNum,x,y);
 
    switch(player.day){
-   	case 10:
-   		// Load thugs sprites
-   		if( player.scn_thugs == 2){
-      		LoadSprite("SPRCHR1.DAT","toni.pcx",7, 32); //Load sprites to one of the fixed structs
-   			LoadSprite("SPRCHR1.DAT","jon.pcx",8, 32); //Load sprites to one of the fixed structs
-   			LoadSprite("SPRCHR1.DAT","erik.pcx",9, 32); //Load sprites to one of the fixed structs
-
-      		SetSpriteAnimation(7,0,6,30,CharacterAnimation3);
-   			SetSpriteAnimation(8,0,6,23,CharacterAnimation2);
-   			SetSpriteAnimation(9,0,6,19,CharacterAnimation2);
-
-      		InitSprite(7,38,302);
-   			InitSprite(8,74,302);
-   			InitSprite(9,110,302);
-   		}
+   	case 4:
          break;
-      case 9:
+      case 3:
       	break;
-      case 8:
+      case 2:
+   		if(player.mission_bag < 3){
+         	LoadSprite("SPRMISC.DAT","bag.pcx",4, 32); //Load sprites to one of the fixed structs
+	         SetSpriteAnimation(4,0,1,12,CharacterAnimation2);
+      	   InitSprite(4,222,346);
+         }
       	break;
-      default:
+      case 1:
       	break;
    }
 
    player.floor = 3;
 
-   ResetLoadingInterrupt(); // Stop loading animation
+   InitSprite(player.spriteNum,x,y);
 
+   ResetLoadingInterrupt(); // Stop loading animation
+   
    // Allow scroll
    scrolling_enabled = 1;
    // Draw map

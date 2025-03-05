@@ -252,7 +252,7 @@ void LoadSprite(char *file, char *dat_string, int sprite_number, byte size){
 
    // Just 20 sprites allowed
    sprintf(error1, "%d", sprite_number);
-   if(sprite_number>=20){ Error("Error max. sprite number ",error1,dat_string);}
+   if(sprite_number>20){ Error("Error max. sprite number ",error1,dat_string);}
 
    // Check sprite pointer
    sprintf(error1, "%d", sprite_number);

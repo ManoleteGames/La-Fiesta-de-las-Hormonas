@@ -9,7 +9,7 @@
 // - Sets a little intro at the very begining of the game
 // - Can be skipped by pushing ESC
 /////////////////////////////////////////////////////////
-void Intro(void){
+void far Intro(void){
 	byte endIntro = 0; // End intro flag
    byte step = 0; // Current intro step
 
@@ -21,9 +21,7 @@ void Intro(void){
    LoadTiles("TILESETS.DAT","ext1.pcx");
    LoadPanelBackground("IMAGES.DAT","PANEL.pcx");
 
-   LoadSprite("SPRMISC.DAT","enter.pcx",1, 16); //Load sprites to one of the fixed structs
    LoadSprite("SPRCHR1.DAT","player.pcx",2, 32); //Load sprites to one of the fixed structs
-   LoadSprite("SPRFACE1.DAT","playerf.pcx",3, 48); //Load sprites to one of the fixed structs
    LoadSprite("SPRMISC.DAT","bird.pcx",4, 32); //Load sprites to one of the fixed structs
 
    LoadMusic(1);
@@ -33,18 +31,12 @@ void Intro(void){
    scrolling_enabled = 1;
    SetMap(0,0);    // Draw loaded map
 
-   InitSprite(1,0,0);
-  	InitSprite(2,0,360);
-  	InitSprite(3,0,0);
-   InitSprite(4,102,96);
-   SetSpriteAnimation(1,0,4,8,EnterAnimation);
+   InitSprite(2,0,360);
+  	InitSprite(4,102,96);
    SetSpriteAnimation(2,17,4,8,PlayerAnimation); // Set animation >> right
-   SetSpriteAnimation(3,0,1,48,PlayerFaceAnimation);
    SetSpriteAnimation(4,0,14,8,BirdAnimation);
 
-   HideSprite(1);
    HideSprite(2);
-   HideSprite(3);
    HideSprite(4);
 
    Fade_in();
@@ -85,21 +77,17 @@ void Intro(void){
             	sprite[2].pos_x ++;
             }
             else{
-            	// Set animation >> static
-            	SetSpriteAnimation(2,0,6,8,PlayerAnimation);   // Stand up
+            	SetSpriteAnimation(2,0,6,8,PlayerAnimation);   // Stand up player
                step = 5;
             }
          	break;
           case 5: // Show spech
-            Speech("SPRFACE1.DAT","playerf.pcx","GLB_STR.DAT","intro.txt","010","011","012",0);
-            Speech("SPRFACE1.DAT","playerf.pcx","GLB_STR.DAT","intro.txt","014","015","017",0);
+            Speech("SPRFACE1.DAT","playerf.pcx","GLB_STR.DAT","intro.txt","010",0,"011","012");
+            Speech("SPRFACE1.DAT","playerf.pcx","GLB_STR.DAT","intro.txt","014","015",0,"017");
             step = 8;
             break;
          case 8:  // Wait ENTER key
-            HideSprite(1);
-           	HideSprite(3);
-            DrawMapBack();
-           	SetSpriteAnimation(2,17,4,12,PlayerAnimation); // Set animation >> right
+            SetSpriteAnimation(2,17,4,12,PlayerAnimation); // Set animation >> right
             step = 9;
             break;
          case 9: // Move player sprite inside screen
@@ -120,9 +108,7 @@ void Intro(void){
             // Load floor 1 map
 			   LoadMap("MAPS.DAT","floor1.tmx");
 			   LoadTiles("TILESETS.DAT","floor1.pcx");
-            LoadSprite("SPRMISC.DAT","enter.pcx",1,16); //Load sprites to one of the fixed structs
             LoadSprite("SPRCHR1.DAT","player.pcx",2,32); //Load sprites to one of the fixed structs
-            LoadSprite("SPRFACE1.DAT","playerf.pcx",3,48); //Load sprites to one of the fixed structs
 
             ResetLoadingInterrupt(); // Stop loading animation
 
@@ -131,16 +117,8 @@ void Intro(void){
             // Draw map
 			   SetMap(0,12);
 
-            InitSprite(1,0,0);
-  				InitSprite(2,0,400);
-  				InitSprite(3,0,0);
-
-   			SetSpriteAnimation(1,0,4,8,EnterAnimation);
+      		InitSprite(2,0,400);
    			SetSpriteAnimation(2,17,4,8,PlayerAnimation); // Set animation >> right
-   			SetSpriteAnimation(3,0,1,48,PlayerFaceAnimation);
-
-  				HideSprite(1);
-   			HideSprite(3);
 
 			   Fade_in();
 
@@ -180,12 +158,11 @@ void Intro(void){
          	step = 15;
          	break;
          case 15: // Show spech
-         	Speech("SPRFACE1.DAT","playerf.pcx","GLB_STR.DAT","intro.txt","020","022",0,0);
+         	Speech("SPRFACE1.DAT","playerf.pcx","GLB_STR.DAT","intro.txt","020",0,"022",0);
             step = 16;
             break;
          case 16: // Wait ENTER key
-				DrawMapBack();
-            SetSpriteAnimation(2,25,4,8,PlayerAnimation); // Set animation >> walking up
+				SetSpriteAnimation(2,25,4,8,PlayerAnimation); // Set animation >> walking up
 	         step = 17;
             break;
          case 17: // Move player up
@@ -202,16 +179,6 @@ void Intro(void){
          	SetLoadingInterrupt();   // Start loading animation
 
          	LoadImage("IMAGES.DAT","cartel.pcx",2); // Load menu background image to non visible page
-            LoadSprite("SPRMISC.DAT","enter.pcx",1,16); //Load sprites to one of the fixed structs
-            LoadSprite("SPRFACE1.DAT","playerf.pcx",3, 48); //Load sprites to one of the fixed structs
-
-            InitSprite(1,0,0);
-  				InitSprite(3,0,0);
-
-   			SetSpriteAnimation(1,0,4,8,EnterAnimation);
-   			SetSpriteAnimation(3,0,1,48,PlayerFaceAnimation);
-
-   			HideSprite(3);
 
             ResetLoadingInterrupt();   // Stop loading animation
 
@@ -225,13 +192,8 @@ void Intro(void){
             step = 19;
 
          case 19: // Wait for ENTER key
-            if( keys[K_ENTER] != 1) {
-            	Update(0);
-            }
-            else {
-					HideSprite(1);
-	            step = 20;
-            }
+            Delay(100);
+            step = 20;
          	break;
          case 20: // Show speech
            	Speech("SPRFACE1.DAT","playerf.pcx","GLB_STR.DAT","intro.txt","024","025","026","027");
@@ -242,7 +204,6 @@ void Intro(void){
 
 			   LoadMap("MAPS.DAT","floor1.tmx");   // Load floor 1 map
 			   LoadTiles("TILESETS.DAT","floor1.pcx");
-            LoadSprite("SPRMISC.DAT","enter.pcx",1,16); //Load sprites to one of the fixed structs
             LoadSprite("SPRCHR1.DAT","player.pcx",2, 32); //Load sprites to one of the fixed structs
             LoadSprite("SPRCHR1.DAT","jessy.pcx",3, 32); //Load sprites to one of the fixed structs
 
@@ -294,23 +255,12 @@ void Intro(void){
          	SetLoadingInterrupt();   // Start loading animation
 
          	LoadImage("IMAGES.DAT","jessy.pcx",2); // Load menu background image to non visible page
-            LoadSprite("SPRMISC.DAT","enter.pcx",1,16); //Load sprites to one of the fixed structs
-            LoadSprite("SPRFACE1.DAT","playerf.pcx",3, 48); //Load sprites to one of the fixed structs
 
             ResetLoadingInterrupt();   // Stop loading animation
 
             SetPage(2);
 
          	LoadImage("IMAGES.DAT","jessy2.pcx",1); // Load menu background image to non visible page
-
-	         InitSprite(1,scroll_x + 298,scroll_y + 42);
-  				InitSprite(3,scroll_x,scroll_y);
-
-   			SetSpriteAnimation(1,0,4,8,EnterAnimation);
-   			SetSpriteAnimation(3,0,1,48,PlayerFaceAnimation);
-
-            HideSprite(1);
-            HideSprite(3);
 
             Fade_in();
 
@@ -322,27 +272,18 @@ void Intro(void){
    			break;
          case 30: // Show text box
             SetPage(1);
-				Speech("SPRFACE1.DAT","playerf.pcx","GLB_STR.DAT","intro.txt","032","033","034","035");
+            Delay(100);
+				Speech("SPRFACE1.DAT","playerf.pcx","GLB_STR.DAT","intro.txt","032","033","034",0);
             step = 37;
    			break;
          case 37: // Show spech
          	SetLoadingInterrupt();   // Start loading animation
 
             LoadImage("IMAGES.DAT","player.pcx",2); // Load menu background image to non visible page
-            LoadSprite("SPRMISC.DAT","enter.pcx",1,16); //Load sprites to one of the fixed structs
-            LoadSprite("SPRFACE1.DAT","playerf.pcx",3, 48); //Load sprites to one of the fixed structs
 
             ResetLoadingInterrupt();   // Stop loading animation
 
             SetPage(2);
-
-            InitSprite(1,scroll_x + 296,scroll_y + 42);
-            InitSprite(3,scroll_x,scroll_y);
-            SetSpriteAnimation(1,0,4,8,EnterAnimation);
-            SetSpriteAnimation(3,0,1,48,PlayerFaceAnimation);
-
-            HideSprite(1);
-            HideSprite(3);
 
             Fade_in();
 
@@ -350,7 +291,7 @@ void Intro(void){
             Speech("SPRFACE1.DAT","playerf.pcx","GLB_STR.DAT","intro.txt","040","041","042","043");
 
             Fade_out();
-            
+
             step = 38;
             break;
 			case 38: // Wait ENTER key

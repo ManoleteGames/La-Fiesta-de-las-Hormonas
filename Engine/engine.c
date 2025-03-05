@@ -7,8 +7,6 @@
 unsigned char far *error1;
 unsigned char far *error2;
 unsigned char far *string;
-//byte debug;
-//int debug1,debug2,debug3,debug4,debug5;
 
 int scrollCameraFloat = 0;
 int scrollCameraArray[135] = {
@@ -53,7 +51,6 @@ byte musicNonStopPlaying = 0;
 byte musicLoaded = 0;
 
 byte time_countdown = 0;
-byte time_done = 0;
 byte time_minutes = 0;
 byte time_seconds = 0;
 int time_counter = 0;
@@ -199,14 +196,14 @@ void ResetScroll(void){
 //0-undef; 1-Speaker; 2-tandy; 3-Adlib; 4-Sound blaster
 /////////////////////////////////////////////////////////
 void CheckSoundCard(void){
-	printf("***** Checking audio hardware... \n");
+	//printf("***** Checking audio hardware... \n");
 
    // Check if any card is avaliable
-   printf(" - PC Speaker is present. He will never let you out \n");
+   //printf(" - PC Speaker is present. He will never let you out \n");
    pcspeakerPresent = 1;
-   if( SB_Present() ){ soundBlasterPresent = 1; }
+   //if( SB_Present() ){ soundBlasterPresent = 1; }
    //if( false ){ soundTandyPresent = 1; }
-   if( ADLIB_Present() ){ adlibPresent = 1; }
+   //if( ADLIB_Present() ){ adlibPresent = 1; }
 }
 
 /////////////////////////////////////////////////////////
@@ -214,7 +211,7 @@ void CheckSoundCard(void){
 // 0: No card; 1: VGA; 2: EGA; 3:CGA
 /////////////////////////////////////////////////////////
 void CheckGraphicsCard(void){
-   printf("***** Checking video hardware... \n");
+   //printf("***** Checking video hardware... \n");
 
    // Check if any card is avaliable
    if( VGA_Present() ) { videoVGA_Present = 1; }
@@ -234,11 +231,11 @@ void CheckGraphicsCard(void){
 /////////////////////////////////////////////////////////
 void InitKeyboard(void){
 
-	printf("***** Inicializando teclado... \n");
+	//printf("***** Inicializando teclado... \n");
 
    // Set keyboard interrupt
    Set_key_handler();
-   printf(" - Teclado inicializado \n");
+   //printf(" - Teclado inicializado \n");
 
 }
 
@@ -248,11 +245,11 @@ void InitKeyboard(void){
 /////////////////////////////////////////////////////////
 void LinkAudio(void){
 
-	printf("***** Inicializando sonido... \n");
+	//printf("***** Inicializando sonido... \n");
 
 	switch(audio_mode){
    	case 0: // audio off. Link all functions to pc speaker but never activate buzzer
-         printf(" - Audio is off \n");
+         //printf(" - Audio is off \n");
          InitSoundCard = &SPEAKER_Init;
          DeInitSoundCard = &SPEAKER_Deinit;
 			PlaySound = &SPEAKER_PlaySound;
@@ -263,7 +260,7 @@ void LinkAudio(void){
          PauseMusic = SPEAKER_PauseMusic;
          StopMusic = SPEAKER_StopMusic;
    	case 1: // PC Speaker
-      	printf(" - Activating PC Speaker sound mode\n");
+      	//printf(" - Activating PC Speaker sound mode\n");
       	InitSoundCard = &SPEAKER_Init;
          DeInitSoundCard = &SPEAKER_Deinit;
 			PlaySound = &SPEAKER_PlaySound;
@@ -274,32 +271,16 @@ void LinkAudio(void){
          StopMusic = SPEAKER_StopMusic;
       	break;
       case 2: // Tandy sound card
-      	printf(" - Activating Tandy sound mode\n");
+      	//printf(" - Activating Tandy sound mode\n");
       	break;
       case 3: // Adlib
-      	printf(" - Activating Adlib sound mode\n");
-      	InitSoundCard = ADLIB_Init;
-         DeInitSoundCard = ADLIB_DeInit;
-			PlaySound = ADLIB_PlaySound;
-         LoadMusic = ADLIB_LoadMusic;
-         UnloadMusic = ADLIB_UnloadMusic;
-			PlayMusic = ADLIB_PlayMusic;
-         PlayNonStopMusic = ADLIB_PlayNonStopMusic;
-         StopMusic = ADLIB_StopMusic;
+      	//printf(" - Activating Adlib sound mode\n");
       	break;
       case 4: // Sound blaster
-      	printf(" - Activating Sound Blaster sound mode\n");
-        	InitSoundCard = SB_Init;
-         DeInitSoundCard = SB_DeInit;
-			PlaySound = SB_PlaySound;
-         LoadMusic = ADLIB_LoadMusic;
-         UnloadMusic = ADLIB_UnloadMusic;
-			PlayMusic = ADLIB_PlayMusic;
-         PlayNonStopMusic = ADLIB_PlayNonStopMusic;
-         StopMusic = ADLIB_StopMusic;
-      	break;
+      	//printf(" - Activating Sound Blaster sound mode\n");
+        	break;
       default:
-      	printf("No sound mode defined\n");
+      	//printf("No sound mode defined\n");
       	break;
 	}
 }
@@ -309,12 +290,9 @@ void LinkAudio(void){
 // 0: No card; 1: VGA; 2: EGA; 3:CGA; 4-TANDY
 /////////////////////////////////////////////////////////
 void LinkVideo(void){
-
-   printf("***** Inicializando video... \n");
-
-   switch(video_mode){
+	switch(video_mode){
    	case 1: // Mode VGA :: 320x200 256 colors, Mode X
-      	printf(" - Activating VGA mode\n");
+      	//printf(" - Activating VGA mode\n");
 			// Link global functions to VGA custom functions
          Vsync = VGA_Vsync;
          TextMode = VGA_TextMode;
@@ -400,29 +378,33 @@ void SaveConfig(void){
    FILE *setupfile;
    setupfile = fopen("setup.ini","w");
    if (!setupfile) { Error("Cannot update configuration file SETUP.INI",0,0); }
-   fprintf(setupfile,"#SETUP\n------\n[1]VIDEO=%03u\n[2]AUDIO=%03u\n[3]MUSVL=%03u\n[4]SNDVL=%03u\n[5]BLASA=%03x\n[6]BLASI=%03x\n[7]BLSLD=%03x\n[8]BLSHD=%03x\n[9]LANG =%03x",video_mode,audio_mode,music_volume,sound_volume,sbBaseAddress,sbIrq,sbLoDMA,sbHiDMA,language);
+   fprintf(setupfile,"#SETUP\n------\n[1]VIDEO=%03u\n[2]AUDIO=%03u\n[3]MUSVL=%03u\n[4]SNDVL=%03u\n[5]BLASA=%03x\n[6]BLASI=%03x\n[7]BLSLD=%03x\n[8]BLSHD=%03x\n[9]LANG =%03x",video_mode,audio_mode,music_volume,sound_volume,0,0,0,0,language);
 	fclose(setupfile);
 }
+
 
 /////////////////////////////////////////////////////////
 // Load configuration
 /////////////////////////////////////////////////////////
 void LoadConfig(void){
 	FILE *setupfile;
-	byte buffer[256];
+   byte buffer[256];
 
-	printf("***** Cargando configuracion...\n");
+   //printf("***** Cargando configuracion...\n");
    setupfile = fopen("setup.ini","rb+");
    if (!setupfile) {
 		printf(" - setup.ini no encontrado\n - Creando nuevo archivo con la configuracion básica...\n");
 		setupfile = fopen("setup.ini","w");
       if (!setupfile) { Error("Cannot create configuration file SETUP.INI",0,0); }
 		fprintf(setupfile,"#SETUP\n------\n[1]VIDEO=%03u\n[2]AUDIO=%03u\n[3]MUSVL=050\n[4]SNDVL=050\n[5]BLASA=%03x\n[6]BLASI=%03x\n[7]BLSLD=%03x\n[8]BLSHD=%03x\n[9]LANG =001",1,1,0,0,0,0);
-   	//fclose(setupfile);
-		//sleep(2);
+   	fclose(setupfile);
+		sleep(2);
 	}
 
-	fread(buffer,1,256,setupfile);
+   setupfile = fopen("setup.ini","rb+");
+   if (!setupfile) { Error("Cannot open configuration file SETUP.INI",0,0); }
+
+   fread(&buffer,1,256,setupfile);
 
    // 0: No card; 1: VGA; 2: EGA; 3:CGA
 	video_mode 		= (buffer[25]-48)*100 + (buffer[26]-48)*10 + (buffer[27]-48);
@@ -430,20 +412,19 @@ void LoadConfig(void){
 	audio_mode 		= (buffer[39]-48)*100 + (buffer[40]-48)*10 + (buffer[41]-48);
    music_volume 	= (buffer[53]-48)*100 + (buffer[54]-48)*10 + (buffer[55]-48);
    sound_volume 	= (buffer[67]-48)*100 + (buffer[68]-48)*10 + (buffer[69]-48);
-   sbBaseAddress  = (buffer[81]-48)*100 + (buffer[82]-48)*10 + (buffer[83]-48);
-   sbIrq				= (buffer[95]-48)*100 + (buffer[96]-48)*10 + (buffer[97]-48);
-   sbLoDMA			= (buffer[109]-48)*100 + (buffer[110]-48)*10 + (buffer[111]-48);
-   sbHiDMA			= (buffer[123]-48)*100 + (buffer[124]-48)*10 + (buffer[125]-48);
+   //sbBaseAddress  = (buffer[81]-48)*100 + (buffer[82]-48)*10 + (buffer[83]-48);
+   //sbIrq				= (buffer[95]-48)*100 + (buffer[96]-48)*10 + (buffer[97]-48);
+   //sbLoDMA			= (buffer[109]-48)*100 + (buffer[110]-48)*10 + (buffer[111]-48);
+   //sbHiDMA			= (buffer[123]-48)*100 + (buffer[124]-48)*10 + (buffer[125]-48);
    language 		= (buffer[137]-48)*100 + (buffer[138]-48)*10 + (buffer[139]-48);
 
    // Check selected video mode is compatible
    // 0: No card; 1: VGA; 2: EGA; 3:CGA
    switch(video_mode){
    	case 1: // VGA
-      	printf(" - VGA is selected\n");
       	if( videoVGA_Present == 0){
-         	printf(" - ... but not present \n");
          	if( videoEGA_Present ){
+               printf(" - VGA is selected but not present\n");
          		printf(" - Applying EGA graphics instead \n");
             	video_mode = 2;
             	printf("EGA video mode is not avaliable yet!\n");
@@ -451,6 +432,7 @@ void LoadConfig(void){
       			exit(1);
          	}
         	 	else if( videoCGA_Present ){
+            	printf(" - VGA is selected but not present\n");
          		printf(" - Applying CGA graphics instead \n");
             	video_mode = 3;
             	printf("CGA video mode is not avaliable yet!\n");
@@ -465,14 +447,14 @@ void LoadConfig(void){
          }
       	break;
       case 2: // EGA
-      	printf(" - EGA is selected \n");
          if( videoEGA_Present == 0){
-         	printf(" - ... but not present \n");
          	if( videoVGA_Present ){
+               printf(" - EGA is selected but not present\n");
          		printf(" - Applying VGA graphics instead \n");
             	video_mode = 1;
          	}
          	else if( videoCGA_Present ){
+            	printf(" - EGA is selected but not present\n");
          		printf(" - Applying CGA graphics instead \n");
             	video_mode = 3;
             	printf("CGA video mode is not avaliable yet!\n");
@@ -487,14 +469,14 @@ void LoadConfig(void){
          }
       	break;
       case 3: // CGA
-      	printf(" - CGA is selected \n");
          if( videoCGA_Present == 0){
-         	printf(" - ... but not present \n");
          	if( videoVGA_Present ){
+            	printf(" - CGA is selected but not present \n");
          		printf(" - Applying VGA graphics instead \n");
             	video_mode = 1;
          	}
          	else if( videoEGA_Present ){
+            	printf(" - CGA is selected but not present \n");
          		printf(" - Applying EGA graphics instead \n");
             	video_mode = 2;
             	printf("EGA video mode is not avaliable yet!\n");
@@ -508,16 +490,21 @@ void LoadConfig(void){
             }
          }
       	break;
+      default:
+      	printf("Unknown video mode: %u \n",video_mode);
+         getch();
+         exit(1);
+      	break;
    }
 
    // Check selected audio mode is compatible
    // 0-undef; 1-Speaker; 2-tandy; 3-Adlib; 4-Sound blaster
    switch(audio_mode){
    	case 0: // OFF
-      	printf(" - Audio OFF is selected\n");
+      	//printf(" - Audio OFF is selected\n");
          break;
    	case 1: // Speaker
-         printf(" - PC Speaker is selected \n");
+         //printf(" - PC Speaker is selected \n");
       	break;
       case 2: // Tandy
       	printf(" - Tandy audio is selected \n");
@@ -545,7 +532,7 @@ void LoadConfig(void){
       	break;
    }
 
-   printf(" - Configuracion cargada \n");
+   //printf(" - Configuracion cargada \n");
    fclose(setupfile);
 }
 
@@ -663,39 +650,42 @@ void Error(char *error, char *file, char *filename){
 /////////////////////////////////////////////////////////
 void AllocateEngineMem(void){
 
-	printf("***** Allocating memory ...\n");
+	//printf("***** Allocating memory ...\n");
 
    //Allocate error strings
    if ((error1 = farcalloc(30, sizeof(unsigned char))) == NULL) Error("Not enough RAM to allocate 30 bytes of error1 string","error1",0);
- 	printf(" error1 allocated onto adddress: %p address \n", error1);
+ 	//printf(" error1 allocated onto adddress: %p address \n", error1);
    if ((error2 = farcalloc(30, sizeof(unsigned char))) == NULL) Error("Not enough RAM to allocate 30 bytes of error2 string","error2",0);
-   printf(" error2 allocated onto adddress: %p address \n", error2);
+   //printf(" error2 allocated onto adddress: %p address \n", error2);
    if ((string = farcalloc(40, sizeof(unsigned char))) == NULL) Error("Not enough RAM to allocate 50 bytes of global string","string",0);
-   printf(" string allocated onto adddress: %p address \n", string);
+   //printf(" string allocated onto adddress: %p address \n", string);
 
    //Allocate 32KB block for temp data
-   if ((tempdata1 = farcalloc(65535L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate 32 Kb of temp. data","tempdata1",0);
-   printf(" tempdata1 allocated onto adddress: %p address \n", tempdata1);
+//   if ((tempdata1 = farcalloc(65535L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate 64 Kb of temp. data","tempdata1",0);
+	if ((tempdata1 = farcalloc(32767L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate 32 Kb of temp. data","tempdata1",0);
+   //printf(" tempdata1 allocated onto adddress: %p address \n", tempdata1);
    //Allocate 32 KB of temp data just after the first
-   if ((tempdata2 = farcalloc(65535L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate 32 Kb of temp. data","tempdata2",0);
-   printf(" tempdata2 allocated onto adddress: %p address \n", tempdata2);
+//   if ((tempdata2 = farcalloc(65535L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate 64 Kb of temp. data","tempdata2",0);
+   if ((tempdata2 = farcalloc(32767L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate 32 Kb of temp. data","tempdata2",0);
+   //printf(" tempdata2 allocated onto adddress: %p address \n", tempdata2);
 
-	if ((music.sdata = farcalloc(65535L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate 64 Kb of music data","music","sdata");
-   printf(" music.sdata allocated onto adddress: %p address \n", music.sdata);
+//	if ((music.sdata = farcalloc(65535L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate 64 Kb of music data","music","sdata");
+	if ((music.sdata = farcalloc(32767L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate 32 Kb of music data","music","sdata");
+   //printf(" music.sdata allocated onto adddress: %p address \n", music.sdata);
    if ((map_data = farcalloc(maxMapSize,sizeof(byte))) == NULL) Error("Not enough RAM to allocate map data","map","data");
-   printf(" map_data allocated onto adddress: %p address \n", map_data);
+   //printf(" map_data allocated onto adddress: %p address \n", map_data);
 	if ((map_collision = farcalloc(maxMapSize,sizeof(byte))) == NULL) Error("Not enough RAM to allocate collision data","map","collision");
-   printf(" map_collision allocated onto adddress: %p address \n", map_collision);
+   //printf(" map_collision allocated onto adddress: %p address \n", map_collision);
    if ((map_hotspot = farcalloc(maxMapSize,sizeof(byte))) == NULL) Error("Not enough RAM to allocate hotspot data","map","hotspot");
-   printf(" map_hotspot allocated onto adddress: %p address \n", map_hotspot);
+   //printf(" map_hotspot allocated onto adddress: %p address \n", map_hotspot);
    if ((map_event = farcalloc(maxMapSize,sizeof(byte))) == NULL) Error("Not enough RAM to allocate event data","map","event");
-   printf(" map_event allocated onto adddress: %p address \n", map_event);
+   //printf(" map_event allocated onto adddress: %p address \n", map_event);
    if ((map_sprites = farcalloc(maxMapSize,sizeof(byte))) == NULL) Error("Not enough RAM to allocate event data","map","sprites");
-   printf(" map_sprites allocated onto adddress: %p address \n", map_event);
+   //printf(" map_sprites allocated onto adddress: %p address \n", map_event);
    if ((sprite = farcalloc(20,sizeof(SPRITE))) == NULL) Error("Not enough RAM to allocate 20 predefined sprite structs","sprite",0);
-   printf(" sprite allocated onto adddress: %p address \n", sprite);
+   //printf(" sprite allocated onto adddress: %p address \n", sprite);
 
-   printf(" - Memory allocated successfuly \n");
+   //printf(" - Memory allocated successfuly \n");
    //getchar();
 }
 
@@ -704,7 +694,7 @@ void AllocateEngineMem(void){
 /////////////////////////////////////////////////////////
 void InitEngine(void){
 
-	printf("*** Starting engine ****** \n");
+	//printf("*** Starting engine ****** \n");
 
    CheckGraphicsCard();
    CheckSoundCard();
@@ -769,6 +759,11 @@ void ResetTimeInterrupt(void){
 //   can be loaded on other pages.
 /////////////////////////////////////////////////////////
 void SetLoadingInterrupt(void){
+
+	panelScrolling = 0;
+   showPanel = 0;
+   Update(0);
+
 	Fade_out();
 
    SPEAKER_PauseMusic();
@@ -779,6 +774,8 @@ void SetLoadingInterrupt(void){
    SetPage(1);
    Fade_in();
    scrolling_enabled = 0;
+
+   player.oldMove = 0;
 
 	Vsync();  //Wait Vsync
 
@@ -864,8 +861,6 @@ void ScrollFollow(void){
 	int speed_x = 0;
 	int speed_y = 0;
 
-   //if ((player.move == 0) && (scroll_y_adjust > 70)){ scroll_y_adjust--; }//STANDING
-   //if ((player.move == 0) && (scroll_y_adjust < 70)){ scroll_y_adjust++; }//STANDING
    if ((player.move == 1) && (scroll_y_adjust != 90)){ scroll_y_adjust++; }//FACING UP
 	if ((player.move == 2) && (scroll_y_adjust != 50)){ scroll_y_adjust--; }//FACING DOWN
 
@@ -892,8 +887,6 @@ void ScrollFollow(void){
     	if ((scroll_x_adjust != 190)){ scroll_x_adjust++; }//FACING LEFT
    }
 
-
-
 	//Show more screen in the direction the sprite is facing
 	x = (s->pos_x-scroll_x) - scroll_x_adjust;
 	x1 = abs(x);
@@ -904,7 +897,7 @@ void ScrollFollow(void){
 	if ((scroll_x > -1) && ((scroll_x + 319)<map_width_px) && (scroll_y > -1) && ((scroll_y + 209 - vga_page[1])<(map_height_px))){
 
    	// Reset scroll camera
-		if (scrollCameraFloat == 8) scrollCameraFloat = 0;
+		if (scrollCameraFloat == 8){ scrollCameraFloat = 0; }
 
       // Calculate scroll speed
 		speed_x = scrollCameraSpeed[(scrollCameraArray[x1]<<3)+scrollCameraFloat];
@@ -935,8 +928,10 @@ void Update(int player_follow){
    if (speech_active == 0) Restore_Sprites();
 	if (scrolling_enabled) ScrollMap();
    if (speech_active == 0) Draw_Sprites();
+
    PanelRefresh();
    Update_FP_Keys();
+
 }
 
 /////////////////////////////////////////////////////////
@@ -1058,8 +1053,8 @@ void MovePlayer(void){
    player.hotspot = map_hotspot[tile_number];
    player.spriteColl = map_sprites[tile_number];
 
-	//Fixed animations
-   if((player.oldMove !=  player.move)&& (s->animate == 1)){
+	//Player animations
+   if((player.oldMove !=  player.move)&& (s->animate == 1)&&(s->init == 1)){
    	switch (player.move){
       	case 1:
          	// Check if it was facing left
@@ -1113,266 +1108,6 @@ void MovePlayer(void){
    player.oldMove =  player.move;
 }
 
-/////////////////////////////////////////////////////////
-// Question
-// - Exam question function
-/////////////////////////////////////////////////////////
-int Question(char* filename, char* dat_string, int numQ){
-   word length;
-   unsigned char line[3];
-   byte currentQ = 0;
-   byte question[40] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-   byte index = 0;
-   byte end = 0;
-   byte next = 0;
-   byte found = 0;
-   byte q1,q2,q3,q4;
-   byte r1,r2,r3,r4;
-   byte r_ok = 0;
-   byte good_option = 0;
-   byte option;
-   byte second_chance = 0;
-   int good_count = 0;
-
-   player.mission_cheat = 100;
-   if(player.mission_party == 0){time_minutes = 1;}
-   else{time_minutes = 2;}
-   time_seconds = 0;
-   time_countdown = 1;
-
-   SetTimeInterrupt();
-
-   while((currentQ < numQ)&&((time_minutes > 0)||(time_seconds > 0))){
-
-      option = 1;
-
-      srand(time(NULL));
-
-   	while(!found){
-   		index = rand() % 20;
-      	if( question[index] == 0 ){
-         	found = 1;
-            question[index] = 1;
-            index = index*10 + 20;  // apply offset
-      		q1 = index;
-      		q2 = index + 1;
-      		q3 = index + 2;
-      		q4 = index + 3;
-      		r1 = index + 4;
-      		r2 = index + 5;
-         	r3 = index + 6;
-      		r4 = index + 7;
-      		r_ok = index + 8;
-         }
-   	}
-
-      Draw_EmptyBox(0,0,38,8);
-
-      // Question line 1
-      sprintf(line, "%03d", q1);
-      LoadText(filename,dat_string,&line,string,&length);
-   	PrintText(1,1,length,string,0);
-
-      // Question line 2
-      sprintf(line, "%03d", q2);
-      LoadText(filename,dat_string,&line,string,&length);
-   	PrintText(1,2,length,string,0);
-
-      // Question line 3
-      sprintf(line, "%03d", q3);
-      LoadText(filename,dat_string,&line,string,&length);
-   	PrintText(1,3,length,string,0);
-
-      // Question line 4
-      sprintf(line, "%03d", q4);
-      LoadText(filename,dat_string,&line,string,&length);
-   	PrintText(1,4,length,string,0);
-
-      // Response a
-      sprintf(line, "%03d", r1);
-      LoadText(filename,dat_string,&line,string,&length);
-   	PrintText(1,5,length,string,1);
-
-      // Response b
-      sprintf(line, "%03d", r2);
-      LoadText(filename,dat_string,&line,string,&length);
-   	PrintText(1,6,length,string,0);
-
-      // Response c
-      sprintf(line, "%03d", r3);
-      LoadText(filename,dat_string,&line,string,&length);
-   	PrintText(1,7,length,string,0);
-
-      // Response d
-      sprintf(line, "%03d", r4);
-      LoadText(filename,dat_string,&line,string,&length);
-   	PrintText(1,8,length,string,0);
-
-      // Response OK
-      sprintf(line, "%03d", r_ok);
-      LoadText(filename,dat_string,&line,string,&length);
-      good_option = string[1]-48; // convert to value
-
-      while(( keys[K_ENTER] != 1)&&((time_minutes > 0)||(time_seconds > 0))) {
-			//select response
-      	if(fp_keys[K_UP]){
-   			switch(option){
-         		case 1: // Do nothing
-            		break;
-            	case 2: // Rewrite old and new option
-               	sprintf(line, "%03d", r2);
-               	LoadText(filename,dat_string,line,string,&length);
-   					PrintText(1,6,length,string,0);
-	            	option--; // Change option
-                  sprintf(line, "%03d", r1);
-               	LoadText(filename,dat_string,line,string,&length);
-   					PrintText(1,5,length,string,1);
-				  		break;
-            	case 3: // Rewrite old and new option
-               	sprintf(line, "%03d", r3);
-               	LoadText(filename,dat_string,line,string,&length);
-   					PrintText(1,7,length,string,0);
-	            	option--; // Change option
-                  sprintf(line, "%03d", r2);
-               	LoadText(filename,dat_string,line,string,&length);
-   					PrintText(1,6,length,string,1);
-				  		break;
-            	case 4: // Rewrite old and new option
-               	sprintf(line, "%03d", r4);
-               	LoadText(filename,dat_string,line,string,&length);
-   					PrintText(1,8,length,string,0);
-	            	option--; // Change option
-                  sprintf(line, "%03d", r3);
-               	LoadText(filename,dat_string,line,string,&length);
-   					PrintText(1,7,length,string,1);
-				  		break;
-         	}
-      	}
-
-      	if(fp_keys[K_DOWN]){
-      		switch(option){
-         		case 1: // Rewrite old and new option
-            		sprintf(line, "%03d", r1);
-            		LoadText(filename,dat_string,line,string,&length);
-   					PrintText(1,5,length,string,0);
-      	      	option++;
-               	sprintf(line, "%03d", r2);
-         	   	LoadText(filename,dat_string,line,string,&length);
-   					PrintText(1,6,length,string,1);
-               	break;
-            	case 2: // Rewrite old and new option
-            		sprintf(line, "%03d", r2);
-	            	LoadText(filename,dat_string,line,string,&length);
-            		PrintText(1,6,length,string,0);
-               	option++;
-               	sprintf(line, "%03d", r3);
-               	LoadText(filename,dat_string,line,string,&length);
-               	PrintText(1,7,length,string,1);
-               	break;
-            	case 3: // Rewrite old and new option
-                  sprintf(line, "%03d", r3);
-               	LoadText(filename,dat_string,line,string,&length);
-               	PrintText(1,7,length,string,0);
-               	option++;
-               	sprintf(line, "%03d", r4);
-               	LoadText(filename,dat_string,line,string,&length);
-               	PrintText(1,8,length,string,1);
-                  break;
-            	case 4: // Do nothing
-				  		break;
-         	}
-      	}
-      	if(option < 1){option = 1;}
-         if(option > 4){option = 4;}
-
-         // Print remaining time
-         sprintf(string, "%02d", time_minutes);
-         PrintText(34,22,2,string,1);
-         PrintText(36,22,1,":",1);
-         sprintf(string, "%02d", time_seconds);
-         PrintText(37,22,2,string,1);
-
-      	Update(0);
-   	}
-
-      if((time_minutes > 0)||(time_seconds > 0)) {
-      	if(option == good_option){
-        		currentQ++;
-         	good_count++;
-     			found = 0;
-        		second_chance = 0;
-      	} else {
-      		// if cheater
-      		if(player.mission_cheat > 99) {
-      			if((option != good_option) && (second_chance == 0)) {
-
-            		second_chance = 1;
-
-         			// Clear screen
-         			Draw_EmptyBox(0,0,38,8);
-
-            		sprintf(line, "%03d", 10);
-           			LoadText(filename,dat_string,&line,string,&length);
-   					PrintText(1,1,length,string,0);
-
-            		sprintf(line, "%03d", 11);
-            		LoadText(filename,dat_string,&line,string,&length);
-   					PrintText(1,3,length,string,0);
-
-               	sprintf(line, "%03d", 12);
-            		LoadText(filename,dat_string,&line,string,&length);
-   					PrintText(1,4,length,string,0);
-
-            		sprintf(line, "%03d", 13);
-            		LoadText(filename,dat_string,&line,string,&length);
-   					PrintText(1,5,length,string,0);
-
-               	sprintf(line, "%03d", 14);
-            		LoadText(filename,dat_string,&line,string,&length);
-   					PrintText(1,6,length,string,0);
-
-                  while( keys[K_ENTER] != 1) {
-							// Print remaining time
-         				sprintf(string, "%02d", time_minutes);
-         				PrintText(34,22,2,string,1);
-         				PrintText(36,22,1,":",1);
-         				sprintf(string, "%02d", time_seconds);
-         				PrintText(37,22,2,string,1);
-
-      					Update(0);
-   					}
-            		while( keys[K_ENTER] == 1) {
-							//wait
-   					}
-
-            		// Clear screen
-         			Draw_EmptyBox(0,0,38,8);
-
-         		}
-        	 		else{
-         			currentQ++;
-     					found = 0;
-        				second_chance = 0;
-         		}
-      		}
-      		else
-      		{
-       			currentQ++;
-         		found = 0;
-      		}
-      	}
-      }
-
-   	while( keys[K_ENTER] == 1) {
-			//wait
-
-   	}
-   }
-
-   ResetTimeInterrupt();
-
-   return good_count;
-}
 
 /////////////////////////////////////////////////////////
 // Speech
@@ -1384,8 +1119,9 @@ void Speech(char* facefile, char* face,char* filename, char* dat_string,char * l
    int newscroll_y;
 
    LoadSprite("SPRMISC.DAT","enter.pcx",18,16); //Load sprites to one of the fixed structs
+   SetSpriteAnimation(18,0,3,8,EnterAnimation);
+
    LoadSprite(facefile,face,19, 48); //Load sprites to one of the fixed structs
-   SetSpriteAnimation(18,0,4,8,EnterAnimation);
    SetSpriteAnimation(19,0,1,48,PlayerFaceAnimation);
 
    speech_active = 1;
@@ -1436,11 +1172,10 @@ void Speech(char* facefile, char* face,char* filename, char* dat_string,char * l
 
    sprite[18].pos_x = scroll_x + 298;
    sprite[18].pos_y = scroll_y + 34;
-   ShowSprite(18);
+   DrawSpriteDestructive(18);
 
 	while( keys[K_ENTER] != 1) {
   		Update(0);
-      DrawSpriteDestructive(18);
    }
    while( keys[K_ENTER] == 1) {
 		//wait
@@ -1602,46 +1337,4 @@ byte SpeechSelection(int optNum, char* facefile, char* face,char* filename, char
 
    return option;
 }
-
-/////////////////////////////////////////////////////////
-//  Set item
-// - Sets item on panel position
-/////////////////////////////////////////////////////////
-void SetItem(int pos, int spriteNum, char* itemImg){
-	// Update panel item
-	LoadSprite("SPRMISC.DAT",itemImg,16, 32); //Load sprites to one of the fixed structs
-   switch(pos){
-   	case 1:
-   		sprite[spriteNum].pos_x = 221;
-      	break;
-      case 2:
-      	sprite[spriteNum].pos_x = 247;
-      	break;
-   }
-   sprite[spriteNum].pos_y = 0;
-   DrawSpriteDestructive(spriteNum);
-   UnloadSprite(spriteNum);
-}
-
-/////////////////////////////////////////////////////////
-//  Reset item
-// - Sets item on panel position
-/////////////////////////////////////////////////////////
-void ResetItem(int pos, int spriteNum){
-  // Update panel item
-	LoadSprite("SPRMISC.DAT","eitem.pcx",16, 32); //Load sprites to one of the fixed structs
-   switch(pos){
-   	case 1:
-   		sprite[spriteNum].pos_x = 221;
-      	break;
-      case 2:
-      	sprite[spriteNum].pos_x = 247;
-      	break;
-   }
-   sprite[spriteNum].pos_y = 0;
-   DrawSpriteDestructive(spriteNum);
-   UnloadSprite(spriteNum);
-}
-
-
 

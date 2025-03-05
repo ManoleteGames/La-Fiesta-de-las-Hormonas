@@ -1,4 +1,4 @@
-makedat.exe DIRECTF.PCX pcf.pcx conserf.pcx senseif.pcx
+makedat.exe DIRECTF.PCX pcf.pcx conserf.pcx senseif.pcx windowf.pcx
 RENAME DATA.DAT SPRFACE2.DAT
 COPY SPRFACE2.DAT Z:\HORMONA\FINAL
 DEL SPRFACE2.DAT
