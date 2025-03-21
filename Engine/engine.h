@@ -23,9 +23,8 @@ typedef struct tagPLAYER{
    byte good;
 
    byte money;
-
    byte day;
-
+  
    byte floor;
    byte event;
    byte hotspot;
@@ -201,6 +200,7 @@ extern int scroll_y;   // Scroll Y
 extern int scroll_wy;   // Scroll window Y
 extern int scroll_x_adjust;
 extern int scroll_y_adjust;
+extern byte scroll_focus;
 extern byte showPanel;
 extern byte panelScrolling;
 extern byte scrolling_enabled;
@@ -217,13 +217,12 @@ extern IMFsong far music;	// One song in ram stored at "music"
 extern byte musicPlaying;
 extern byte musicNonStopPlaying;
 extern byte musicLoaded;
-extern byte time_countdown;
-extern byte time_minutes;
-extern byte time_seconds;
 
 void InitEngine(void);
 void SetLoadingInterrupt(void);
 void ResetLoadingInterrupt(void);
+void SetTimeInterrupt(void);
+void ResetTimeInterrupt(void);
 void RestartProgram(void);
 void Delay(int count);
 void Error(char *error, char *file, char *filename);
@@ -248,17 +247,18 @@ extern void (*LoadFont)(char *file, char *dat_string);
 extern void (*LoadTiles)(char *file,char* dat_string);
 extern void (*Draw_EmptyBox)(word x, word y, byte w, byte h);
 extern void (*PrintText)(word x, word y, word lineLength, unsigned char *string, byte color);
+extern void (*PrintPanelText)(word x, word y, word lineLength, unsigned char *string);
+extern void (*PrintLine)(int pos_x, int pos_y, int width_x, int width_y, byte color);
 extern void (*Draw_Sprites)(void);
 extern void (*Restore_Sprites)(void);
 extern void (*DrawSpriteDestructive)(int sprNum);
 extern void (*SetPalette)(unsigned char *pal);
 extern void (*LoadTiles)(char *file,char* dat_string);
-extern void (*SetMap)(int x, int y);
+extern void (*SetMap)(void);
 extern void (*ScrollMap)(void);
 extern void (*PanelRefresh)(void);
 extern void (*LoadPanelBackground)(char *file,char* dat_string);
 extern void (*DrawMapBack)(void);
-extern void (*PanelUpdate)(void);
 
 extern void (*LoadMusic)(byte song);
 extern void (*UnloadMusic)(void);
@@ -290,18 +290,19 @@ void VGA_Draw_EmptyBox(word x, word y, byte w, byte h);
 void VGA_SetLoadingInterrupt(void);
 void VGA_ResetLoadingInterrupt(void);
 void VGA_PrintText(word x, word y, word lineLength, unsigned char *string, byte color);
+void VGA_PrintPanelText(word x, word y, word lineLength, unsigned char *string);
+void VGA_PrintLine(int pos_x, int pos_y, int width_x, int width_y, byte color);
 void VGA_Draw_Sprites(void);
 void VGA_Restore_Sprites(void);
 void VGA_DrawSpriteDestructive(int sprNum);
 void VGA_SetPalette(unsigned char *pal);
 void VGA_LoadTiles(char *file,char* dat_string);
-void VGA_SetMap(int x, int y);
+void VGA_SetMap(void);
 void VGA_ScrollMap(void);
 void VGA_Draw_MapBack(void);
 void VGA_Set_Window(void);
 void VGA_MoveWindow(void);
 void VGA_PanelRefresh(void);
-void VGA_PanelUpdate(void);
 void VGA_LoadPanelBackground(char *file,char* dat_string);
 void VGA_RotatePaletteAsync(int index1, int index2);
 void VGA_LoadTransImage(char *file,char* dat_string);
@@ -355,6 +356,7 @@ extern byte far *spriteData2;
 extern dword spriteDataOffset;
 extern byte spriteStack;
 extern SPRITE loadingAnimation;
+extern int spritesProcessed;
 word CompileBitmap(word logical_width, unsigned char *bitmap, unsigned char *output);
 void ResetSpriteStack(void);
 void UnloadSprite(int sprite_number);
@@ -395,6 +397,9 @@ extern byte CharacterAnimation2[];
 extern byte CharacterAnimation3[];
 extern byte EnterAnimation[];
 extern byte end_game;
+extern byte time_countdown;
+extern byte time_minutes;
+extern byte time_seconds;
 
 // All day events
 void far Events(byte event);
@@ -407,12 +412,17 @@ void far GoToGym(int x, int y);
 void far GoToEnd(void);
 void far GoToExam(void);
 void far InitDay(void);
+void far SetNewTime(byte newTime);
+void far UpdateGoodness(int value);
+void far UpdateInteligence(int value);
+void far UpdatePopularity(int value);
 
 // Intro.c
 void Intro(void);
 
 // EndGame.c
-void EndGameExtinguisher(void);
+void far EndGameExtinguisher(void);
+void far EndGameRoof(void);
 
 // Janitor.c
 void far Janitor(void);

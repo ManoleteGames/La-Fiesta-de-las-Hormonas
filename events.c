@@ -87,21 +87,21 @@ void far Events(byte event){
 
    					if(player.score[player.day]<3){
    						Speech("SPRFACE1.DAT","playerf.pcx","GLB_STR.DAT","MISC.TXT","125","126",0,0);
-      					if(player.intell>2){player.intell--; }
-      					if(player.intell>2){player.intell--; }
+      					if(player.intell>2){UpdateInteligence(-1); }
+      					if(player.intell>2){UpdateInteligence(-1); }
    					}
    					else if((player.score[player.day]>=3)&&(player.score[player.day]<5)){
    						Speech("SPRFACE1.DAT","playerf.pcx","GLB_STR.DAT","MISC.TXT","125","126",0,0);
-      					if(player.intell>2){player.intell--; }
+      					if(player.intell>2){UpdateInteligence(-1); }
    					}
    					else if((player.score[player.day]>=5) && (player.score[player.day]<=7)){
       					Speech("SPRFACE1.DAT","playerf.pcx","GLB_STR.DAT","MISC.TXT","127","128",0,0);
-      					if(player.intell<18){player.intell++; }
+      					if(player.intell<18){UpdateInteligence(1);}
    					}
    					else{
       					Speech("SPRFACE1.DAT","playerf.pcx","GLB_STR.DAT","MISC.TXT","129","130",0,0);
-      					if(player.intell<18){player.intell++; }
-      					if(player.intell<18){player.intell++; }
+      					if(player.intell<18){UpdateInteligence(1);}
+      					if(player.intell<18){UpdateInteligence(1);}
    					}
 
                } else {
@@ -160,7 +160,7 @@ void far Events(byte event){
                }
             }
          	if(player.event == 2){ GoToFloor1(32,395);}
-           	if(player.event == 3){ GoToExt2(784,456);}
+           	if(player.event == 3){ GoToExt2(784,420);}
             if(player.event == 4){ EndGameRoof(); }
             if(player.event == 5){ EndGameRoof(); }
             if(player.event == 6){ EndGameRoof(); }

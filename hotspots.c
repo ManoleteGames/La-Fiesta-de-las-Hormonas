@@ -112,12 +112,12 @@ void far Hotspots(byte hotspot){
                      			SetSpriteAnimation(1,0,6,12,PlayerAnimation);
                      			Speech("SPRFACE1.DAT","playerf.pcx","D4_STR.DAT","D4GLB.TXT","088","089",0,0);
                      			player.scn_director = 3;
-                        		if(player.good>0){player.good--;}
+                        		if(player.good>0){UpdateGoodness(-1);}
 			      					break;
      								case 2: // DO NOT TAKE EXAMS
                      			player.mission_cheat = 5;
          							Speech("SPRFACE1.DAT","playerf.pcx","D4_STR.DAT","D4GLB.TXT","091","092",0,0);
-                        		if(player.good<18){player.good++;}
+                        		if(player.good<18){UpdateGoodness(1);}
       								break;
                			}
                      	break;
@@ -125,7 +125,7 @@ void far Hotspots(byte hotspot){
                   		Speech("SPRFACE1.DAT","playerf.pcx","D4_STR.DAT","D4GLB.TXT","105","106","107",0);
                   		break;
                   	case 5:
-                  		Speech("SPRFACE1.DAT","playerf.pcx","D4_STR.DAT","D4GLB.TXT","110","111","112",0);
+                  		Speech("SPRFACE1.DAT","playerf.pcx","D4_STR.DAT","D4GLB.TXT","110","111","112","113");
                   		break;
                	}
                } else { // rest of the days, just papers
@@ -145,7 +145,7 @@ void far Hotspots(byte hotspot){
                	option = SpeechSelection(2,"SPRFACE1.DAT","playerf.pcx","D3_STR.DAT","D3GLB.TXT","022","023",0,0);
                   switch(option){
                   	case 1: // Open lookers
-                     	if(player.good>0){player.good--;}
+                     	if(player.good>0){UpdateGoodness(-1);}
                         player.mission_doll = 1;
                         Speech("SPRFACE1.DAT","playerf.pcx","D3_STR.DAT","D3GLB.TXT","110",0,0,0);
                         Speech("SPRFACE1.DAT","playerf.pcx","D3_STR.DAT","D3GLB.TXT","111",0,0,0);
@@ -295,6 +295,10 @@ void far Hotspots(byte hotspot){
 
             if(player.hotspot == 13){ // Window
             	GoToFloor2(80,195);
+               Speech("SPRFACE1.DAT","xavif.pcx","D2_STR.DAT","D2NERD.TXT","145","146",0,0);
+               Speech("SPRFACE1.DAT","alainf.pcx","D2_STR.DAT","D2NERD.TXT","148",0,0,0);
+               Speech("SPRFACE1.DAT","davidf.pcx","D2_STR.DAT","D2NERD.TXT","150",0,0,0);
+               Speech("SPRFACE1.DAT","antof.pcx","D2_STR.DAT","D2NERD.TXT","152",0,0,0);
             }
 
             if(player.hotspot == 14){ // bag

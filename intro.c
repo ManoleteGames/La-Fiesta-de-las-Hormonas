@@ -13,13 +13,17 @@ void far Intro(void){
 	byte endIntro = 0; // End intro flag
    byte step = 0; // Current intro step
 
+   panelScrolling = 0;
+   showPanel = 0;
+   Update(0);
+
   	SetLoadingInterrupt();   // Start loading animation
 
    LoadFont("FONTS.DAT","FONT.bmp"); //Load a font
    // Load map and tilesets
    LoadMap("MAPS.DAT","ext1i.tmx");
    LoadTiles("TILESETS.DAT","ext1.pcx");
-   LoadPanelBackground("IMAGES.DAT","PANEL.pcx");
+   LoadPanelBackground("IMAGES.DAT","PINTRO.pcx");
 
    LoadSprite("SPRCHR1.DAT","player.pcx",2, 32); //Load sprites to one of the fixed structs
    LoadSprite("SPRMISC.DAT","bird.pcx",4, 32); //Load sprites to one of the fixed structs
@@ -29,7 +33,8 @@ void far Intro(void){
    ResetLoadingInterrupt(); // Stop loading animation
 
    scrolling_enabled = 1;
-   SetMap(0,0);    // Draw loaded map
+
+   SetMap();    // Draw loaded map
 
    InitSprite(2,0,360);
   	InitSprite(4,102,96);
@@ -39,7 +44,12 @@ void far Intro(void){
    HideSprite(2);
    HideSprite(4);
 
+   PrintPanelText(5,1,30,"PULSA ESCAPE PARA SALTAR INTRO");
+
    Fade_in();
+
+   panelScrolling = 1;
+   showPanel = 1;
 
    // Intro loop
    while( (keys[K_ESC] != 1) && (endIntro != 1) )
@@ -78,12 +88,14 @@ void far Intro(void){
             }
             else{
             	SetSpriteAnimation(2,0,6,8,PlayerAnimation);   // Stand up player
+               showPanel = 0;
                step = 5;
             }
          	break;
           case 5: // Show spech
             Speech("SPRFACE1.DAT","playerf.pcx","GLB_STR.DAT","intro.txt","010",0,"011","012");
             Speech("SPRFACE1.DAT","playerf.pcx","GLB_STR.DAT","intro.txt","014","015",0,"017");
+            showPanel = 1;
             step = 8;
             break;
          case 8:  // Wait ENTER key
@@ -103,6 +115,10 @@ void far Intro(void){
          // **** SECOND INTRO SCENE *******
          case 10: // Load interior floor 1 map
 
+         	panelScrolling = 0;
+   			showPanel = 0;
+   			Update(0);
+
 	        	SetLoadingInterrupt();   // Start loading animation
 
             // Load floor 1 map
@@ -114,13 +130,22 @@ void far Intro(void){
 
 			   // Allow scroll
 			   scrolling_enabled = 1;
-            // Draw map
-			   SetMap(0,12);
 
       		InitSprite(2,0,400);
    			SetSpriteAnimation(2,17,4,8,PlayerAnimation); // Set animation >> right
 
+             // Draw map
+			   SetMap();
+
+            while(scroll_y < 300){
+            	scroll_y = scroll_y + 8;
+            	Update(0);
+            }
+
 			   Fade_in();
+
+            panelScrolling = 1;
+   			showPanel = 1;
 
             step = 11;
             break;
@@ -156,6 +181,7 @@ void far Intro(void){
          	break;
          case 14: // empty
          	step = 15;
+            showPanel = 0;
          	break;
          case 15: // Show spech
          	Speech("SPRFACE1.DAT","playerf.pcx","GLB_STR.DAT","intro.txt","020",0,"022",0);
@@ -200,6 +226,10 @@ void far Intro(void){
             step = 22;
             break;
          case 22:  // Show back map (page 0)
+         	panelScrolling = 0;
+   			showPanel = 0;
+   			Update(0);
+
            	SetLoadingInterrupt();   // Start loading animation
 
 			   LoadMap("MAPS.DAT","floor1.tmx");   // Load floor 1 map
@@ -214,10 +244,14 @@ void far Intro(void){
 
             // Allow scroll
 			   scrolling_enabled = 1;
+
             // Draw map
-			   SetMap(0,0);
+			   SetMap();
 
  	   		Fade_in();
+
+            panelScrolling = 1;
+   			showPanel = 1;
 
             step = 23;
          	break;

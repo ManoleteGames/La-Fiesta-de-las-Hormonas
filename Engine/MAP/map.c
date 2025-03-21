@@ -161,6 +161,9 @@ void LoadMap(char *file, char* dat_string){
 			start_col_data = 1;
 		}
 	}
+   map_width_px = map_width << 4;
+   map_height_px = map_height << 4;
+
 	fgets(line, 64, f); //skip line: <data encoding="csv">
 
 	//read collision array

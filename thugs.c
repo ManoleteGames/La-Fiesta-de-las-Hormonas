@@ -59,7 +59,7 @@ void near GoToThugs_D4(void){
    	case 1: //A FUMARME UN PITI AL RECRE
          Speech("SPRFACE1.DAT","tonif.pcx","D4_STR.DAT","D4THUG.TXT","029","030",0,0);
          Speech("SPRFACE1.DAT","tonif.pcx","D4_STR.DAT","D4THUG.TXT","031","032","033",0);
-         if(player.popular<18){player.popular++;}
+         if(player.popular<18){UpdatePopularity(1);}
          player.scn_thugs = 2;
          break;
       case 2: //APARTATE MATON, O ME CHIVO
@@ -70,8 +70,8 @@ void near GoToThugs_D4(void){
          Speech("SPRFACE1.DAT","jonf.pcx","D4_STR.DAT","D4THUG.TXT","039",0,0,0);
          Speech("SPRFACE1.DAT","tonif.pcx","D4_STR.DAT","D4THUG.TXT","040",0,0,0);
          Speech("SPRFACE1.DAT","erikf.pcx","D4_STR.DAT","D4THUG.TXT","041",0,0,0);
-         if(player.popular>2){player.popular--;}
-         if(player.good<18){player.good++;}
+         if(player.popular>2){UpdatePopularity(-1);}
+         if(player.good<18){UpdateGoodness(1);}
          player.scn_thugs = 1;
          break;
    }
@@ -100,7 +100,7 @@ void near GoToThugs_Ext2(void){
          Speech("SPRFACE1.DAT","jonf.pcx","D4_STR.DAT","D4THUG.TXT","069","070",0,0);
          Speech("SPRFACE1.DAT","tonif.pcx","D4_STR.DAT","D4THUG.TXT","071",0,0,0);
          Speech("SPRFACE1.DAT","erikf.pcx","D4_STR.DAT","D4THUG.TXT","072",0,0,0);
-         if(player.good<18){player.good++;}
+         if(player.good<18){UpdateGoodness(1);}
          break;
       case 2: // To smoke
       	Speech("SPRFACE1.DAT","tonif.pcx","D4_STR.DAT","D4THUG.TXT","074","075","076","077");
@@ -108,9 +108,9 @@ void near GoToThugs_Ext2(void){
          LoadImage("IMAGES2.DAT","later.pcx",1); // Load menu background image to non visible page
          SetPage(1);
          Fade_in();
-         if(player.popular<18){player.popular++;}
-         if(player.good>2){player.good--;}
-         time_seconds = time_seconds - 30;
+         if(player.popular<18){UpdatePopularity(1);}
+         if(player.good>2){UpdateGoodness(-1);}
+         SetNewTime(time_seconds-30);
          Delay(100);
          Fade_out();
          SetPage(2);
@@ -382,9 +382,9 @@ void far Thugs(void){
                            Fade_out();
          						LoadImage("IMAGES2.DAT","later.pcx",2); // Load menu background image to non visible page
          						Fade_in();
-                        	time_seconds = time_seconds - 30;
-                           if(player.popular<18){player.popular++;}
-                           if(player.good>2){player.good--;}
+                        	SetNewTime(time_seconds-30);
+                           if(player.popular<18){UpdatePopularity(1);}
+                           if(player.good>2){UpdateGoodness(-1);}
          						Delay(100);
          						Fade_out();
          						LoadImage("IMAGES2.DAT","thugs3.pcx",2); // Load menu background image to non visible page
@@ -404,7 +404,7 @@ void far Thugs(void){
                            Speech("SPRFACE1.DAT","erikf.pcx","D3_STR.DAT","D3THUG.TXT","135","136",0,0);
                            Speech("SPRFACE1.DAT","jonf.pcx","D3_STR.DAT","D3THUG.TXT","138",0,0,0);
                            Speech("SPRFACE1.DAT","tonif.pcx","D3_STR.DAT","D3THUG.TXT","140","141","142","143");
-                           if(player.good<18){player.good++;}
+                           if(player.good<18){UpdateGoodness(1);}
                            end_conversation = 1;
                            player.scn_thugs = 3;
                            break;
@@ -412,8 +412,8 @@ void far Thugs(void){
                         	Speech("SPRFACE1.DAT","tonif.pcx","D3_STR.DAT","D3THUG.TXT","075","076","077","078");
                            Speech("SPRFACE1.DAT","jonf.pcx","D3_STR.DAT","D3THUG.TXT","080",0,0,0);
                            Speech("SPRFACE1.DAT","tonif.pcx","D3_STR.DAT","D3THUG.TXT","083","084",0,0);
-                           if(player.popular>0){player.popular--;}
-                           if(player.good<20){player.good++;}
+                           if(player.popular>0){UpdatePopularity(-1);}
+                           if(player.good<20){UpdateGoodness(1);}
                            end_conversation = 1;
                            player.scn_thugs = 2;
                            break;
@@ -425,7 +425,7 @@ void far Thugs(void){
                      end_conversation = 1;
                      break;
                   case 4: // keys
-                  	if(player.good<20){player.good++;}
+                  	if(player.good<20){UpdateGoodness(1);}
                   	Speech("SPRFACE1.DAT","jonf.pcx","D3_STR.DAT","D3THUG.TXT","110","111",0,0);
                      Speech("SPRFACE1.DAT","erikf.pcx","D3_STR.DAT","D3THUG.TXT","113","114",0,0);
                      Speech("SPRFACE1.DAT","tonif.pcx","D3_STR.DAT","D3THUG.TXT","116",0,0,0);
@@ -444,7 +444,7 @@ void far Thugs(void){
          		break;
          	case 1: // second time speak if help thugs
          		if((player.mission_doll == 0)&&(player.item_keys == 1)){
-            		if(player.good<20){player.good++;}
+            		if(player.good<20){UpdateGoodness(1);}
             		Speech("SPRFACE1.DAT","playerf.pcx","D3_STR.DAT","D3THUG.TXT","015",0,0,0);
                	Speech("SPRFACE1.DAT","jonf.pcx","D3_STR.DAT","D3THUG.TXT","110","111",0,0);
                	ResetItem(1,16);
@@ -452,7 +452,7 @@ void far Thugs(void){
                	player.scn_main = 1;
             	}
          		if(player.mission_doll == 1){
-            		if(player.good<20){player.good++;}
+            		if(player.good<20){UpdateGoodness(1);}
             		Speech("SPRFACE1.DAT","playerf.pcx","D3_STR.DAT","D3THUG.TXT","016",0,0,0);
                	Speech("SPRFACE1.DAT","jonf.pcx","D3_STR.DAT","D3THUG.TXT","110","111",0,0);
                	ResetItem(1,16);
@@ -467,7 +467,7 @@ void far Thugs(void){
             	break;
          	case 2: // second time speak if do not help thugs
          		if((player.mission_doll == 0)&&(player.item_keys == 1)){
-            		if(player.good<20){player.good++;}
+            		if(player.good<20){UpdateGoodness(1);}
             		Speech("SPRFACE1.DAT","playerf.pcx","D3_STR.DAT","D3THUG.TXT","015",0,0,0);
             		Speech("SPRFACE1.DAT","jonf.pcx","D3_STR.DAT","D3THUG.TXT","110","111",0,0);
                	ResetItem(1,16);
@@ -475,7 +475,7 @@ void far Thugs(void){
                	player.scn_main = 1;
             	}
             	if(player.mission_doll == 1){
-            		if(player.good<20){player.good++;}
+            		if(player.good<20){UpdateGoodness(1);}
             		Speech("SPRFACE1.DAT","playerf.pcx","D3_STR.DAT","D3THUG.TXT","016",0,0,0);
                	Speech("SPRFACE1.DAT","jonf.pcx","D3_STR.DAT","D3THUG.TXT","110","111",0,0);
                	ResetItem(1,16);
@@ -488,7 +488,7 @@ void far Thugs(void){
             	break;
          	case 3: // second time speak if do not help thugs
          		if((player.mission_doll == 0)&&(player.item_keys == 1)){
-            		if(player.good<20){player.good++;}
+            		if(player.good<20){UpdateGoodness(1);}
             		Speech("SPRFACE1.DAT","playerf.pcx","D3_STR.DAT","D3THUG.TXT","015",0,0,0);
             		Speech("SPRFACE1.DAT","jonf.pcx","D3_STR.DAT","D3THUG.TXT","110","111",0,0);
                	ResetItem(1,16);
@@ -496,7 +496,7 @@ void far Thugs(void){
                	player.scn_main = 1;
             	}
             	if(player.mission_doll == 1){
-            		if(player.good<20){player.good++;}
+            		if(player.good<20){UpdateGoodness(1);}
             		Speech("SPRFACE1.DAT","playerf.pcx","D3_STR.DAT","D3THUG.TXT","016",0,0,0);
                	Speech("SPRFACE1.DAT","jonf.pcx","D3_STR.DAT","D3THUG.TXT","110","111",0,0);
                	ResetItem(1,16);
@@ -567,11 +567,11 @@ void far Thugs(void){
          							LoadImage("IMAGES2.DAT","later.pcx",2); // Load menu background image to non visible page
          							Fade_in();
 
-                             	if(player.popular<20){player.popular++;}
-                              if(player.popular<20){player.popular++;}
-		                        if(player.good>0){player.good--;}
+                             	if(player.popular<20){UpdatePopularity(1);}
+                              if(player.popular<20){UpdatePopularity(1);}
+		                        if(player.good>0){UpdateGoodness(-1);}
 
-                        		time_seconds = time_seconds - 30;
+                        		SetNewTime(time_seconds-30);
 
                         		Delay(100);
          							Fade_out();
@@ -602,15 +602,15 @@ void far Thugs(void){
                      		case 2:   // do not paint
                      			Speech("SPRFACE1.DAT","erikf.pcx","D2_STR.DAT","D2THUG.TXT","100","101",0,0);
                         		Speech("SPRFACE1.DAT","tonif.pcx","D2_STR.DAT","D2THUG.TXT","105",0,0,0);
-                        		if(player.good<18){player.good++;}
+                        		if(player.good<18){UpdateGoodness(1);}
                         		end_conversation = 1;
                               player.scn_thugs = 2;
                               GoToExt2(844, 396);
                      			break;
                      		case 3: //tell
                         		Speech("SPRFACE1.DAT","tonif.pcx","D2_STR.DAT","D2THUG.TXT","125","126",0,0);
-                        		if(player.popular>0){player.popular--;}
-                        		if(player.good<18){player.good++;}
+                        		if(player.popular>0){UpdatePopularity(-1);}
+                        		if(player.good<18){UpdateGoodness(1);}
                         		player.scn_thugs = 3;
                               end_conversation = 1;
                               GoToExt2(844, 396);
@@ -722,15 +722,15 @@ void far Thugs(void){
          	case 0:
                GoToFight();
                if(player.mission_fight == 2){ // fight stopped
-               	if(player.popular<18){player.popular++;}
-               	if(player.good<18){player.good++;}
-                  time_seconds = time_seconds - 30;
+               	if(player.popular<18){UpdatePopularity(1);}
+               	if(player.good<18){UpdateGoodness(1);}
+                  SetNewTime(time_seconds-30);
                	GoToFloor1(426,356);
 
                	Speech("SPRFACE1.DAT","playerf.pcx","D1_STR.DAT","D1THUG.TXT","155","156","157",0);
                	Speech("SPRFACE1.DAT","playerf.pcx","D1_STR.DAT","D1THUG.TXT","160","161","162",0);
                } else {
-                  if(player.popular>2){player.popular--;}
+                  if(player.popular>2){UpdatePopularity(-1);}
                	GoToExt2(254,316);
                   Speech("SPRFACE1.DAT","playerf.pcx","D1_STR.DAT","D1THUG.TXT","163","164",0,0);
                   player.mission_fight = 3;

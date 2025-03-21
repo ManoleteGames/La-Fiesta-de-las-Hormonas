@@ -42,8 +42,8 @@ void near GoToNerds_D4(void){
          LoadImage("IMAGES2.DAT","later.pcx",1);
          SetPage(1);
          Fade_in();
-         if(player.popular<18){player.popular++;}
-         time_seconds = time_seconds - 30;
+         if(player.popular<18){UpdatePopularity(1);}
+         SetNewTime(time_seconds-30);
          Delay(100);
          Fade_out();
          SetPage(2);
@@ -131,8 +131,8 @@ void far Nerds(void){
                      Fade_out();
          				LoadImage("IMAGES2.DAT","later.pcx",2); // Load menu background image to non visible page
          				Fade_in();
-         				if(player.popular<20){player.popular++;}
-                     time_seconds = time_seconds - 30;
+         				if(player.popular<20){UpdatePopularity(1);}
+                     SetNewTime(time_seconds-30);
                      Delay(100);
                      Fade_out();
          				LoadImage("IMAGES2.DAT","nerds2.pcx",2); // Load menu background image to non visible page
@@ -149,12 +149,12 @@ void far Nerds(void){
                      option = SpeechSelection(2,"SPRFACE1.DAT","playerf.pcx","D3_STR.DAT","D3NERD.TXT","042","043",0,0);
                      switch(option){
                      	case 1: // do not like
-                        	if(player.popular>0){player.popular--;}
+                        	if(player.popular>0){UpdatePopularity(-1);}
                      		Speech("SPRFACE1.DAT","davidf.pcx","D3_STR.DAT","D3NERD.TXT","045","046","047",0);
                            Speech("SPRFACE1.DAT","xavif.pcx","D3_STR.DAT","D3NERD.TXT","048",0,0,0);
                         	break;
                         case 2: // just books
-                           if(player.popular<20){player.popular++;}
+                           if(player.popular<20){UpdatePopularity(+1);}
                         	Speech("SPRFACE1.DAT","davidf.pcx","D3_STR.DAT","D3NERD.TXT","105","106","107",0);
                            break;
                      }
@@ -188,8 +188,8 @@ void far Nerds(void){
          	option = SpeechSelection(2,"SPRFACE1.DAT","playerf.pcx","D3_STR.DAT","D3NERD.TXT","035","036",0,0);
             switch(option){
             	case 1: // doll mission
-                 	if(player.good>0){player.good--;}
-                  if(player.popular<20){player.popular++;}
+                 	if(player.good>0){UpdateGoodness(-1);}
+                  if(player.popular<20){UpdatePopularity(1);}
                   Speech("SPRFACE1.DAT","xavif.pcx","D3_STR.DAT","D3NERD.TXT","080","081","082",0);
                   Speech("SPRFACE1.DAT","antof.pcx","D3_STR.DAT","D3NERD.TXT","085","086","087",0);
                   Speech("SPRFACE1.DAT","playerf.pcx","D3_STR.DAT","D3NERD.TXT","090","091","092","093");
@@ -237,9 +237,9 @@ void far Nerds(void){
                   	Fade_out();
                   	LoadImage("IMAGES2.DAT","later.pcx",2); // Load menu background image to non visible page
                   	Fade_in();
-                  	if(player.popular<18){player.popular++;}
-                  	time_seconds = time_seconds - 30;
-
+                  	if(player.popular<18){UpdatePopularity(1);}
+                     SetNewTime(time_seconds-30);
+                  	
                   	Delay(100);
                   	Fade_out();
                   	LoadImage("IMAGES2.DAT","nerds3.pcx",2); // Load menu background image to non visible page
@@ -250,7 +250,7 @@ void far Nerds(void){
                		break;
             		case 2: // not help
                		Speech("SPRFACE1.DAT","playerf.pcx","D2_STR.DAT","D2NERD.TXT","052","053","054",0);
-                  	if(player.popular>2){player.popular--;}
+                  	if(player.popular>2){UpdatePopularity(-1);}
               	 		break;
                	case 3: // write a letter
                   	Speech("SPRFACE1.DAT","playerf.pcx","D2_STR.DAT","D2NERD.TXT","100","101","102",0);
@@ -261,10 +261,10 @@ void far Nerds(void){
                   	Fade_out();
                   	LoadImage("IMAGES2.DAT","later.pcx",2); // Load menu background image to non visible page
                   	Fade_in();
-                  	if(player.popular<18){player.popular++;}
-                     if(player.popular<18){player.popular++;}
-                  	time_seconds = time_seconds - 30;
-
+                  	if(player.popular<18){UpdatePopularity(1);}
+                     if(player.popular<18){UpdatePopularity(1);}
+                     SetNewTime(time_seconds-30);
+                  	
                   	Delay(100);
                   	Fade_out();
                   	LoadImage("IMAGES2.DAT","nerds3.pcx",2); // Load menu background image to non visible page
@@ -340,6 +340,7 @@ void far Nerds(void){
                	break;
             	case 1: //
                   Speech("SPRFACE1.DAT","jonf.pcx","D1_STR.DAT","D1NERD.TXT","008",0,0,0);
+                  Speech("SPRFACE1.DAT","antof.pcx","D1_STR.DAT","D1NERD.TXT","009",0,0,0);
              		break;
             }
          }

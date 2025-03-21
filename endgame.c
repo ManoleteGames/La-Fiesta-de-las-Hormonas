@@ -8,7 +8,7 @@
 // End game
 // - Extinguisher
 /////////////////////////////////////////////////////////
-void EndGameExtinguisher(void){
+void far EndGameExtinguisher(void){
 	word length;
 
 	panelScrolling = 0;
@@ -156,7 +156,7 @@ void EndGameExtinguisher(void){
 // End game
 // - Falling from roof
 /////////////////////////////////////////////////////////
-void EndGameRoof(void){
+void far EndGameRoof(void){
 	word length;
 
 	panelScrolling = 0;
@@ -331,10 +331,7 @@ void near EndGameLikeADream(void){
    UnloadMusic();
 
    LoadImage("IMAEND.DAT","end8_1.pcx",2); // Load menu background image to non visible page
-   LoadSprite("SPRMISC.DAT","enter.pcx",18, 16); //Load sprites to one of the fixed structs
-   SetSpriteAnimation(18,0,4,8,EnterAnimation);
-
-   LoadMusic(3);
+   LoadMusic(51);
 
    ResetLoadingInterrupt();   // Stop loading animation
 
@@ -343,14 +340,222 @@ void near EndGameLikeADream(void){
    SetPage(2);
    Update(0);
 
-   sprite[18].pos_x = scroll_x + 298;
-   sprite[18].pos_y = scroll_y + 176;
-
    Fade_in();
 
-   while(keys[K_ENTER] == 0){
+   ////////////////// scene 2 //////////////
+   LoadImage("IMAEND.DAT","end8_2.pcx",1); // Load menu background image to non visible page
+   Delay(20);
+   SetPage(1);
+   Update(0);
+
+   LoadImage("IMAEND.DAT","end8_3.pcx",2); // Load menu background image to non visible page
+   Delay(20);
+   SetPage(2);
+   Update(0);
+
+	LoadImage("IMAEND.DAT","end8_4.pcx",1); // Load menu background image to non visible page
+
+   while(musicPlaying == 1){
     	Update(0);
    }
+
+   //Fade_out();
+
+   UnloadMusic();
+   LoadMusic(52);
+   PlayMusic();
+
+   SetPage(1);
+   Update(0);
+
+   //Fade_in();
+
+   ////////////////// scene 3 //////////////
+   LoadImage("IMAEND2.DAT","end8_5.pcx",2); // Load menu background image to non visible page
+
+   while(musicPlaying == 1){
+    	Update(0);
+   }
+
+   //Fade_out();
+
+   UnloadMusic();
+   LoadMusic(53);
+   PlayMusic();
+
+   SetPage(2);
+   Update(0);
+
+   //Fade_in();
+
+   ////////////////// scene 4 //////////////
+   LoadImage("IMAEND2.DAT","end8_6.pcx",1); // Load menu background image to non visible page
+
+   while(musicPlaying == 1){
+    	Update(0);
+   }
+
+   //Fade_out();
+
+   UnloadMusic();
+   LoadMusic(54);
+   PlayMusic();
+
+   SetPage(1);
+   Update(0);
+
+   //Fade_in();
+
+   ////////////////// scene 5 //////////////
+   LoadImage("IMAEND2.DAT","end8_7.pcx",2); // Load menu background image to non visible page
+
+   while(musicPlaying == 1){
+    	Update(0);
+   }
+
+   //Fade_out();
+
+   UnloadMusic();
+   LoadMusic(55);
+   PlayMusic();
+
+   SetPage(2);
+   Update(0);
+
+   //Fade_in();
+
+   ////////////////// scene 6 //////////////
+   LoadImage("IMAEND2.DAT","end8_8.pcx",1); // Load menu background image to non visible page
+
+   while(musicPlaying == 1){
+    	Update(0);
+   }
+
+   //Fade_out();
+
+   UnloadMusic();
+   LoadMusic(56);
+   PlayMusic();
+
+   SetPage(1);
+   Update(0);
+
+   //Fade_in();
+
+   ////////////////// scene 7 //////////////
+   LoadImage("IMAEND2.DAT","end8_9.pcx",2); // Load menu background image to non visible page
+
+   while(musicPlaying == 1){
+    	Update(0);
+   }
+
+   //Fade_out();
+
+   UnloadMusic();
+   LoadMusic(57);
+   PlayMusic();
+
+   SetPage(2);
+   Update(0);
+
+   //Fade_in();
+
+   ////////////////// scene 8 //////////////
+   LoadImage("IMAEND2.DAT","end8_10.pcx",1); // Load menu background image to non visible page
+
+   while(musicPlaying == 1){
+    	Update(0);
+   }
+
+   //Fade_out();
+
+   UnloadMusic();
+   LoadMusic(58);
+   PlayMusic();
+
+   SetPage(1);
+   Update(0);
+
+   //Fade_in();
+
+   ////////////////// scene 9 //////////////
+   LoadImage("IMAEND2.DAT","end8_11.pcx",1); // Load menu background image to non visible page
+
+   while(musicPlaying == 1){
+    	Update(0);
+   }
+
+   //Fade_out();
+
+   UnloadMusic();
+   LoadMusic(59);
+   PlayMusic();
+
+   SetPage(1);
+   Update(0);
+
+   //Fade_in();
+
+   ////////////////// scene 9 //////////////
+   LoadImage("IMAEND2.DAT","end8_12.pcx",2); // Load menu background image to non visible page
+
+   while(musicPlaying == 1){
+    	Update(0);
+   }
+
+   //Fade_out();
+
+   UnloadMusic();
+   LoadMusic(60);
+   PlayMusic();
+
+   SetPage(2);
+   Update(0);
+
+   //Fade_in();
+
+   ////////////////// scene 11 //////////////
+   LoadImage("IMAEND2.DAT","end8_12.pcx",2); // Load menu background image to non visible page
+
+   while(musicPlaying == 1){
+    	Update(0);
+   }
+
+   //Fade_out();
+
+   UnloadMusic();
+   LoadMusic(61);
+   PlayMusic();
+
+   SetPage(2);
+   Update(0);
+
+   //Fade_in();
+
+   ////////////////// scene 12 //////////////
+   LoadImage("IMAEND2.DAT","end8_12.pcx",2); // Load menu background image to non visible page
+
+   while(musicPlaying == 1){
+    	Update(0);
+   }
+
+   //Fade_out();
+
+   UnloadMusic();
+   LoadMusic(61);
+   PlayMusic();
+
+   SetPage(2);
+   Update(0);
+
+   //Fade_in();
+
+   //////////////////// end /////////////
+   while(musicPlaying == 1){
+    	Update(0);
+   }
+
+   Fade_out();
 
    UnloadMusic();
 
@@ -406,7 +611,7 @@ void near EndArrogantGenious(void){
 
    SetLoadingInterrupt();   // Start loading animation
 
-   LoadImage("IMAEND.DAT","end7_1.pcx",2); // Load menu background image to non visible page
+   LoadImage("IMAEND.DAT","end2_1.pcx",2); // Load menu background image to non visible page
    LoadSprite("SPRMISC.DAT","enter.pcx",18, 16); //Load sprites to one of the fixed structs
    SetSpriteAnimation(18,0,4,8,EnterAnimation);
 
@@ -567,7 +772,7 @@ void near EndGameMissunderstoodRomantic(void){
 
    SetLoadingInterrupt();   // Start loading animation
 
-   LoadImage("IMAEND.DAT","end6_1.pcx",2); // Load menu background image to non visible page
+   LoadImage("IMAEND.DAT","end2_1.pcx",2); // Load menu background image to non visible page
    LoadSprite("SPRMISC.DAT","enter.pcx",18, 16); //Load sprites to one of the fixed structs
    SetSpriteAnimation(18,0,4,8,EnterAnimation);
 
@@ -727,7 +932,7 @@ void near EndGameBrilliantSolitaire(void){
 
    SetLoadingInterrupt();   // Start loading animation
 
-   LoadImage("IMAEND.DAT","end5_1.pcx",2); // Load menu background image to non visible page
+   LoadImage("IMAEND.DAT","end2_1.pcx",2); // Load menu background image to non visible page
    LoadSprite("SPRMISC.DAT","enter.pcx",18, 16); //Load sprites to one of the fixed structs
    SetSpriteAnimation(18,0,4,8,EnterAnimation);
 
@@ -888,7 +1093,7 @@ void near EndGameHeartOfGroup(void){
 
    SetLoadingInterrupt();   // Start loading animation
 
-   LoadImage("IMAEND.DAT","end4_1.pcx",2); // Load menu background image to non visible page
+   LoadImage("IMAEND.DAT","end2_1.pcx",2); // Load menu background image to non visible page
    LoadSprite("SPRMISC.DAT","enter.pcx",18, 16); //Load sprites to one of the fixed structs
    SetSpriteAnimation(18,0,4,8,EnterAnimation);
 
@@ -1046,7 +1251,7 @@ void near EndGameSuperficialJocker(void){
 
    SetLoadingInterrupt();   // Start loading animation
 
-   LoadImage("IMAEND.DAT","end3_1.pcx",2); // Load menu background image to non visible page
+   LoadImage("IMAEND.DAT","end2_1.pcx",2); // Load menu background image to non visible page
    LoadSprite("SPRMISC.DAT","enter.pcx",18, 16); //Load sprites to one of the fixed structs
    SetSpriteAnimation(18,0,4,8,EnterAnimation);
 
@@ -1510,17 +1715,17 @@ void far GoToEnd(void){
    LoadSprite("SPRCHR1.DAT","jessy.pcx",2, 32); //Load sprites to one of the fixed structs
    SetSpriteAnimation(2,0,6,16,JessyAnimation);  // Moving up
 
-   LoadMusic(5);
+   LoadMusic(3);
 
    ResetLoadingInterrupt(); // Stop loading animation
 
    PlayNonStopMusic();
 
    scrolling_enabled = 1;
-   // Draw map
-   SetMap(0,0);
 
-   Update(0);
+   // Draw map
+   SetMap();
+
 	Fade_in();
 
    Delay(500);

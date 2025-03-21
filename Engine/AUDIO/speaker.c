@@ -415,6 +415,50 @@ void SPEAKER_LoadMusic(byte song){
       	fsong = fopen("SONG5.DAT","rb");
          if(!fsong) Error("Can't find ","SONG5.DAT",0);
          break;
+      case 51:
+      	fsong = fopen("SONG51.DAT","rb");
+         if(!fsong) Error("Can't find ","SONG51.DAT",0);
+         break;
+      case 52:
+      	fsong = fopen("SONG52.DAT","rb");
+         if(!fsong) Error("Can't find ","SONG52.DAT",0);
+         break;
+      case 53:
+      	fsong = fopen("SONG53.DAT","rb");
+         if(!fsong) Error("Can't find ","SONG53.DAT",0);
+         break;
+      case 54:
+      	fsong = fopen("SONG54.DAT","rb");
+         if(!fsong) Error("Can't find ","SONG54.DAT",0);
+         break;
+      case 55:
+      	fsong = fopen("SONG55.DAT","rb");
+         if(!fsong) Error("Can't find ","SONG55.DAT",0);
+         break;
+      case 56:
+      	fsong = fopen("SONG56.DAT","rb");
+         if(!fsong) Error("Can't find ","SONG56.DAT",0);
+         break;
+      case 57:
+      	fsong = fopen("SONG57.DAT","rb");
+         if(!fsong) Error("Can't find ","SONG57.DAT",0);
+         break;
+      case 58:
+      	fsong = fopen("SONG58.DAT","rb");
+         if(!fsong) Error("Can't find ","SONG58.DAT",0);
+         break;
+      case 59:
+      	fsong = fopen("SONG59.DAT","rb");
+         if(!fsong) Error("Can't find ","SONG59.DAT",0);
+         break;
+      case 60:
+      	fsong = fopen("SONG60.DAT","rb");
+         if(!fsong) Error("Can't find ","SONG60.DAT",0);
+         break;
+      case 61:
+      	fsong = fopen("SONG61.DAT","rb");
+         if(!fsong) Error("Can't find ","SONG61.DAT",0);
+         break;
       default:
       	fsong = fopen("SONG1.DAT","rb");
          if(!fsong) Error("Can't find ","SONG1.DAT",0);

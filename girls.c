@@ -40,8 +40,8 @@ void near GoToGirls_D4(void){
                   LoadImage("IMAGES2.DAT","later.pcx",1); // Load menu background image to non visible page
                   SetPage(1);
          			Fade_in();
-                  if(player.popular<18){player.popular++;}
-                  time_seconds = time_seconds - 30;
+                  if(player.popular<18){UpdatePopularity(1);}
+                  SetNewTime(time_seconds-30);
             		player.mission_party = 1;
          			Delay(100);
          			Fade_out();
@@ -117,7 +117,7 @@ void far Girls(void){
                	Speech("SPRFACE1.DAT","playerf.pcx","D3_STR.DAT","D3GIRL.TXT","001",0,0,0);
                   Speech("SPRFACE1.DAT","fanyf.pcx","D3_STR.DAT","D3GIRL.TXT","003",0,0,0);
                   Speech("SPRFACE1.DAT","jessyf.pcx","D3_STR.DAT","D3GIRL.TXT","003",0,0,0);
-                  Speech("SPRFACE1.DAT","vanef.pcx","D3_STR.DAT","D3GIRL.TXT","040","041","042",0);
+                  Speech("SPRFACE1.DAT","vanef.pcx","D3_STR.DAT","D3GIRL.TXT","040","041","042","043");
                   Speech("SPRFACE1.DAT","fanyf.pcx","D3_STR.DAT","D3GIRL.TXT","015","016","017","018");
                } else {
                	Speech("SPRFACE1.DAT","vanef.pcx","D3_STR.DAT","D3GIRL.TXT","004","005","006",0);
@@ -136,8 +136,8 @@ void far Girls(void){
                      LoadImage("IMAGES2.DAT","later.pcx",2); // Load menu background image to non visible page
          				Fade_in();
 
-                     if(player.popular<20){player.popular++;}
-                     time_seconds = time_seconds - 30;
+                     if(player.popular<20){UpdatePopularity(1);}
+                     SetNewTime(time_seconds-30);
 
          				Delay(100);
          				Fade_out();
@@ -150,7 +150,7 @@ void far Girls(void){
                      player.scn_girls = 1;
                      break;
                   case 2: //DO NOT HELP
-                  	if(player.popular>0){player.popular--;}
+                  	if(player.popular>0){UpdatePopularity(-1);}
                      Speech("SPRFACE1.DAT","jessyf.pcx","D3_STR.DAT","D3GIRL.TXT","025",0,0,0);
                      Speech("SPRFACE1.DAT","vanef.pcx","D3_STR.DAT","D3GIRL.TXT","026",0,0,0);
                      player.mission_party = 0;
@@ -180,8 +180,8 @@ void far Girls(void){
          	option = SpeechSelection(2,"SPRFACE1.DAT","playerf.pcx","D3_STR.DAT","D3GIRL.TXT","065","066",0,0);
             switch(option){
             	case 1: //JON?
-               	if(player.popular>0){player.popular--;}
-                  if(player.good>0){player.good--;}
+               	if(player.popular>0){UpdatePopularity(-1);}
+                  if(player.good>0){UpdateGoodness(-1);}
                   Speech("SPRFACE1.DAT","vanef.pcx","D3_STR.DAT","D3GIRL.TXT","070","071",0,0);
                   Speech("SPRFACE1.DAT","playerf.pcx","D3_STR.DAT","D3GIRL.TXT","075","076",0,0);
                   Speech("SPRFACE1.DAT","fanyf.pcx","D3_STR.DAT","D3GIRL.TXT","080","081","082",0);
@@ -220,7 +220,7 @@ void far Girls(void){
                               	Speech("SPRFACE1.DAT","playerf.pcx","D2_STR.DAT","D2GIRL.TXT","035","036",0,0);
                                  Speech("SPRFACE1.DAT","jessyf.pcx","D2_STR.DAT","D2GIRL.TXT","037",0,0,0);
                                  end_conversation = 1;
-                                	if(player.popular>2){player.popular--;}
+                                	if(player.popular>2){UpdatePopularity(-1);}
                                  player.mission_bag = 9;
                                  player.scn_girls = 1;
                                  break;
@@ -256,16 +256,16 @@ void far Girls(void){
                      	Speech("SPRFACE1.DAT","playerf.pcx","D2_STR.DAT","D2GIRL.TXT","067","068",0,0);
                         Speech("SPRFACE1.DAT","playerf.pcx","D2_STR.DAT","D2GIRL.TXT","090","091",0,0);
                         Speech("SPRFACE1.DAT","jessyf.pcx","D2_STR.DAT","D2GIRL.TXT","093","094",0,0);
-                        if(player.popular<18){player.popular++;}
-                        if(player.good>2){player.popular--;}
+                        if(player.popular<18){UpdatePopularity(1);}
+                        if(player.good>2){UpdateGoodness(-1);}
                         player.item_bag = 0;
                         HideSprite(4);
                         break;
                      case 2: // do not accusse toni
                      	Speech("SPRFACE1.DAT","playerf.pcx","D2_STR.DAT","D2GIRL.TXT","067","068","069",0);
                         Speech("SPRFACE1.DAT","jessyf.pcx","D2_STR.DAT","D2GIRL.TXT","071","072","073",0);
-                        if(player.popular<18){player.popular++;}
-                        if(player.good<18){player.good++;}
+                        if(player.popular<18){UpdatePopularity(1);}
+                        if(player.good<18){UpdateGoodness(1);}
                         player.item_bag = 0;
                         HideSprite(4);
                         break;
@@ -280,7 +280,7 @@ void far Girls(void){
                case 9:  //////////////////////////////// scene 9 : do not help ////////////////////////////////////
                   Speech("SPRFACE1.DAT","playerf.pcx","D2_STR.DAT","D2GIRL.TXT","001",0,0,0);
                   Speech("SPRFACE1.DAT","jessyf.pcx","D2_STR.DAT","D2GIRL.TXT","005",0,0,0);
-                  if(player.popular>2){player.popular--;}
+                  if(player.popular>2){UpdatePopularity(-1);}
                   while(end_conversation == 0){
                   	option = SpeechSelection(2,"SPRFACE1.DAT","playerf.pcx","D2_STR.DAT","D2GIRL.TXT","008","009",0,0);
                      switch(option){
@@ -365,8 +365,8 @@ void far Girls(void){
                     				LoadImage("IMAGES2.DAT","later.pcx",2); // Load menu background image to non visible page
          							Fade_in();
 
-                     			if(player.popular<18){player.popular++;}
-                              time_seconds = time_seconds - 30;
+                     			if(player.popular<18){UpdatePopularity(1);}
+                              SetNewTime(time_seconds-30);
 
                               player.mission_chair = 1;
 
@@ -376,7 +376,7 @@ void far Girls(void){
         	 							Fade_in();
                               Speech("SPRFACE1.DAT","fanyf.pcx","D2_STR.DAT","D2GIRL.TXT","146",0,0,0);
                            } else { // do not help
-                           	if(player.popular>2){player.popular--;}
+                           	if(player.popular>2){UpdatePopularity(-1);}
                               Speech("SPRFACE1.DAT","jessyf.pcx","D2_STR.DAT","D2GIRL.TXT","150","151",0,0);
                            }
                            player.scn_girls++;
@@ -428,12 +428,12 @@ void far Girls(void){
                      Speech("SPRFACE1.DAT","playerf.pcx","D1_STR.DAT","D1GIRL.TXT","047","048",0,0);
                      player.scn_girls = 1;
                      player.mission_band = 1;
-                     time_seconds = time_seconds - 30;
+                     SetNewTime(time_seconds-30);
                   	break;
                   case 2:  // do not help
                   	Speech("SPRFACE1.DAT","playerf.pcx","D1_STR.DAT","D1GIRL.TXT","039",0,0,0);
                      Speech("SPRFACE1.DAT","vanef.pcx","D1_STR.DAT","D1GIRL.TXT","045",0,0,0);
-                     if(player.popular>2){player.popular--;}
+                     if(player.popular>2){UpdatePopularity(-1);}
                      player.scn_girls = 2;
                   	break;
                }
@@ -454,8 +454,8 @@ void far Girls(void){
                      	Speech("SPRFACE1.DAT","vanef.pcx","D1_STR.DAT","D1GIRL.TXT","072",0,0,0);
                   		Speech("SPRFACE1.DAT","playerf.pcx","D1_STR.DAT","D1GIRL.TXT","074",0,0,0);
                      	Speech("SPRFACE1.DAT","vanef.pcx","D1_STR.DAT","D1GIRL.TXT","076","077",0,0);
-                        if(player.good<18){player.good++;}
-                        if(player.popular<18){player.popular++;}
+                        if(player.good<18){UpdateGoodness(1);}
+                        if(player.popular<18){UpdatePopularity(1);}
                      	player.scn_girls = 3;
                         player.mission_band = 3;
                   		break;
@@ -465,8 +465,8 @@ void far Girls(void){
                	Speech("SPRFACE1.DAT","vanef.pcx","D1_STR.DAT","D1GIRL.TXT","072",0,0,0);
                   Speech("SPRFACE1.DAT","playerf.pcx","D1_STR.DAT","D1GIRL.TXT","074",0,0,0);
                   Speech("SPRFACE1.DAT","vanef.pcx","D1_STR.DAT","D1GIRL.TXT","076","077",0,0);
-                  if(player.good<18){player.good++;}
-                  if(player.popular<18){player.popular++;}
+                  if(player.good<18){UpdateGoodness(1);}
+                  if(player.popular<18){UpdatePopularity(1);}
                   player.scn_girls = 3;
                   player.mission_band = 3;
                } else if ((player.scn_nerds != 2)&&(player.scn_thugs == 2)){

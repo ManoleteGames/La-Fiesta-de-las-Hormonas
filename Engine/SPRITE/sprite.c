@@ -7,6 +7,7 @@
 SPRITE far *sprite;
 SPRITE loadingAnimation;
 
+int spritesProcessed = 0;
 byte spriteStack = 0;
 byte spriteStackTable[33] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 

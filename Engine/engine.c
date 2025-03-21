@@ -4,20 +4,13 @@
 
 #include "source\engine\engine.h"
 
-unsigned char far *error1;
+unsigned char far *error1;                                                                                                                                  
 unsigned char far *error2;
 unsigned char far *string;
 
 int scrollCameraFloat = 0;
-int scrollCameraArray[135] = {
-	0,1,1,2,2,2,3,3,3,3,4,4,4,4,4,5,5,5,5,5,5,6,6,6,6,6,6,6,7,7,7,7,7,7,7,7,
-	8,8,8,8,8,8,8,8,8,
-	8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
-	8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
-	8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
-};
-
-int scrollCameraSpeed[72] = {
+int scrollCameraArray[65] = {0,1,1,2,2,2,3,3,3,3,4,4,4,4,4,5,5,5,5,5,5,6,6,6,6,6,6,6,7,7,7,7,7,7,7,7,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8};
+int scrollCameraSpeed[73] = {
 	0,0,0,0,0,0,0,0,
 	1,0,0,0,1,0,0,0,
 	1,0,1,0,1,0,1,0,
@@ -26,7 +19,7 @@ int scrollCameraSpeed[72] = {
 	2,1,1,1,2,1,1,1,
 	2,1,2,1,2,1,2,1,
 	2,2,2,1,2,2,2,1,
-	2,2,2,2,2,2,2,2,
+	8,8,8,8,8,8,8,8,
 };
 
 byte videoVGA_Present = 0;
@@ -50,9 +43,6 @@ byte musicPlaying = 0;
 byte musicNonStopPlaying = 0;
 byte musicLoaded = 0;
 
-byte time_countdown = 0;
-byte time_minutes = 0;
-byte time_seconds = 0;
 int time_counter = 0;
 
 byte *tempdata1; //Temp storage of non tiled data. and also sound samples (1/2)
@@ -76,12 +66,13 @@ word vram_SpritesBack; // Sprites background address in VRAM
 // Scrolling variables
 int scroll_x = 0;   // Scroll X
 int scroll_y = 0;  // Scroll Y
-int scroll_x_adjust = 150;
+int scroll_x_adjust = 160;
 int scroll_y_adjust = 70;
 int scroll_wy = 400;
 byte showPanel = 0;
 byte panelScrolling = 0;
 byte scrolling_enabled = 0; // Scrolling and panning enabled
+byte scroll_focus = 0;
 
 unsigned char far *data;
 
@@ -165,17 +156,18 @@ void (*LoadFont)(char *file, char *dat_string);
 void (*LoadTiles)(char *file,char* dat_string);
 void (*Draw_EmptyBox)(word x, word y, byte w, byte h);
 void (*PrintText)(word x, word y, word lineLength, unsigned char *string,byte color);
+void (*PrintPanelText)(word x, word y, word lineLength, unsigned char *string);
+void (*PrintLine)(int pos_x, int pos_y, int width_x, int width_y, byte color);
 void (*Draw_Sprites)(void);
 void (*Restore_Sprites)(void);
 void (*DrawSpriteDestructive)(int sprNum);
 void (*SetPalette)(unsigned char *pal);
 void (*LoadTiles)(char *file,char* dat_string);
-void (*SetMap)(int x, int y);
+void (*SetMap)(void);
 void (*ScrollMap)(void);
 void (*PanelRefresh)(void);
 void (*LoadPanelBackground)(char *file,char* dat_string);
 void (*DrawMapBack)(void);
-void (*PanelUpdate)(void);
 
 /////////////////////////////////////////////////////////
 // Dummy function
@@ -187,7 +179,7 @@ void Dummy(void){
 // Reset scroll adjustment function
 /////////////////////////////////////////////////////////
 void ResetScroll(void){
-	scroll_x_adjust = 150;
+	scroll_x_adjust = 160;
 	scroll_y_adjust = 70;
 }
 
@@ -313,6 +305,8 @@ void LinkVideo(void){
 
          Draw_EmptyBox = VGA_Draw_EmptyBox;
          PrintText = VGA_PrintText;
+         PrintPanelText = VGA_PrintPanelText;
+         PrintLine = VGA_PrintLine;
          Draw_Sprites = VGA_Draw_Sprites;
          Restore_Sprites = VGA_Restore_Sprites;
          DrawSpriteDestructive = VGA_DrawSpriteDestructive;
@@ -322,9 +316,7 @@ void LinkVideo(void){
          ScrollMap = VGA_ScrollMap;
          PanelRefresh = VGA_PanelRefresh;
          LoadPanelBackground = VGA_LoadPanelBackground;
-
          DrawMapBack = VGA_Draw_MapBack;
-         PanelUpdate = VGA_PanelUpdate;
 
       	break;
       case 2:
@@ -555,7 +547,6 @@ void ExitDOS(void){
 	UnloadMusic();
 
    DeInitSoundCard();
-	//UnloadTileset();
 	UnloadMap();
    UnloadSprites();
 
@@ -573,8 +564,8 @@ void ExitDOS(void){
    if(map_sprites ){ farfree(map_sprites); }
    if(sprite ){ farfree(sprite); }
 
-   printf("bye byte...");
-	exit(1);
+   system("cls");
+   exit(1);
 }
 
 /////////////////////////////////////////////////////////
@@ -595,7 +586,6 @@ void RestartProgram(void){
 	UnloadMusic();
 
    DeInitSoundCard();
-	//UnloadTileset();
 	UnloadMap();
    UnloadSprites();
 
@@ -661,15 +651,12 @@ void AllocateEngineMem(void){
    //printf(" string allocated onto adddress: %p address \n", string);
 
    //Allocate 32KB block for temp data
-//   if ((tempdata1 = farcalloc(65535L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate 64 Kb of temp. data","tempdata1",0);
 	if ((tempdata1 = farcalloc(32767L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate 32 Kb of temp. data","tempdata1",0);
    //printf(" tempdata1 allocated onto adddress: %p address \n", tempdata1);
    //Allocate 32 KB of temp data just after the first
-//   if ((tempdata2 = farcalloc(65535L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate 64 Kb of temp. data","tempdata2",0);
    if ((tempdata2 = farcalloc(32767L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate 32 Kb of temp. data","tempdata2",0);
    //printf(" tempdata2 allocated onto adddress: %p address \n", tempdata2);
 
-//	if ((music.sdata = farcalloc(65535L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate 64 Kb of music data","music","sdata");
 	if ((music.sdata = farcalloc(32767L,sizeof(byte))) == NULL) Error("Not enough RAM to allocate 32 Kb of music data","music","sdata");
    //printf(" music.sdata allocated onto adddress: %p address \n", music.sdata);
    if ((map_data = farcalloc(maxMapSize,sizeof(byte))) == NULL) Error("Not enough RAM to allocate map data","map","data");
@@ -832,11 +819,6 @@ void ResetLoadingInterrupt(void){
 
 	asm CLI
 
-	// do not reset timer
-   //outportb(PTI_MODE, 0x36);
-  	//outportb(PTI_CH2, 0xFF);	//lo-byte
-	//outportb(PTI_CH2, 0xFF);	//hi-byte
-
     // Restore old handler, normaly the sound interrupt function
 	setvect(TIMER_IRQ, old_loading_handler);
 
@@ -860,6 +842,13 @@ void ScrollFollow(void){
 	int y1;
 	int speed_x = 0;
 	int speed_y = 0;
+   int scroll_x_lock = 0;
+   int scroll_y_lock = 0;
+
+   if ((player.move == 0) && (scroll_y_adjust > 70)){ scroll_y_adjust--; }//STANDSTILL
+   if ((player.move == 0) && (scroll_y_adjust < 70)){ scroll_y_adjust++; }//STANDSTILL
+   if ((player.move == 0) && (scroll_x_adjust > 160)){ scroll_y_adjust--; }//STANDSTILL
+   if ((player.move == 0) && (scroll_x_adjust < 160)){ scroll_y_adjust++; }//STANDSTILL
 
    if ((player.move == 1) && (scroll_y_adjust != 90)){ scroll_y_adjust++; }//FACING UP
 	if ((player.move == 2) && (scroll_y_adjust != 50)){ scroll_y_adjust--; }//FACING DOWN
@@ -887,35 +876,39 @@ void ScrollFollow(void){
     	if ((scroll_x_adjust != 190)){ scroll_x_adjust++; }//FACING LEFT
    }
 
+
 	//Show more screen in the direction the sprite is facing
-	x = (s->pos_x-scroll_x) - scroll_x_adjust;
-	x1 = abs(x);
-   y = (s->pos_y-scroll_y) - scroll_y_adjust;
+	x = s->pos_x - (scroll_x + scroll_x_adjust);
+   x1 = abs(x);
+   if(x1<0)x1=0;
+   if(x1>64)x1=64;
+   y = s->pos_y - (scroll_y + scroll_y_adjust);
 	y1 = abs(y);
+   if(y1<0)y1=0;
+   if(y1>64)y1=64;
 
-   // If scroll is inside limits
-	if ((scroll_x > -1) && ((scroll_x + 319)<map_width_px) && (scroll_y > -1) && ((scroll_y + 209 - vga_page[1])<(map_height_px))){
+   // Reset scroll camera
+   if (scrollCameraFloat == 8){ scrollCameraFloat = 0; }
 
-   	// Reset scroll camera
-		if (scrollCameraFloat == 8){ scrollCameraFloat = 0; }
+   // Calculate scroll speed
+   speed_x = scrollCameraSpeed[(scrollCameraArray[x1]<<3)+scrollCameraFloat];
+   speed_y = scrollCameraSpeed[(scrollCameraArray[y1]<<3)+scrollCameraFloat];
 
-      // Calculate scroll speed
-		speed_x = scrollCameraSpeed[(scrollCameraArray[x1]<<3)+scrollCameraFloat];
-		speed_y = scrollCameraSpeed[(scrollCameraArray[y1]<<3)+scrollCameraFloat];
+   if (x < 0) scroll_x-=speed_x;
+   if (x > 0) scroll_x+=speed_x;
+   if (y < 0) scroll_y-=speed_y;
+   if (y > 0) scroll_y+=speed_y;
 
-		if (x < 0) scroll_x-=speed_x;
-		if (x > 0) scroll_x+=speed_x;
-		if (y < 0) scroll_y-=speed_y;
-		if (y > 0) scroll_y+=speed_y;
-
-		scrollCameraFloat++;
-	}
+   scrollCameraFloat++;
 
    // Lock scroll on map limits
-	if (scroll_x < 0) scroll_x = 0;
-	if ((scroll_x + 320) > map_width_px) scroll_x = map_width_px - 320;
-	if (scroll_y < 64) scroll_y = 64;
-	if ((scroll_y + 210 - vga_page[1]) > (map_height_px)) scroll_y = map_height_px - 210 + vga_page[1] ;  // it was 201 before
+	if (scroll_x < 0){ scroll_x = 0; scroll_x_lock = 1; }
+   if (scroll_y < vga_page[1]){ scroll_y = vga_page[1]; scroll_y_lock = 1; }
+	if ((scroll_x + 320) > map_width_px){ scroll_x = map_width_px - 320; scroll_x_lock = 1;}
+	if ((scroll_y + 210 - vga_page[1]) > (map_height_px)){ scroll_y = map_height_px - 210 + vga_page[1] ; scroll_y_lock = 1;}  // it was 201 before
+
+	scroll_focus = 0;
+   if(((x==0)||(scroll_x_lock))&&((y==0)||(scroll_y_lock))){scroll_focus = 1;}
 }
 
 /////////////////////////////////////////////////////////
@@ -931,7 +924,6 @@ void Update(int player_follow){
 
    PanelRefresh();
    Update_FP_Keys();
-
 }
 
 /////////////////////////////////////////////////////////
@@ -943,7 +935,6 @@ void MovePlayer(void){
 	byte half = s->width>>1;
 
    // Sprite tiles
-   //long tile_number = 0;
    int tile_number = 0;
 
    // Collision flags
@@ -994,40 +985,48 @@ void MovePlayer(void){
    // Check map collisions
    //if( (player.move == P_DWNLEFT) || (player.move == P_UPLEFT) || (player.move == P_LEFT) ){
    if( (player.move == 8) || (player.move == 6) || (player.move == 3) ){
-  	   tile_number = ( ((s->pos_y + 4 - 64)>>4)* map_width ) +  s->tile_x - 1;
+  	   tile_number = ( ((s->pos_y + 1 - 64)>>4)* map_width ) +  s->tile_x - 1;
    	if(map_collision[tile_number]  != 0) {  left_coll = 1; player.collision = map_collision[tile_number]; }
       if(map_sprites[tile_number]  != 0) {  left_coll = 1; player.collision = map_sprites[tile_number]+10;  }
-      tile_number = ( ((s->pos_y + s->height - 4 - 64)>>4)* map_width) +  s->tile_x - 1;
+      tile_number = ( ((s->pos_y + s->height - 1 - 64)>>4)* map_width) +  s->tile_x - 1;
      	if(map_collision[tile_number]  != 0) {  left_coll = 1; player.collision = map_collision[tile_number]; }
       if(map_sprites[tile_number]  != 0) {  left_coll = 1; player.collision = map_sprites[tile_number]+10; }
    }
    //if( (player.move == P_UPRIGHT) || (player.move == P_UPLEFT) || (layer.move == P_UP) ){
    if( (player.move == 5) || (player.move == 6) || (player.move == 1) ){
-      tile_number = ((s->tile_y-1) * map_width ) +  ((s->pos_x + 4)>>4);
-   	if(map_collision[tile_number]  != 0) {  up_coll = 1; player.collision = map_collision[tile_number]; }
+      tile_number = ((s->tile_y-1) * map_width ) +  ((s->pos_x+1)>>4);
+      if(map_collision[tile_number]  != 0) {  up_coll = 1; player.collision = map_collision[tile_number]; }
       if(map_sprites[tile_number]  != 0) {  up_coll = 1; player.collision = map_sprites[tile_number]+10; }
-      tile_number = ((s->tile_y-1) * map_width ) +  ((s->pos_x + s->width - 4)>>4);
+      tile_number++;
+      if(map_collision[tile_number]  != 0) {  up_coll = 1; player.collision = map_collision[tile_number]; }
+      if(map_sprites[tile_number]  != 0) {  up_coll = 1; player.collision = map_sprites[tile_number]+10; }
+      tile_number = ((s->tile_y-1) * map_width ) +  ((s->pos_x + s->width - 1)>>4);
      	if(map_collision[tile_number]  != 0) {  up_coll = 1; player.collision = map_collision[tile_number]; }
       if(map_sprites[tile_number]  != 0) {  up_coll = 1; player.collision = map_sprites[tile_number]+10; }
    }
    //if( (player.move == P_UPRIGHT) || (player.move == P_DWNRIGHT) || (player.move == P_RIGHT) ){
    if( (player.move == 5) || (player.move == 7) || (player.move == 4) ){
-      tile_number = ( ((s->pos_y + 4 - 64)>>4)* map_width ) +  s->tile_x + 1;
+      tile_number = ( ((s->pos_y + 1 - 64)>>4)* map_width ) +  s->tile_x + 1;
    	if(map_collision[tile_number]  != 0) {  right_coll = 1; player.collision = map_collision[tile_number]; }
       if(map_sprites[tile_number]  != 0) {  right_coll = 1; player.collision = map_sprites[tile_number]+10; }
-      tile_number = ( ((s->pos_y + s->height - 4 - 64)>>4)* map_width) +  s->tile_x + 1;
+      tile_number = ( ((s->pos_y + s->height - 1 - 64)>>4)* map_width) +  s->tile_x + 1;
      	if(map_collision[tile_number]  != 0) {  right_coll = 1; player.collision = map_collision[tile_number]; }
       if(map_sprites[tile_number]  != 0) {  right_coll = 1; player.collision = map_sprites[tile_number]+10; }
    }
    //if( (player.move == P_DWNLEFT) || (player.move == P_DWNRIGHT) || (player.move == P_DOWN) ){
    if( (player.move == 8) || (player.move == 7) || (player.move == 2) ){
-      tile_number = ((s->tile_y+1) * map_width ) +  ((s->pos_x + 4)>>4);
+      tile_number = ((s->tile_y+1) * map_width ) +  ((s->pos_x + 1)>>4);
    	if(map_collision[tile_number]  != 0) {  down_coll = 1; player.collision = map_collision[tile_number]; }
       if(map_sprites[tile_number]  != 0) {  down_coll = 1; player.collision = map_sprites[tile_number]+10; }
-      tile_number = ((s->tile_y+1) * map_width ) +  ((s->pos_x + s->width - 4)>>4);
+      tile_number++;
+      if(map_collision[tile_number]  != 0) {  down_coll = 1; player.collision = map_collision[tile_number]; }
+      if(map_sprites[tile_number]  != 0) {  down_coll = 1; player.collision = map_sprites[tile_number]+10; }
+      tile_number = ((s->tile_y+1) * map_width ) +  ((s->pos_x + s->width - 1)>>4);
      	if(map_collision[tile_number]  != 0) {  down_coll = 1; player.collision = map_collision[tile_number]; }
       if(map_sprites[tile_number]  != 0) {  down_coll = 1; player.collision = map_sprites[tile_number]+10; }
    }
+
+
 
    // Player movement
   	//if( (player.move == P_UP) || (player.move == P_UPRIGHT) || (player.move == P_UPLEFT) ){
@@ -1337,4 +1336,3 @@ byte SpeechSelection(int optNum, char* facefile, char* face,char* filename, char
 
    return option;
 }
-

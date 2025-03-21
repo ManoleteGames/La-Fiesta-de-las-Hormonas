@@ -21,6 +21,65 @@ byte DirectorAnimation[] = {0,1,0,1,0,0,2,2,3,3,4,0,0,0,1};
 byte CharacterAnimation2[] = {0,0,0,1,0,0,0};
 byte CharacterAnimation3[] = {0,0,0,1,2,0,0};
 
+byte time_countdown = 0;
+byte time_minutes = 0;
+byte time_seconds = 0;
+
+/////////////////////////////////////////////////////////
+// Set new time
+/////////////////////////////////////////////////////////
+void far SetNewTime(byte newTime){
+	time_seconds = newTime;
+   sprintf(string, "%03d", time_seconds);
+   PrintPanelText(36,1,strlen(string),string);
+}
+
+/////////////////////////////////////////////////////////
+// Update goodness
+/////////////////////////////////////////////////////////
+void far UpdateGoodness(int value){
+
+	player.good = player.good + value;
+
+   // Goodguy
+   PrintLine(177,9,10,6,0); // Print to black
+   PrintLine(190,9,10,6,0); // Print to black
+   if(player.good < 10){ PrintLine(187-(10-player.good),9,(10-player.good),6,48); } // Print to red
+   else if(player.good > 17){ PrintLine(190,9,(player.good-10),6,64); } // Print to green
+   else{ PrintLine(190,9,(player.good-10),6,8); } // Print to yellow
+
+}
+
+/////////////////////////////////////////////////////////
+// Update inteligence
+/////////////////////////////////////////////////////////
+void far UpdateInteligence(int value){
+
+	player.intell = player.intell + value;
+
+   // Intelligence
+   PrintLine(52,9,10,6,0); // Print to black
+   PrintLine(65,9,10,6,0); // Print to black
+   if(player.intell < 10){ PrintLine(62-(10-player.intell),9,(10-player.intell),6,48); } // Print to red
+   else if(player.intell > 17){ PrintLine(65,9,(player.intell-10),6,64); } // Print to green
+   else { PrintLine(65,9,(player.intell-10),6,8); } // Print to yellow
+}
+
+/////////////////////////////////////////////////////////
+// Update popularity
+/////////////////////////////////////////////////////////
+void far UpdatePopularity(int value){
+
+	player.popular = player.popular + value;
+
+   // popular
+   PrintLine(118,9,10,6,0); // Print to black
+   PrintLine(131,9,10,6,0); // Print to black
+   if(player.popular < 10){ PrintLine(128-(10-player.popular),9,(10-player.popular),6,48); } // Print to red
+   else if(player.popular > 17){ PrintLine(131,9,(player.popular-10),6,64); } // Print to green
+   else { PrintLine(131,9,(player.popular-10),6,8); } // Print to yellow
+}
+
 /////////////////////////////////////////////////////////
 // Save game
 /////////////////////////////////////////////////////////
@@ -396,36 +455,33 @@ void near Logo(void){
    Fade_in();
    Delay(200);
 
-
    Fade_out();
    LoadImage("LOGO.DAT","oneman1.pcx",2);  // One man logo
    SetPage(2);
    Fade_in();
-   Delay(200);
-
+   Delay(100);
    LoadImage("LOGO.DAT","oneman2.pcx",1);  // One man logo
    SetPage(1);
    LoadImage("LOGO.DAT","oneman3.pcx",2);  // One man logo
    SetPage(2);
-   Delay(20);
+   Delay(5);
    SetPage(1);
-   Delay(20);
+   Delay(5);
    SetPage(2);
-   Delay(20);
+   Delay(5);
    SetPage(1);
    LoadImage("LOGO.DAT","oneman4.pcx",2);  // One man logo
    SetPage(2);
    LoadImage("LOGO.DAT","oneman5.pcx",1);  // One man logo
    SetPage(1);
-   Delay(200);
-
+   Delay(100);
    LoadImage("LOGO.DAT","warn.pcx",2);  // Warning
    Fade_out();
    SetPage(2);
    Fade_in();
    while(counter < 5){
    	RotatePalette(101,104,50);
-      Delay(20);
+      Delay(5);
       counter++;
    }
 
@@ -590,6 +646,7 @@ void near Menu(void)
 /////////////////////////////////////////////////////////
 void near MainLoop(void) {
 	while(end_game == 0){
+
    	Events(player.event);
       if(keys[K_ENTER] == 1){ Hotspots(player.hotspot); }
       // Main loop
@@ -598,17 +655,21 @@ void near MainLoop(void) {
 
       if(keys[K_ESC]== 1){
       	if((map_loaded == 1) && (speech_active == 0)){
-          	option = SpeechSelection(2,"SPRFACE1.DAT","playerf.pcx","GLB_STR.DAT","GLOBAL.TXT","053","054",0,0);
+          	option = SpeechSelection(3,"SPRFACE2.DAT","pcf.pcx","GLB_STR.DAT","GLOBAL.TXT","053","054","055",0);
    			switch(option){
-     				case 1: // YES
+     				case 1: // Exist and save
          			SaveGame();
+                  UnloadMusic();
+         			end_game = 1;
       				break;
-      			case 2: // NO
+      			case 2: // Exit and do not save
+                  UnloadMusic();
+         			end_game = 1;
          			break;
+               case 3: // do not exit
+               	break;
             }
          }
-         UnloadMusic();
-         end_game = 1;
       }
    }
 
@@ -629,12 +690,6 @@ void near Init(void){
 	// Initialize player status
    player.day = 4;
 
-   //////////debug///////
-   //player.day = 2;
-   //player.mission_party = 1;
-   //player.item_exams = 1;
-   /////////////////////
-
    // Starting player status
    player.intell = 10;
    player.popular = 10;
@@ -654,10 +709,9 @@ void near Init(void){
 
    LoadFont("FONTS.DAT","FONT.bmp"); //Load text font
    LoadPanelBackground("IMAGES.DAT","PANEL.pcx");
-   PanelUpdate();
 
    InitDay();
-   GoToFloor1(100, 185);
+   GoToFloor1(128, 192);
 }
 
 /////////////////////////////////////////////////////////
@@ -902,7 +956,7 @@ void near LoadGame(void){
 // Check savegame
 // - Returns true if there is any file saved
 /////////////////////////////////////////////////////////
-byte CheckSavegame() {
+byte CheckSavegame(void) {
 	FILE *savefile;
    savefile = fopen("savegame.ini","rb+");
 
@@ -928,7 +982,15 @@ void near ContinueGame(void) {
 	LoadGame();
    LoadFont("FONTS.DAT","FONT.bmp"); //Load text font
    LoadPanelBackground("IMAGES.DAT","PANEL.pcx");
-   VGA_PanelUpdate();
+
+   // Update day on panel
+	sprintf(string, "%02d", player.day);
+	PrintPanelText(1,1,strlen(string),string);
+
+   SetNewTime(120);
+   UpdateGoodness(0);
+   UpdateInteligence(0);
+   UpdatePopularity(0);
 
    // Set current items
    if(player.item_exams){ SetItem(2,16,"exams.pcx"); }
@@ -954,13 +1016,12 @@ void near ContinueGame(void) {
 // Options
 // - ...
 /////////////////////////////////////////////////////////
-void near Options(){
+void near Options(void){
 
 	byte end;
 	word length;
    int menu_pos[8] = {20,76,92,100,108,124,140,156};
-   byte MenuCursorAnimation[8] = {0,1,2,3,3,3,3,3};
-
+   
 	// Draw menu options
    end = 0;
    option = 1;
@@ -1354,8 +1415,8 @@ void main(){
 
    InitEngine(); // Initialize system
 
-   //Logo(); // Show logos and stuff before start the party
-   //Intro();  // Show little intro
+   Logo(); // Show logos and stuff before start the party
+   Intro();  // Show little intro
 
    player.spriteNum = 1; // Player sprite is always sprite 1!
    existingSaveGame = CheckSavegame();

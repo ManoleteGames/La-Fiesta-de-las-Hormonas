@@ -5,7 +5,6 @@
 #include "source\engine\engine.h"
 
 void far GoToFloor1(int x, int y){
-	int mapx,mapy;
 
    panelScrolling = 0;
    showPanel = 0;
@@ -110,11 +109,11 @@ void far GoToFloor1(int x, int y){
       	if((player.mission_fight <= 1)&&(player.scn_main != 2)){
          	LoadSprite("SPRCHR1.DAT","jon.pcx",3, 32); //Load sprites to one of the fixed structs
          	SetSpriteAnimation(3,0,6,23,CharacterAnimation2);
-         	InitSprite(3,286,182);
+         	InitSprite(3,260,182);
 
          	LoadSprite("SPRCHR1.DAT","antonio.pcx",4, 32); //Load sprites to one of the fixed structs
          	SetSpriteAnimation(4,0,6,19,CharacterAnimation2);
-         	InitSprite(4,246,182);
+         	InitSprite(4,230,182);
          }
          if((player.mission_fight > 1)&&(player.scn_main != 2)){
             LoadSprite("SPRCHR2.DAT","conser.pcx",3, 32); //Load sprites to one of the fixed structs
@@ -148,18 +147,10 @@ void far GoToFloor1(int x, int y){
 
    // Allow scroll
    scrolling_enabled = 1;
+
    // Draw map
-   // - calculate map position
-   mapx = (x>>4)-10;
-   if(mapx < 0){ mapx = 0;}
-   if((mapx + 21) > map_width){ mapx = map_width - 21;}
-   mapy = (y>>4)-6;
-   if(mapy < 0){ mapy = 0;}
-
-   SetMap(mapx,mapy);
-
-   Update(1);
-
+   SetMap();
+   
    Fade_in();
 
    panelScrolling = 1;

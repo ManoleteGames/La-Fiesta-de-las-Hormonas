@@ -138,17 +138,10 @@ void far GoToExt2(int x, int y){
 
    // Allow scroll
    scrolling_enabled = 1;
+
    // Draw map
-   // - calculate map position
-   mapx = (x>>4)-10;
-   if(mapx < 0){ mapx = 0;}
-   if((mapx + 21) > map_width){ mapx = map_width - 21;}
-   mapy = (y>>4)-6;
-   if(mapy < 0){ mapy = 0;}
-   SetMap(mapx,mapy);
-
-   Update(0);
-
+   SetMap();
+  	
 	Fade_in();
 
    panelScrolling = 1;

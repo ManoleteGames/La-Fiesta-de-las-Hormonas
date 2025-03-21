@@ -28,15 +28,15 @@ void far GoToFloor2(int x, int y){
    	case 4:  /////////////////////// day 4 //////////////////////////////
          LoadSprite("SPRCHR1.DAT","jessy.pcx",3, 32); //Load sprites to one of the fixed structs
    		SetSpriteAnimation(3,0,6,8,CharacterAnimation2);
-         InitSprite(3,158,170);
+         InitSprite(3,156,170);
 
    		LoadSprite("SPRCHR1.DAT","vane.pcx",4, 32); //Load sprites to one of the fixed structs
    		SetSpriteAnimation(4,0,6,30,CharacterAnimation3);
-         InitSprite(4,132,182);
+         InitSprite(4,134,182);
 
          LoadSprite("SPRCHR1.DAT","fany.pcx",5, 32); //Load sprites to one of the fixed structs
    		SetSpriteAnimation(5,0,6,23,CharacterAnimation3);
-   		InitSprite(5,188,182);
+   		InitSprite(5,182,182);
 
       	break;
       case 3:  /////////////////////// day 3 //////////////////////////////
@@ -68,17 +68,10 @@ void far GoToFloor2(int x, int y){
 
    // Allow scroll
    scrolling_enabled = 1;
+
    // Draw map
-   // - calculate map position
-   mapx = (x>>4)-10;
-   if(mapx < 0){ mapx = 0;}
-   if((mapx + 21) > map_width){ mapx = map_width - 21;}
-   mapy = (y>>4)-6;
-   if(mapy < 0){ mapy = 0;}
-   SetMap(mapx,mapy);
-
-   Update(0);
-
+   SetMap();
+   
 	Fade_in();
 
    panelScrolling = 1;
