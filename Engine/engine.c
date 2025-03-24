@@ -71,6 +71,8 @@ int scroll_y_adjust = 70;
 int scroll_wy = 400;
 byte showPanel = 0;
 byte panelScrolling = 0;
+byte panelShown = 0;
+byte panelHiden = 0;
 byte scrolling_enabled = 0; // Scrolling and panning enabled
 byte scroll_focus = 0;
 
@@ -819,15 +821,16 @@ void ResetLoadingInterrupt(void){
 
 	asm CLI
 
-    // Restore old handler, normaly the sound interrupt function
+   Fade_out();
+
+   // Restore old handler, normaly the sound interrupt function
 	setvect(TIMER_IRQ, old_loading_handler);
 
    // Continue playing music from the same point it was
    SPEAKER_PlayNonStopMusic();
 
-	asm STI
 
-	Fade_out();
+	asm STI
 }
 
 /////////////////////////////////////////////////////////

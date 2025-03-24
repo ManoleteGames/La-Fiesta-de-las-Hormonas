@@ -401,15 +401,44 @@ void ResetSpriteAnimation(int sprite_number, byte anim){
 }
 
 void HideSprite(int sprite_number){
+	word aux;
 	SPRITE *s = &sprite[sprite_number];
    s->hide = 1;
+
+   // Reset collision tile
+   if(map_loaded){
+      // Check collision only if is not the player sprite
+      if( sprite_number != player.spriteNum){
+      	//Update map collision
+      	aux = (((s->pos_y-64)>>4) * map_width ) +  ((s->pos_x)>>4);
+      	map_sprites[aux]  = 0;
+      	map_sprites[aux + 1] = 0;
+      	map_sprites[aux + map_width] = 0;
+      	map_sprites[aux + map_width + 1] = 0;
+   	}
+   }
    Update(0);
 }
 
 void ShowSprite(int sprite_number){
+   word aux;
 	SPRITE *s = &sprite[sprite_number];
    s->hide = 0;
    s->hidden = 0;
+
+   // Set collision tile
+   if(map_loaded){
+   	// Check collision only if is not the player sprite
+      if( sprite_number != player.spriteNum){
+      	//Update map collision
+      	aux = (((s->pos_y-64)>>4) * map_width ) +  ((s->pos_x)>>4);
+      	map_sprites[aux]  = sprite_number;
+      	map_sprites[aux + 1] = sprite_number;
+      	map_sprites[aux + map_width] = sprite_number;
+      	map_sprites[aux + map_width + 1] = sprite_number;
+   	}
+   }
+   Update(0);
 }
 
 

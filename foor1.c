@@ -150,7 +150,7 @@ void far GoToFloor1(int x, int y){
 
    // Draw map
    SetMap();
-   
+
    Fade_in();
 
    panelScrolling = 1;

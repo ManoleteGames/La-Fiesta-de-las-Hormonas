@@ -514,7 +514,7 @@ void near Menu(void)
    SetSpriteAnimation(1,0,7,6,MenuCursorAnimation);
 
    LoadMusic(2);
-
+   
    ResetLoadingInterrupt();   // Stop loading animation
 
    PlayNonStopMusic();

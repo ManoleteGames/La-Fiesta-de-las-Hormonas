@@ -262,6 +262,10 @@ void far EndGameRoof(void){
    PrintText(1,19,length,string,0);
    LoadText("D0_END.DAT","D0END0.TXT","072",string,&length);
    PrintText(1,20,length,string,0);
+   LoadText("D0_END.DAT","D0END0.TXT","073",string,&length);
+   PrintText(1,21,length,string,0);
+   LoadText("D0_END.DAT","D0END0.TXT","074",string,&length);
+   PrintText(1,22,length,string,0);
 
    DrawSpriteDestructive(18);
    while(keys[K_ENTER]==0){ Update(0); }
@@ -281,6 +285,8 @@ void far EndGameRoof(void){
 /////////////////////////////////////////////////////////
 void near EndGameLikeADream(void){
    word length;
+   byte step = 0; // Current step
+   byte endSequence = 0; // End  flag
 
    Delay(300);
 
@@ -325,13 +331,15 @@ void near EndGameLikeADream(void){
    Speech("SPRFACE1.DAT","jessyf.pcx","D0_END.DAT","D0END8.txt","005","006",0,0);
    Delay(20);
 
-
    SetLoadingInterrupt();   // Start loading animation
 
    UnloadMusic();
 
    LoadImage("IMAEND.DAT","end8_1.pcx",2); // Load menu background image to non visible page
+   LoadPanelBackground("IMAEND.DAT","PEND.pcx");
    LoadMusic(51);
+
+   panelScrolling = 1;
 
    ResetLoadingInterrupt();   // Stop loading animation
 
@@ -342,217 +350,425 @@ void near EndGameLikeADream(void){
 
    Fade_in();
 
-   ////////////////// scene 2 //////////////
-   LoadImage("IMAEND.DAT","end8_2.pcx",1); // Load menu background image to non visible page
-   Delay(20);
-   SetPage(1);
-   Update(0);
-
-   LoadImage("IMAEND.DAT","end8_3.pcx",2); // Load menu background image to non visible page
-   Delay(20);
-   SetPage(2);
-   Update(0);
-
-	LoadImage("IMAEND.DAT","end8_4.pcx",1); // Load menu background image to non visible page
-
-   while(musicPlaying == 1){
-    	Update(0);
-   }
-
-   //Fade_out();
-
-   UnloadMusic();
-   LoadMusic(52);
-   PlayMusic();
-
-   SetPage(1);
-   Update(0);
-
-   //Fade_in();
-
-   ////////////////// scene 3 //////////////
-   LoadImage("IMAEND2.DAT","end8_5.pcx",2); // Load menu background image to non visible page
-
-   while(musicPlaying == 1){
-    	Update(0);
-   }
-
-   //Fade_out();
-
-   UnloadMusic();
-   LoadMusic(53);
-   PlayMusic();
-
-   SetPage(2);
-   Update(0);
-
-   //Fade_in();
-
-   ////////////////// scene 4 //////////////
-   LoadImage("IMAEND2.DAT","end8_6.pcx",1); // Load menu background image to non visible page
-
-   while(musicPlaying == 1){
-    	Update(0);
-   }
-
-   //Fade_out();
-
-   UnloadMusic();
-   LoadMusic(54);
-   PlayMusic();
-
-   SetPage(1);
-   Update(0);
-
-   //Fade_in();
-
-   ////////////////// scene 5 //////////////
-   LoadImage("IMAEND2.DAT","end8_7.pcx",2); // Load menu background image to non visible page
-
-   while(musicPlaying == 1){
-    	Update(0);
-   }
-
-   //Fade_out();
-
-   UnloadMusic();
-   LoadMusic(55);
-   PlayMusic();
-
-   SetPage(2);
-   Update(0);
-
-   //Fade_in();
-
-   ////////////////// scene 6 //////////////
-   LoadImage("IMAEND2.DAT","end8_8.pcx",1); // Load menu background image to non visible page
-
-   while(musicPlaying == 1){
-    	Update(0);
-   }
-
-   //Fade_out();
-
-   UnloadMusic();
-   LoadMusic(56);
-   PlayMusic();
-
-   SetPage(1);
-   Update(0);
-
-   //Fade_in();
-
-   ////////////////// scene 7 //////////////
-   LoadImage("IMAEND2.DAT","end8_9.pcx",2); // Load menu background image to non visible page
-
-   while(musicPlaying == 1){
-    	Update(0);
-   }
-
-   //Fade_out();
-
-   UnloadMusic();
-   LoadMusic(57);
-   PlayMusic();
-
-   SetPage(2);
-   Update(0);
-
-   //Fade_in();
-
-   ////////////////// scene 8 //////////////
-   LoadImage("IMAEND2.DAT","end8_10.pcx",1); // Load menu background image to non visible page
-
-   while(musicPlaying == 1){
-    	Update(0);
-   }
-
-   //Fade_out();
-
-   UnloadMusic();
-   LoadMusic(58);
-   PlayMusic();
-
-   SetPage(1);
-   Update(0);
-
-   //Fade_in();
-
-   ////////////////// scene 9 //////////////
-   LoadImage("IMAEND2.DAT","end8_11.pcx",1); // Load menu background image to non visible page
-
-   while(musicPlaying == 1){
-    	Update(0);
-   }
-
-   //Fade_out();
-
-   UnloadMusic();
-   LoadMusic(59);
-   PlayMusic();
-
-   SetPage(1);
-   Update(0);
-
-   //Fade_in();
-
-   ////////////////// scene 9 //////////////
-   LoadImage("IMAEND2.DAT","end8_12.pcx",2); // Load menu background image to non visible page
-
-   while(musicPlaying == 1){
-    	Update(0);
-   }
-
-   //Fade_out();
-
-   UnloadMusic();
-   LoadMusic(60);
-   PlayMusic();
-
-   SetPage(2);
-   Update(0);
-
-   //Fade_in();
-
-   ////////////////// scene 11 //////////////
-   LoadImage("IMAEND2.DAT","end8_12.pcx",2); // Load menu background image to non visible page
-
-   while(musicPlaying == 1){
-    	Update(0);
-   }
-
-   //Fade_out();
-
-   UnloadMusic();
-   LoadMusic(61);
-   PlayMusic();
-
-   SetPage(2);
-   Update(0);
-
-   //Fade_in();
-
-   ////////////////// scene 12 //////////////
-   LoadImage("IMAEND2.DAT","end8_12.pcx",2); // Load menu background image to non visible page
-
-   while(musicPlaying == 1){
-    	Update(0);
-   }
-
-   //Fade_out();
-
-   UnloadMusic();
-   LoadMusic(61);
-   PlayMusic();
-
-   SetPage(2);
-   Update(0);
-
-   //Fade_in();
-
-   //////////////////// end /////////////
-   while(musicPlaying == 1){
-    	Update(0);
+   // End loop
+   while( (keys[K_ESC] != 1) && (endSequence != 1) )
+   {
+   	// Animation
+      switch(step){
+      	case 0:  // Step 0
+            showPanel = 1;
+            LoadText("D0_END.DAT","D0END8.TXT","010",string,&length);
+         	PrintPanelText(2,1,length,string);
+            Delay(180);
+            if(panelShown == 1){step++;}
+            break;
+         case 1:
+         	LoadText("D0_END.DAT","D0END8.TXT","011",string,&length);
+         	PrintPanelText(2,1,length,string);
+            Delay(180);
+            LoadImage("IMAEND.DAT","end8_2.pcx",1); // Load menu background image to non visible page
+            step++;
+            break;
+         case 2:
+            if(musicPlaying==0){step++;}
+				break;
+         case 3:
+            showPanel = 0;
+         	UnloadMusic();
+            LoadMusic(52);
+            PlayMusic();
+            step++;
+            break;
+         case 4:
+            if(panelHiden == 1){step++;}
+         	break;
+         case 5:
+            SetPage(1);
+         	showPanel = 1;
+         	LoadText("D0_END.DAT","D0END8.TXT","015",string,&length);
+         	PrintPanelText(2,1,length,string);
+            Delay(150);
+            if(panelShown == 1){step++;}
+            break;
+         case 6:
+         	LoadText("D0_END.DAT","D0END8.TXT","016",string,&length);
+         	PrintPanelText(2,1,length,string);
+            Delay(150);
+            step++;
+            break;
+         case 7:
+         	LoadText("D0_END.DAT","D0END8.TXT","017",string,&length);
+         	PrintPanelText(2,1,length,string);
+            Delay(150);
+            LoadImage("IMAEND.DAT","end8_3.pcx",2); // Load menu background image to non visible page
+            step++;
+            break;
+         case 8:
+            if(musicPlaying==0){step++;}
+				break;
+         case 9:
+         	showPanel = 0;
+         	UnloadMusic();
+            LoadMusic(53);
+            PlayMusic();
+            step++;
+            break;
+         case 10:
+            if(panelHiden == 1){step++;}
+         	break;
+        	case 11:
+         	SetPage(2);
+            showPanel = 1;
+            LoadText("D0_END.DAT","D0END8.TXT","020",string,&length);
+         	PrintPanelText(2,1,length,string);
+            Delay(150);
+            if(panelShown == 1){step++;}
+            break;
+         case 12:
+         	LoadText("D0_END.DAT","D0END8.TXT","021",string,&length);
+         	PrintPanelText(2,1,length,string);
+            Delay(150);
+            step++;
+            break;
+         case 13:
+         	LoadText("D0_END.DAT","D0END8.TXT","022",string,&length);
+         	PrintPanelText(2,1,length,string);
+            LoadImage("IMAEND.DAT","end8_4.pcx",1); // Load menu background image to non visible page
+            Delay(150);
+            step++;
+            break;
+         case 14:
+            if(musicPlaying==0){step++;}
+				break;
+         case 15:
+            showPanel = 0;
+         	UnloadMusic();
+            LoadMusic(54);
+            PlayMusic();
+            step++;
+            break;
+         case 16:
+            if(panelHiden == 1){step++;}
+            break;
+         case 17:
+         	SetPage(1);
+            showPanel = 1;
+            LoadText("D0_END.DAT","D0END8.TXT","025",string,&length);
+         	PrintPanelText(2,1,length,string);
+            Delay(130);
+            if(panelShown == 1){step++;}
+            break;
+         case 18:
+            LoadText("D0_END.DAT","D0END8.TXT","026",string,&length);
+         	PrintPanelText(2,1,length,string);
+            Delay(130);
+            step++;
+            break;
+         case 19:
+            LoadText("D0_END.DAT","D0END8.TXT","027",string,&length);
+         	PrintPanelText(2,1,length,string);
+            Delay(130);
+            step++;
+            break;
+         case 20:
+            LoadText("D0_END.DAT","D0END8.TXT","028",string,&length);
+         	PrintPanelText(2,1,length,string);
+            Delay(130);
+            step++;
+            break;
+         case 21:
+            LoadText("D0_END.DAT","D0END8.TXT","029",string,&length);
+         	PrintPanelText(2,1,length,string);
+            Delay(130);
+            step++;
+            break;
+         case 22:
+            LoadText("D0_END.DAT","D0END8.TXT","030",string,&length);
+         	PrintPanelText(2,1,length,string);
+            LoadImage("IMAEND2.DAT","end8_5.pcx",2); // Load menu background image to non visible page2
+            Delay(120);
+            step++;
+            break;
+         case 23:
+            if(musicPlaying==0){step++;}
+				break;
+         case 24:
+         	showPanel = 0;
+         	UnloadMusic();
+            LoadMusic(55);
+            PlayMusic();
+            step++;
+            break;
+         case 25:
+				if(panelHiden == 1){step++;}
+         	break;
+			case 26:
+            SetPage(2);
+            showPanel = 1;
+            LoadText("D0_END.DAT","D0END8.TXT","035",string,&length);
+         	PrintPanelText(2,1,length,string);
+            Delay(120);
+            step++;
+         	break;
+         case 27:
+            LoadText("D0_END.DAT","D0END8.TXT","036",string,&length);
+         	PrintPanelText(2,1,length,string);
+            Delay(120);
+            step++;
+         	break;
+         case 28:
+            LoadText("D0_END.DAT","D0END8.TXT","037",string,&length);
+         	PrintPanelText(2,1,length,string);
+            Delay(120);
+            step++;
+         	break;
+         case 29:
+            LoadText("D0_END.DAT","D0END8.TXT","038",string,&length);
+         	PrintPanelText(2,1,length,string);
+            Delay(120);
+            step++;
+         	break;
+         case 30:
+            LoadText("D0_END.DAT","D0END8.TXT","039",string,&length);
+         	PrintPanelText(2,1,length,string);
+            LoadImage("IMAEND2.DAT","end8_6.pcx",1); // Load menu background image to non visible page2
+            step++;
+         	break;
+         case 31:
+            if(musicPlaying==0){step++;}
+				break;
+         case 32:
+         	showPanel = 0;
+         	UnloadMusic();
+            LoadMusic(56);
+            PlayMusic();
+            step++;
+            break;
+         case 33:
+				if(panelHiden == 1){step++;}
+         	break;
+         case 34:
+            SetPage(1);
+            showPanel = 1;
+            LoadText("D0_END.DAT","D0END8.TXT","045",string,&length);
+         	PrintPanelText(2,1,length,string);
+            Delay(150);
+            step++;
+         	break;
+         case 35:
+            LoadText("D0_END.DAT","D0END8.TXT","046",string,&length);
+         	PrintPanelText(2,1,length,string);
+            Delay(150);
+            step++;
+         	break;
+         case 36:
+            LoadText("D0_END.DAT","D0END8.TXT","047",string,&length);
+         	PrintPanelText(2,1,length,string);
+            LoadImage("IMAEND2.DAT","end8_7.pcx",2); // Load menu background image to non visible page2
+            Delay(150);
+            step++;
+         	break;
+         case 37:
+            if(musicPlaying==0){step++;}
+				break;
+         case 38:
+         	showPanel = 0;
+         	UnloadMusic();
+            LoadMusic(57);
+            PlayMusic();
+            step++;
+            break;
+         case 39:
+				if(panelHiden == 1){step++;}
+         	break;
+         case 40:
+            SetPage(2);
+            showPanel = 1;
+            LoadText("D0_END.DAT","D0END8.TXT","050",string,&length);
+         	PrintPanelText(2,1,length,string);
+            Delay(150);
+            step++;
+         	break;
+         case 41:
+            LoadText("D0_END.DAT","D0END8.TXT","051",string,&length);
+         	PrintPanelText(2,1,length,string);
+            LoadImage("IMAEND2.DAT","end8_8.pcx",1); // Load menu background image to non visible page2
+            Delay(150);
+            step++;
+         	break;
+         case 42:
+            if(musicPlaying==0){step++;}
+				break;
+         case 43:
+         	showPanel = 0;
+         	UnloadMusic();
+            LoadMusic(58);
+            PlayMusic();
+            step++;
+            break;
+         case 44:
+				if(panelHiden == 1){step++;}
+         	break;
+         case 45:
+            SetPage(1);
+            showPanel = 1;
+            LoadText("D0_END.DAT","D0END8.TXT","055",string,&length);
+         	PrintPanelText(2,1,length,string);
+            Delay(120);
+            step++;
+         	break;
+         case 46:
+            LoadText("D0_END.DAT","D0END8.TXT","056",string,&length);
+         	PrintPanelText(2,1,length,string);
+            Delay(120);
+            step++;
+         	break;
+         case 47:
+            LoadText("D0_END.DAT","D0END8.TXT","057",string,&length);
+         	PrintPanelText(2,1,length,string);
+            LoadImage("IMAEND2.DAT","end8_9.pcx",2); // Load menu background image to non visible page2
+            Delay(120);
+            step++;
+         	break;
+         case 48:
+            if(musicPlaying==0){step++;}
+				break;
+         case 49:
+         	showPanel = 0;
+         	UnloadMusic();
+            LoadMusic(59);
+            PlayMusic();
+            step++;
+            break;
+         case 50:
+				if(panelHiden == 1){step++;}
+         	break;
+         case 51:
+            SetPage(2);
+            showPanel = 1;
+            LoadText("D0_END.DAT","D0END8.TXT","060",string,&length);
+         	PrintPanelText(2,1,length,string);
+            Delay(100);
+            step++;
+         	break;
+         case 52:
+            LoadText("D0_END.DAT","D0END8.TXT","061",string,&length);
+         	PrintPanelText(2,1,length,string);
+            Delay(100);
+            step++;
+         	break;
+         case 53:
+            LoadText("D0_END.DAT","D0END8.TXT","062",string,&length);
+         	PrintPanelText(2,1,length,string);
+            Delay(100);
+            step++;
+         	break;
+         case 54:
+         	LoadText("D0_END.DAT","D0END8.TXT","063",string,&length);
+         	PrintPanelText(2,1,length,string);
+				LoadImage("IMAEND2.DAT","end8_10.pcx",1); // Load menu background image to non visible page2
+            Delay(100);
+            step++;
+         	break;
+         case 55:
+            if(musicPlaying==0){step++;}
+				break;
+         case 56:
+         	showPanel = 0;
+         	UnloadMusic();
+            LoadMusic(60);
+            PlayMusic();
+            step++;
+            break;
+         case 57:
+				if(panelHiden == 1){step++;}
+         	break;
+         case 58:
+            SetPage(1);
+            showPanel = 1;
+            LoadText("D0_END.DAT","D0END8.TXT","065",string,&length);
+         	PrintPanelText(2,1,length,string);
+            Delay(200);
+            step++;
+         	break;
+         case 59:
+            LoadText("D0_END.DAT","D0END8.TXT","066",string,&length);
+         	PrintPanelText(2,1,length,string);
+            LoadImage("IMAEND2.DAT","end8_11.pcx",2); // Load menu background image to non visible page2
+            step++;
+         	break;
+         case 60:
+            if(musicPlaying==0){step++;}
+				break;
+         case 61:
+         	showPanel = 0;
+         	UnloadMusic();
+            LoadMusic(61);
+            PlayMusic();
+            step++;
+            break;
+         case 62:
+				if(panelHiden == 1){step++;}
+         	break;
+         case 63:
+            SetPage(2);
+            showPanel = 1;
+            LoadText("D0_END.DAT","D0END8.TXT","070",string,&length);
+         	PrintPanelText(2,1,length,string);
+            Delay(200);
+            step++;
+         	break;
+			case 64:
+            LoadText("D0_END.DAT","D0END8.TXT","071",string,&length);
+         	PrintPanelText(2,1,length,string);
+            LoadImage("IMAEND2.DAT","end8_12.pcx",1); // Load menu background image to non visible page2
+            step++;
+         	break;
+         case 65:
+            if(musicPlaying==0){step++;}
+				break;
+         case 66:
+         	showPanel = 0;
+         	UnloadMusic();
+            LoadMusic(62);
+            PlayMusic();
+            step++;
+            break;
+         case 67:
+				if(panelHiden == 1){step++;}
+         	break;
+         case 68:
+            SetPage(1);
+            showPanel = 1;
+            LoadText("D0_END.DAT","D0END8.TXT","075",string,&length);
+         	PrintPanelText(2,1,length,string);
+            Delay(300);
+            step++;
+         	break;
+         case 69:
+            if(musicPlaying==0){step++;}
+				break;
+         case 70:
+            Fade_out();
+         	showPanel = 0;
+         	step++;
+            break;
+         case 71:
+				if(panelHiden == 1){step++;}
+         	break;
+         case 72:
+            Delay(50);
+            LoadImage("IMAEND2.DAT","end8_13.pcx",2); // Load menu background image to non visible page2
+            SetPage(2);
+            Fade_in();
+            Delay(200);
+            step++;
+				break;
+         default:
+         	endSequence = 1;
+         	break;
+      }
+      Update(0);
    }
 
    Fade_out();
@@ -1709,8 +1925,10 @@ void far GoToEnd(void){
    LoadSprite("SPRCHR1.DAT","antonio.pcx",8, 32); //Load sprites to one of the fixed structs
    SetSpriteAnimation(8,0,6,19,CharacterAnimation2);
 
-   LoadSprite("SPRCHR1.DAT","player.pcx",1, 32); //Load sprites to one of the fixed structs
+   LoadSprite("SPRCHR1.DAT","player.pcx",player.spriteNum, 32); //Load sprites to one of the fixed structs
    SetSpriteAnimation(1,0,6,8,PlayerAnimation); // Set animation >> right
+   sprite[player.spriteNum].pos_x = 50;
+   sprite[player.spriteNum].pos_y = 50;
 
    LoadSprite("SPRCHR1.DAT","jessy.pcx",2, 32); //Load sprites to one of the fixed structs
    SetSpriteAnimation(2,0,6,16,JessyAnimation);  // Moving up

@@ -1025,16 +1025,29 @@ void VGA_PrintPanelText(word x, word y, word lineLength, unsigned char *string){
 		mov bx,size
 	}
 
-	printloop3:
+   printloop3:
 	asm push bx
 	datastring = string[i]; // Get current char
-   // Filter chars > 96
-	if (datastring > 96) datastring -=32;
 	asm{
+      cmp   datastring,0xA1 // char '¡' in ASCII
+      jne   ch1
+      mov   datastring,0x5F // char '¡' equivalent char in table
+      ch1:
+
+      cmp   datastring,0xBF // char '¿' in ASCII
+      jne   ch2
+      mov   datastring,0x5C // char '¿' equivalent char in table
+      ch2:
+
+      cmp   datastring,0xD1 // char 'Ñ' in ASCII
+      jne   ch3
+      mov   datastring,0x40 // char 'Ñ' equivalent char in table
+      ch3:
+
 		mov	dx,word ptr datastring
 		sub	dx,32
 	}
-
+   
 	asm{
 		mov	si,fontAddress;			//ds:si VRAM FONT TILE ADDRESS
 
@@ -2067,7 +2080,8 @@ void VGA_Set_Window(void){
 void VGA_PanelRefresh(void){
    int newPos = 355;
 
-	if(showPanel){
+	if((showPanel==1)&&(panelShown == 0)){
+   	panelHiden = 0;
    	if(panelScrolling == 1){     // Move with scroll
    		if(scroll_wy > newPos){
       		scroll_wy --;
@@ -2080,8 +2094,10 @@ void VGA_PanelRefresh(void){
          	VGA_MoveWindow();
       	}
       }
+      if(scroll_wy == newPos){panelShown = 1;}
 	}
-   else{
+   if((showPanel==0)&&(panelHiden == 0)){
+   	panelShown = 0;
    	if(panelScrolling == 1){
    		if(scroll_wy < 400){
       		scroll_wy ++;
@@ -2094,6 +2110,7 @@ void VGA_PanelRefresh(void){
          	VGA_MoveWindow();
       	}
       }
+      if(scroll_wy == 400){panelHiden = 1;}
 	}
 }
 

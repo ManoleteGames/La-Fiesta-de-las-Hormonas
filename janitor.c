@@ -58,12 +58,11 @@ void far Janitor(void){
                            Speech("SPRFACE2.DAT","conserf.pcx","D4_STR.DAT","D4CNS.TXT","125","126","127","128");
                            player.floor1_hotspot_mask[16] = 0;  // Disable janitor hotspot
                            player.floor1_event_mask[5] = 1;  // Enable event after enter directors room
-                           //sprite[3].hide = 1;   // Hide janitor sprite and move it to the directors place
-                           //Update(0);
+                           HideSprite(3);
                            sprite[3].pos_x = 446;
                            sprite[3].pos_y = 412;
                            Update(0);
-                           //sprite[3].hide = 0;   // Show janitor
+                           ShowSprite(3);
                            player.mission_cheat = 3;  // Update mission cheat status
                            player.scn_janitor++;
                            end_conversation = 1;

@@ -12,16 +12,11 @@ int speakerMusicOffset = 2;
 
 byte *speakerSFX;
 
-//byte *speakerMusicNote;
-//byte *speakerMusicOctave;
-//byte *speakerMusicDuration;
-
 int speakerSoundSize = 16;
 int speakerMusicSize = 16;
 
 byte speakerMenu[4] = {56,52,51,45};
 
-//byte speakerMenu[16] = {0,0,56,52,51,45,40,30,25,15,10,5,0,0,0,0};
 byte speakerSelect[16] = {0,0,90,80,70,60,50,30,10,5,10,30,50,60,70,60};
 byte speakerCrash[16] = {0,0,69,3,120,32,39,200,20,60,16,106,12,87,8,70};
 byte speakerJump[16] = {0,0,30,35,40,43,44,45,46,47,48,49,50,51,52,53};
@@ -411,10 +406,6 @@ void SPEAKER_LoadMusic(byte song){
       	fsong = fopen("SONG4.DAT","rb");
          if(!fsong) Error("Can't find ","SONG4.DAT",0);
          break;
-      case 5:
-      	fsong = fopen("SONG5.DAT","rb");
-         if(!fsong) Error("Can't find ","SONG5.DAT",0);
-         break;
       case 51:
       	fsong = fopen("SONG51.DAT","rb");
          if(!fsong) Error("Can't find ","SONG51.DAT",0);
@@ -458,6 +449,10 @@ void SPEAKER_LoadMusic(byte song){
       case 61:
       	fsong = fopen("SONG61.DAT","rb");
          if(!fsong) Error("Can't find ","SONG61.DAT",0);
+         break;
+      case 62:
+      	fsong = fopen("SONG62.DAT","rb");
+         if(!fsong) Error("Can't find ","SONG62.DAT",0);
          break;
       default:
       	fsong = fopen("SONG1.DAT","rb");

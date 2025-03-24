@@ -203,6 +203,8 @@ extern int scroll_y_adjust;
 extern byte scroll_focus;
 extern byte showPanel;
 extern byte panelScrolling;
+extern byte panelShown;
+extern byte panelHiden;
 extern byte scrolling_enabled;
 extern PLAYER far player;
 extern byte speech_active;
