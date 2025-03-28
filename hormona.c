@@ -681,13 +681,15 @@ void near MainLoop(void) {
    end_game = 0;
 }
 
+/////////////////////////////////////////////////////////
+// New game
+// - Initialize game and call main loop function
+/////////////////////////////////////////////////////////
+void near NewGame(void) {
 
-/////////////////////////////////////////////////////////
-// Init game
-// - Initialize all variables for a new game
-/////////////////////////////////////////////////////////
-void near Init(void){
-	// Initialize player status
+   UnloadMusic();
+
+   // Initialize player status
    player.day = 4;
 
    // Starting player status
@@ -708,20 +710,10 @@ void near Init(void){
 	player.score[10] = 0;
 
    LoadFont("FONTS.DAT","FONT.bmp"); //Load text font
-   LoadPanelBackground("IMAGES.DAT","PANEL.pcx");
 
    InitDay();
    GoToFloor1(128, 192);
-}
 
-/////////////////////////////////////////////////////////
-// New game
-// - Initialize game and call main loop function
-/////////////////////////////////////////////////////////
-void near NewGame(void) {
-
-   UnloadMusic();
-	Init();
    LoadMusic(1);
    PlayNonStopMusic();
 
@@ -945,10 +937,6 @@ void near LoadGame(void){
       player.gym_hotspot_mask[i] = spare & 0x01;
       spare = (spare >> 1);
    }
-
-   //sprintf(error1, "%d", player.good);
-   //sprintf(error2, "%d", player.money);
-   //Error("buffer 25 value",error1, error2);
 }
 
 
@@ -1021,7 +1009,7 @@ void near Options(void){
 	byte end;
 	word length;
    int menu_pos[8] = {20,76,92,100,108,124,140,156};
-   
+
 	// Draw menu options
    end = 0;
    option = 1;

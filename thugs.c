@@ -98,8 +98,8 @@ void near GoToThugs_Ext2(void){
       	Speech("SPRFACE1.DAT","tonif.pcx","D4_STR.DAT","D4THUG.TXT","066","067",0,0);
          Speech("SPRFACE1.DAT","erikf.pcx","D4_STR.DAT","D4THUG.TXT","068",0,0,0);
          Speech("SPRFACE1.DAT","jonf.pcx","D4_STR.DAT","D4THUG.TXT","069","070",0,0);
-         Speech("SPRFACE1.DAT","tonif.pcx","D4_STR.DAT","D4THUG.TXT","071",0,0,0);
-         Speech("SPRFACE1.DAT","erikf.pcx","D4_STR.DAT","D4THUG.TXT","072",0,0,0);
+         Speech("SPRFACE1.DAT","tonif.pcx","D4_STR.DAT","D4THUG.TXT","071","072","073",0);
+         Speech("SPRFACE1.DAT","erikf.pcx","D4_STR.DAT","D4THUG.TXT","083",0,0,0);
          if(player.good<18){UpdateGoodness(1);}
          break;
       case 2: // To smoke

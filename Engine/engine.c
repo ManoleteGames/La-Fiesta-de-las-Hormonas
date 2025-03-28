@@ -739,6 +739,9 @@ void ResetTimeInterrupt(void){
 	setvect(TIMER_IRQ, old_time_handler);
 
 	asm STI
+
+	Fade_out();
+
 }
 
 
@@ -819,9 +822,9 @@ void SetLoadingInterrupt(void){
 /////////////////////////////////////////////////////////
 void ResetLoadingInterrupt(void){
 
-	asm CLI
+	Fade_out();
 
-   Fade_out();
+	asm CLI
 
    // Restore old handler, normaly the sound interrupt function
 	setvect(TIMER_IRQ, old_loading_handler);
@@ -829,8 +832,9 @@ void ResetLoadingInterrupt(void){
    // Continue playing music from the same point it was
    SPEAKER_PlayNonStopMusic();
 
-
 	asm STI
+
+   Fade_out();
 }
 
 /////////////////////////////////////////////////////////
@@ -1190,6 +1194,7 @@ void Speech(char* facefile, char* face,char* filename, char* dat_string,char * l
 
    speech_active = 0;
    if(map_loaded){ DrawMapBack(); }
+   Update(0);
 }
 
 /////////////////////////////////////////////////////////
@@ -1336,6 +1341,8 @@ byte SpeechSelection(int optNum, char* facefile, char* face,char* filename, char
 
    speech_active = 0;
    if(map_loaded){ DrawMapBack(); }
+
+   Update(0);
 
    return option;
 }

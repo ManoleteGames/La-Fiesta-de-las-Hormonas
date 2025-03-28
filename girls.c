@@ -141,7 +141,7 @@ void far Girls(void){
 
          				Delay(100);
          				Fade_out();
-         				LoadImage("IMAGES.DAT","girls.pcx",2); // Load menu background image to non visible page
+         				LoadImage("IMAGES2.DAT","girls2.pcx",2); // Load menu background image to non visible page
         	 				Fade_in();
 
                   	Speech("SPRFACE1.DAT","jessyf.pcx","D3_STR.DAT","D3GIRL.TXT","055",0,0,0);

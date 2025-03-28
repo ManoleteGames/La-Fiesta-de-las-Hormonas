@@ -9,15 +9,6 @@
 /////////////////////////////////////////////////////////
 void far InitDay(void){
 
-	// Update day on panel
-	sprintf(string, "%02d", player.day);
-	VGA_PrintPanelText(1,1,strlen(string),string);
-
-   SetNewTime(120);
-   UpdateGoodness(0);
-   UpdateInteligence(0);
-   UpdatePopularity(0);
-
    switch(player.day){
    	case 4:  //////////////////////////// day 4 ///////////////////////////
          player.score[4] = 0;
@@ -403,7 +394,6 @@ void far InitDay(void){
 
 
          time_minutes = 0;
-			SetNewTime(120);
 
       	break;
       case 2: //////////////////////////// day 2 ///////////////////////////
@@ -595,9 +585,7 @@ void far InitDay(void){
    		player.item_bag = 0;
          player.item_keys = 0;
 
-
          time_minutes = 0;
-			SetNewTime(120);
 
       	break;
       case 1: //////////////////////////// day 1 ///////////////////////////
@@ -789,14 +777,31 @@ void far InitDay(void){
    		//player.item_exams = 0;
    		player.item_bag = 0;
          //player.item_keys = 0;
-
-
          time_minutes = 0;
+
       	break;
       case 0:
       	// End game
       	break;
    }
+
+   LoadPanelBackground("IMAGES.DAT","PANEL.pcx");
+
+   // Update day on panel
+	sprintf(string, "%02d", player.day);
+	VGA_PrintPanelText(1,1,strlen(string),string);
+
+   SetNewTime(120);
+   UpdateGoodness(0);
+   UpdateInteligence(0);
+   UpdatePopularity(0);
+
+    // Set current items
+   if(player.item_exams){ SetItem(2,16,"exams.pcx"); }
+   if(player.item_chalk){ SetItem(2,16,"chalk.pcx"); }
+   if(player.item_bag){ SetItem(1,16,"bitem.pcx"); }
+   if(player.item_keys){ SetItem(1,16,"kitem.pcx"); }
+
 }
 
 /////////////////////////////////////////////////////////

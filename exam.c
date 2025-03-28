@@ -307,23 +307,23 @@ void far GoToExam(void){
          player.floor2_hotspot_mask[11] = 0; // Disable hotspot of chalk on floor 2
          player.floor1_event_mask[5] = 0; // Disable event of director's place
          player.floor1_event_mask[9] = 0; // Disable event of thugs assault
-         time_seconds = 0;
+         SetNewTime(0);
       	break;
       case 3:
       	Speech("SPRFACE1.DAT","playerf.pcx","D3_STR.DAT","D3EXA.TXT","001","002",0,0);
          player.score[player.day] = Question("D3_STR.DAT","D3EXA.TXT",10);
-         time_seconds = 0;
+         SetNewTime(0);
       	break;
       case 2:
       	Speech("SPRFACE1.DAT","playerf.pcx","D2_STR.DAT","D2EXA.TXT","001","002",0,0);
          player.score[player.day] = Question("D2_STR.DAT","D2EXA.TXT",10);
-         time_seconds = 0;
+         SetNewTime(0);
       	break;
       case 1:
       	Speech("SPRFACE1.DAT","playerf.pcx","D1_STR.DAT","D1EXA.TXT","001","002",0,0);
          player.score[player.day] = Question("D1_STR.DAT","D1EXA.TXT",10);
          player.floor1_event_mask[5] = 0; // Disable event of director's place
-         time_seconds = 0;
+         SetNewTime(0);
       	break;
    }
 }

@@ -761,7 +761,7 @@ void near EndGameLikeADream(void){
             LoadImage("IMAEND2.DAT","end8_13.pcx",2); // Load menu background image to non visible page2
             SetPage(2);
             Fade_in();
-            Delay(200);
+            Delay(300);
             step++;
 				break;
          default:
